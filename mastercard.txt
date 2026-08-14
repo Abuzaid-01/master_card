@@ -1,0 +1,432 @@
+Mastercard Innovation Challenge 2026
+
+AI red teaming challenge to identify, simulate, and defend against GenAI-powered payment frauds
+
+
+
+
+Mastercard Innovation Challenge 2026
+
+View Writeups
+
+You haven't created a writeup yet.
+
+Your submission is due by Aug 31, 2026 at 11:59 PM GMT+5:30.
+
+
+
+
+Overview
+
+Mastercard Innovation Challenge @ GFF 2026 - AI Defense Lab for Payment Security
+
+Build the attack, then build the defense.
+
+GenAI is making payment fraud faster, cheaper, and harder to spot. In this red team/blue team challenge, you take on both sides of the problem by building one end-to-end Red Teaming AI system that:
+
+Identifies novel emerging GenAI-powered payment fraud attacks,
+
+Generates realistic simulations of those attacks at scale, and
+
+Defends against them with an accurate detection model.
+
+Goal: Build a closed-loop AI system that discovers emerging GenAI payment fraud, recreates it with high fidelity, and reliably detects it. The best solutions turn their own simulated attacks into the training ground for a stronger defense.
+
+Start
+
+3 days ago
+
+Close
+
+18 days to go
+
+Description
+
+Generative AI has lowered the barrier for sophisticated, fast-evolving payment fraud. Static, rule-based defenses struggle to keep pace with attacks that are novel, adaptive, and generated at scale. The Mastercard Innovation Challenge 2026, hosted at the Global Fintech Fest (GFF) 2026 (9–11 September, Jio World Centre, Mumbai), invites participants to fight fire with fire: use AI to stress-test and harden payment security.
+
+This is a closed-loop, red-team/blue-team challenge. Rather than tackling detection in isolation, participants own the full cycle - first imagining how fraud could evolve, then building the tooling to reproduce it faithfully and finally engineering a model that catches it. The strongest submissions treat these three pillars as a single feedback loop: the attacks you generate become the training and stress-testing ground for the defense you build, and the gaps your defense reveals feed back into new attack ideas.
+
+The Problem: Identify, Generate, Defend
+
+Build an end-to-end Red Teaming AI system structured across three core pillars:
+
+Identify (ideate) - Research and map the landscape of emerging, novel GenAI-powered fraud attacks targeting payments. Be thorough and exhaustive: the goal is breadth and depth. Surface as many distinct, plausible attack vectors as possible across channels, rails, and social-engineering surfaces rather than a narrow handful. Ground each idea in how real payment systems and fraud actually work.
+
+Generate - Build algorithms and agents that generate and simulate those attacks at scale. Prioritise fidelity: the synthetic attacks and transactions should closely resemble real payment data and real fraud patterns - realistic distributions, behaviours and edge cases so they are genuinely useful for training and stress-testing a defense.
+
+Defend - Build an AI/ML solution (for example, a classifier) that detects, flags, and mitigates the generated attacks. Prioritise accuracy: maximise detection performance (precision, recall, F1 / AUC) on the simulated attacks while keeping false positives on legitimate payments low.
+
+What Your Solution Should Achieve
+
+Your submission is an end-to-end technical solution, evaluated on:
+
+Diversity of attacks identified
+
+Fidelity of attacks in simulation
+
+Detection algorithms and their efficacy
+
+Novelty of the solution
+
+Real-world feasibility in live payments
+
+Who Should Participate
+
+The challenge is open to:
+
+Startups
+
+Individuals (tech professionals, market researchers, and others)
+
+Students (undergraduate, postgraduate, doctoral)
+
+Financial Institutions, Fintechs & DeepTech teams
+
+Teams can have 1-5 members.
+
+Timeline
+
+DateMilestone10th Aug.Registration opens20th Aug.Registration closes31st Aug.Submission deadline5th Sep.Results announced8th-11th Sep.Top teams present at GFF 2026
+
+Prizes & Recognition
+
+1st Prize: ₹2,56,000 (~$2690)
+
+2nd Prize: ₹1,28,000 (~$1345)
+
+3rd Prize: ₹64,000 (~$672)
+
+Winning teams also receive a showcase opportunity at GFF 2026, Mumbai.
+
+Submission Requirements
+
+A valid submission (write-up) must contain the following three artifacts, submitted from the "Writeups" section prior to the deadline. Any un-submitted or draft work by the deadline will not be considered by the judges.
+
+1. Code Repository
+
+A complete, runnable code repository covering all three pillars of the solution - identify, generate, and defend. Your code should be organized, documented and reproducible.
+
+2. Solution Walkthrough
+
+A deck or document (.pptx / .docx / .pdf) that walks through your approach, including:
+
+The novel fraud attacks you identified
+
+How your system generates and simulates those attacks
+
+Your detection and mitigation model, with efficacy results
+
+Real-world feasibility in live payment environments
+
+3. Working Prototype (Web)
+
+A working web-based prototype with a presentable UI that demonstrates the closed-loop system in action.
+
+Tracks and Awards
+
+AI Defense Lab for Payment Security · $4,707
+
+Generative AI is making payment fraud faster, cheaper, and harder to detect. In this red team / blue team challenge, you build one end-to-end Adversarial AI system that owns the full cycle:
+
+Identify - Research and surface emerging, novel GenAI-powered fraud attacks targeting payments. Be thorough and exhaustive - breadth and depth of attack vectors.
+
+Generate - Build agents that simulate those attacks at scale with high fidelity, closely resembling real payment data and fraud patterns.
+
+Defend - Build an AI/ML solution (e.g., a classifier) that accurately detects, flags, and mitigates the generated attacks while keeping false positives low.
+
+What you submit: a code repository, a solution walkthrough (deck/doc), and a working web prototype with a presentable UI.
+
+Judged on: diversity of attacks identified · fidelity of simulated attacks · detection efficacy · novelty · real-world feasibility in live payments.
+
+1st Prize
+
+Winning Team (INR 2,56,000)
+
+$2,690
+
+2nd Prize
+
+First runner-up (INR 1,28,000)
+
+$1,345
+
+3rd Prize
+
+Second runner-up (INR 64,000)
+
+$672
+
+Evaluation
+
+Submissions will be scored on:
+
+Diversity of attacks identified
+
+Fidelity of attacks in simulation
+
+Detection algorithm efficacy
+
+Novelty of the overall solution
+
+Real-world feasibility in live payments
+
+Your final submission must be made prior to the 31st August deadline. Shortlisted teams will be invited to present at GFF 2026 on 8th–11th September in Mumbai.
+
+Judges
+
+
+
+
+raahul
+
+Competition Host
+
+raahul
+
+
+
+
+Prizes & Awards
+
+$4,707
+
+Does not award Points or Medals
+
+Participation
+
+141 Entrants
+
+0 Participants
+
+0 Teams
+
+0 Submissions
+
+
+
+
+Table of Contents
+
+Mastercard Innovation Challenge 2026
+
+AI red teaming challenge to identify, simulate, and defend against GenAI-powered payment frauds
+
+
+
+
+Mastercard Innovation Challenge 2026
+
+View Writeups
+
+You haven't created a writeup yet.
+
+Your submission is due by Aug 31, 2026 at 11:59 PM GMT+5:30.
+
+
+
+
+You have accepted the rules for this competition. Good luck!
+
+Competition Rules
+
+AI Defence Lab for Payment Security ("Event")
+
+Terms & Conditions of Participation in the Event ("Terms").
+
+1. Eligibility
+
+By registering for the Event, you represent and warrant that:
+
+You are participating in your personal capacity, either individually or as part of a team of not more than five (5) individuals, and are at least eighteen (18) years of age at the time of registration.
+
+Each participant may be a member of only one team, and only one Submission may be made per team.
+
+All team members must be identified and registered at the time of registration; no changes to team composition may be made without Mastercard's prior written approval.
+
+All information provided by you is true, accurate, and complete.
+
+You are not an employee, officer, director, contractor, or temporary staff member of Mastercard or its affiliates.
+
+2. Event Timelines
+
+Registration opens 10 August 2026 and closes 20 August 2026. Submissions must be received by 31 August 2026. Any un-submitted or draft work by the deadline will not be considered as an eligible entry or Submission. A valid submission must include all three required artifacts: code repository, solution walkthrough (.pptx / .docx / .pdf), and a working web prototype with a presentable UI. Mastercard reserves the right to amend these timelines in accordance with these Terms.
+
+3. Participation and Submissions
+
+You are solely responsible for any presentation, software, prototype, idea, content, materials, or other submission made in connection with the Event ("Submission"). You represent and warrant that you have all rights, permissions, and authority required to make the Submission and that it does not infringe the rights of any third party or violate any applicable law.
+
+Participants shall: (a) use only synthetic, anonymized, or authorized sample data and not use any real cardholder, PII, or production payment data; (b) ensure that all adversarial testing remains within the scope of the Event and does not target live systems, payment infrastructure, or third parties; and (c) comply with applicable laws and responsible AI, cybersecurity, and security-disclosure practices.
+
+Participants must act honestly and with integrity throughout the Event. Any plagiarism, cheating, fraud, misrepresentation, unauthorized collaboration, or other conduct that undermines the fairness or integrity of the Event may result in disqualification at Mastercard's sole discretion.
+
+4. Third-Party Platforms
+
+Registration for and participation in the Event, including submission of entries, may be facilitated through third-party websites, platforms, or services. Participants acknowledge that their access to and use of such third-party platforms shall be subject to the applicable terms, conditions, and privacy policies of such third-party providers. Mastercard is not responsible for the availability, content, security, privacy practices, or operation of any third-party platform and disclaims any liability arising from a participant's use of such platforms.
+
+5. Intellectual Property
+
+All intellectual property rights in a Submission remain with the participant. Nothing in these Terms transfers ownership of any Submission to Mastercard. Participants grant Mastercard a non-exclusive, royalty-free, irrevocable, perpetual, worldwide right and license to review, evaluate, reproduce, display, and use the Submission for purposes relating to administration, judging, promotion, and documentation of the Event.
+
+All intellectual property rights in and relating to the Event — including the challenge statement, Event materials, content, trademarks, logos, branding, websites, documentation, and other materials made available in connection with the Event — remain vested in Mastercard and its affiliates. Participation in the Event does not grant participants any rights or licences in respect of any such intellectual property.
+
+6. Similar Ideas and Independent Development
+
+Participants acknowledge that Mastercard and its affiliates may already possess, be developing, or may independently develop, acquire, evaluate, or commercialize products, services, concepts, technologies, or solutions that are similar or identical to a Submission. Participation in the Event does not create any obligation on Mastercard to adopt, compensate for, license, purchase, or otherwise use a Submission. Participant irrevocably and unconditionally waives any claims arising from any similarities to its ideas and covenants not to bring any claim against Mastercard or its authorized users arising from the fact that Mastercard's products, services, technologies, business activities, or future initiatives are the same or similar to its Submission.
+
+7. Confidentiality
+
+Mastercard and participants shall keep confidential and not disclose any non-public information received from the other in connection with the Event, except as required for participation in, administration of, or evaluation of the Event, or as required by law.
+
+Participants must not include in any Submission or presentation any confidential, proprietary, or trade-secret information belonging to their employer, customers, clients, partners, or any third party unless expressly authorized to disclose such information. Mastercard shall not be responsible for protecting information voluntarily disclosed during public presentations, demos, Q&A sessions, or other portions of the Event open to judges, mentors, sponsors, or other participants. Participants acknowledge that information voluntarily uploaded to, submitted through, or disclosed on any third-party platform may be accessible to platform operators and other authorized users, and Mastercard shall not be responsible for the confidentiality of such information.
+
+8. Judging and Selection of Winners
+
+Submissions will be evaluated by a panel designated by Mastercard using criteria that may include diversity of attacks identified, fidelity of attacks in simulation, detection algorithm efficacy, novelty of the solution, real-world feasibility in live payments, innovation, originality, technical quality, relevance to the challenge statement, effectiveness, feasibility, scalability, commercial viability, and quality of presentation.
+
+Mastercard reserves the right to determine the evaluation process, criteria, and weightage in its sole discretion. All decisions relating to evaluation, shortlisting, disqualification, and selection of winners are final, binding, and not subject to challenge or appeal. Evaluation and shortlisting are expected to take place between 1 September 2026 and 4 September 2026, with results expected to be announced on 5 September 2026, subject to any changes made in accordance with these Terms. Mastercard reserves the right to disqualify any participant or Submission that violates these Terms or the rules of the Event.
+
+9. Taxes
+
+Participants shall be solely responsible for any taxes, duties, levies, or other governmental charges arising from participation in the Event or receipt of any prize, award, or benefit. Payment of prize money will be made through Mastercard's authorised agency(ies), who may deduct or withhold any amounts required by applicable law before making any prize payment and may require participants to provide such information, declarations, or documentation as may be reasonably required for tax, regulatory, or compliance purposes.
+
+10. Data Privacy
+
+Participants acknowledge and agree that Mastercard and the Event organizers may collect, use, process, store, and share registration information, participation details, and other information provided by participants for purposes of administering, evaluating, managing, promoting, and operating the Event and for communicating with participants regarding the Event. Where registration or Event administration is conducted through third-party platforms, participants acknowledge that personal information may be collected and processed by such platform in accordance with its applicable privacy notice and terms of use.
+
+11. Publicity
+
+Participants consent to Mastercard using their name, team name, photographs, and details of participation for Event-related publicity and promotional purposes without additional approval or compensation.
+
+12. Disclaimer
+
+Participation in the Event does not create any employment, partnership, agency, joint venture, procurement, investment, or commercial relationship between Mastercard and any participant. Mastercard makes no commitment to enter into any business arrangement with any participant as a result of participation in the Event.
+
+13. Indemnity and Liability
+
+Participants agree to indemnify and hold harmless Mastercard, its affiliates, officers, employees, and representatives from any third-party claims arising from their participation in the Event, their Submission, breach of these Terms, or infringement of third-party rights including intellectual property rights. To the fullest extent permitted by law, Mastercard shall not be liable for any indirect, incidental, consequential, special, or punitive damages arising from or relating to the Event.
+
+14. Governing Law
+
+These Terms shall be governed by the laws of India. Any dispute arising out of or in connection with these Terms, including any question regarding its existence, validity, or termination, shall be referred to and finally resolved by arbitration in accordance with the Arbitration Rules of the Singapore International Arbitration Centre ("SIAC") for the time being in force, which Rules are deemed to be incorporated by reference in this clause. The arbitration tribunal shall consist of one (1) arbitrator to be agreed between the parties, or, failing agreement within fourteen (14) days after either party has given the other a written request to concur in the appointment of an arbitrator, to be appointed by the Chairman of the SIAC. The place and venue of arbitration shall be Gurgaon, India.
+
+15. Amendments and Cancellation
+
+Mastercard reserves the right, at its sole discretion, to amend these Terms, modify any aspect of the Event (including timelines, eligibility criteria, evaluation criteria, and prizes), or suspend, postpone, or cancel the Event at any time without liability.
+
+Acceptance
+
+By clicking "I Agree" and registering for the Event, I confirm that:
+
+I am participating as an individual or as part of a team of up to five (5) individuals;
+
+I am at least eighteen (18) years of age;
+
+I have authority to accept these Terms;
+
+I am not an employee, officer, director, contractor, or temporary staff member of Mastercard or its affiliates or group companies;
+
+My Submission is original or I have all rights required to submit it, and it does not contain any confidential information that I am not authorized to disclose;
+
+I acknowledge that registration and participation may be facilitated through a third-party platform and that my use of such platform is subject to its applicable terms and privacy notice; and
+
+I have read, understood, and agree to these Terms and Conditions.
+
+Kaggle Competition Foundational Rules
+
+(Non-editable)
+
+Competition participants must also agree to Kaggle's Foundational Competition Rules. These rules will supersede the competition-specific rules in the event of any conflict.
+
+The following Kaggle Competition Foundational Rules (“ Foundational Rules ”) apply to every competition regardless of whether the Sponsor creates competition-specific rules. Any competition-specific rules provided by the Sponsor are in addition to these rules, and in the case of any conflict or inconsistency, these Foundational Rules control and nullify contrary competition-specific rules.
+
+GENERAL COMPETITION RULES - BINDING AGREEMENT
+
+1. ELIGIBILITY
+
+a. To be eligible to enter the Competition, you must be:
+
+a registered account holder at Kaggle.com;
+
+the older of 18 years old or the age of majority in your jurisdiction of residence (unless otherwise agreed to by Competition Sponsor and appropriate parental/guardian consents have been obtained by Competition Sponsor);
+
+not a resident of Crimea, so-called Donetsk People's Republic (DNR) or Luhansk People's Republic (LNR), Cuba, Iran, or North Korea; and
+
+not a person or representative of an entity under U.S. export controls or sanctions (see: https://www.treasury.gov/resourcecenter/sanctions/Programs/Pages/Programs.aspx).
+
+b. Competitions are open to residents of the United States and worldwide, except that if you are a resident of Crimea, so-called Donetsk People's Republic (DNR) or Luhansk People's Republic (LNR), Cuba, Iran, North Korea, or are subject to U.S. export controls or sanctions, you may not enter the Competition. Other local rules and regulations may apply to you, so please check your local laws to ensure that you are eligible to participate in skills-based competitions. The Competition Host reserves the right to forego or award alternative Prizes where needed to comply with local laws. If a winner is located in a country where prizes cannot be awarded, then they are not eligible to receive a prize.
+
+c. If you are entering as a representative of a company, educational institution or other legal entity, or on behalf of your employer, these rules are binding on you, individually, and the entity you represent or where you are an employee. If you are acting within the scope of your employment, or as an agent of another party, you warrant that such party or your employer has full knowledge of your actions and has consented thereto, including your potential receipt of a Prize. You further warrant that your actions do not violate your employer's or entity's policies and procedures.
+
+d. The Competition Sponsor reserves the right to verify eligibility and to adjudicate on any dispute at any time. If you provide any false information relating to the Competition concerning your identity, residency, mailing address, telephone number, email address, ownership of right, or information required for entering the Competition, you may be immediately disqualified from the Competition.
+
+2. SPONSOR AND HOSTING PLATFORM
+
+a. The Competition is sponsored by Competition Sponsor named above. The Competition is hosted on behalf of Competition Sponsor by Kaggle Inc. ("Kaggle"). Kaggle is an independent contractor of Competition Sponsor, and is not a party to this or any agreement between you and Competition Sponsor. You understand that Kaggle has no responsibility with respect to selecting the potential Competition winner(s) or awarding any Prizes. Kaggle will perform certain administrative functions relating to hosting the Competition, and you agree to abide by the provisions relating to Kaggle under these Rules. As a Kaggle.com account holder and user of the Kaggle competition platform, remember you have accepted and are subject to the Kaggle Terms of Service at www.kaggle.com/terms in addition to these Rules.
+
+3. COMPETITION PERIOD
+
+a. For the purposes of Prizes, the Competition will run from the Start Date and time to the Final Submission Deadline (such duration the “Competition Period”). The Competition Timeline is subject to change, and Competition Sponsor may introduce additional hurdle deadlines during the Competition Period. Any updated or additional deadlines will be publicized on the Competition Website. It is your responsibility to check the Competition Website regularly to stay informed of any deadline changes. YOU ARE RESPONSIBLE FOR DETERMINING THE CORRESPONDING TIME ZONE IN YOUR LOCATION.
+
+4. COMPETITION ENTRY
+
+a. NO PURCHASE NECESSARY TO ENTER OR WIN. To enter the Competition, you must register on the Competition Website prior to the Entry Deadline, and follow the instructions for developing and entering your Submission through the Competition Website. Your Submissions must be made in the manner and format, and in compliance with all other requirements, stated on the Competition Website (the "Requirements"). Submissions must be received before any Submission deadlines stated on the Competition Website. Submissions not received by the stated deadlines will not be eligible to receive a Prize. b. Submissions may not use or incorporate information from hand labeling or human prediction of the validation dataset or test data records. c. If the Competition is a multi-stage competition with temporally separate training and/or test data, one or more valid Submissions may be required during each Competition stage in the manner described on the Competition Website in order for the Submissions to be Prize eligible. d. Submissions are void if they are in whole or part illegible, incomplete, damaged, altered, counterfeit, obtained through fraud, or late. Competition Sponsor reserves the right to disqualify any entrant who does not follow these Rules, including making a Submission that does not meet the Requirements.
+
+5. INDIVIDUALS AND TEAMS
+
+a. Individual Account. You may make Submissions only under one, unique Kaggle.com account. You will be disqualified if you make Submissions through more than one Kaggle account, or attempt to falsify an account to act as your proxy. You may submit up to the maximum number of Submissions per day as specified on the Competition Website. b. Teams. If permitted under the Competition Website guidelines, multiple individuals may collaborate as a Team; however, you may join or form only one Team. Each Team member must be a single individual with a separate Kaggle account. You must register individually for the Competition before joining a Team. You must confirm your Team membership to make it official by responding to the Team notification message sent to your Kaggle account. Team membership may not exceed the Maximum Team Size stated on the Competition Website. c. Team Merger. Teams may request to merge via the Competition Website. Team mergers may be allowed provided that: (i) the combined Team does not exceed the Maximum Team Size; (ii) the number of Submissions made by the merging Teams does not exceed the number of Submissions permissible for one Team at the date of the merger request; (iii) the merger is completed before the earlier of: any merger deadline or the Competition deadline; and (iv) the proposed combined Team otherwise meets all the requirements of these Rules. d. Private Sharing. No private sharing outside of Teams. Privately sharing code or data outside of Teams is not permitted. It's okay to share code if made available to all Participants on the forums.
+
+6. SUBMISSION CODE REQUIREMENTS
+
+a. Private Code Sharing. Unless otherwise specifically permitted under the Competition Website or Competition Specific Rules above, during the Competition Period, you are not allowed to privately share source or executable code developed in connection with or based upon the Competition Data or other source or executable code relevant to the Competition (“Competition Code”). This prohibition includes sharing Competition Code between separate Teams, unless a Team merger occurs. Any such sharing of Competition Code is a breach of these Competition Rules and may result in disqualification. b. Public Code Sharing. You are permitted to publicly share Competition Code, provided that such public sharing does not violate the intellectual property rights of any third party. If you do choose to share Competition Code or other such code, you are required to share it on Kaggle.com on the discussion forum or notebooks associated specifically with the Competition for the benefit of all competitors. By so sharing, you are deemed to have licensed the shared code under an Open Source Initiative-approved license (see www.opensource.org) that in no event limits commercial use of such Competition Code or model containing or depending on such Competition Code. c. Use of Open Source. Unless otherwise stated in the Specific Competition Rules above, if open source code is used in the model to generate the Submission, then you must only use open source code licensed under an Open Source Initiative-approved license (see www.opensource.org) that in no event limits commercial use of such code or model containing or depending on such code.
+
+7. DETERMINING WINNERS
+
+a. Each Submission will be scored and ranked by the evaluation metric stated on the Competition Website. During the Competition Period, the current ranking will be visible on the Competition Website's Public Leaderboard. The potential winner(s) are determined solely by the leaderboard ranking on the Private Leaderboard, subject to compliance with these Rules. The Public Leaderboard will be based on the public test set and the Private Leaderboard will be based on the private test set. b. In the event of a tie, the Submission that was entered first to the Competition will be the winner. In the event a potential winner is disqualified for any reason, the Submission that received the next highest score rank will be chosen as the potential winner.
+
+8. NOTIFICATION OF WINNERS & DISQUALIFICATION
+
+a. The potential winner(s) will be notified by email. b. If a potential winner (i) does not respond to the notification attempt within one (1) week from the first notification attempt or (ii) notifies Kaggle within one week after the Final Submission Deadline that the potential winner does not want to be nominated as a winner or does not want to receive a Prize, then, in each case (i) and (ii) such potential winner will not receive any Prize, and an alternate potential winner will be selected from among all eligible entries received based on the Competition’s judging criteria. c. In case (i) and (ii) above Kaggle may disqualify the Participant. However, in case (ii) above, if requested by Kaggle, such potential winner may provide code and documentation to verify the Participant’s compliance with these Rules. If the potential winner provides code and documentation to the satisfaction of Kaggle, the Participant will not be disqualified pursuant to this paragraph. d. Competition Sponsor reserves the right to disqualify any Participant from the Competition if the Competition Sponsor reasonably believes that the Participant has attempted to undermine the legitimate operation of the Competition by cheating, deception, or other unfair playing practices or abuses, threatens or harasses any other Participants, Competition Sponsor or Kaggle. e. A disqualified Participant may be removed from the Competition leaderboard, at Kaggle's sole discretion. If a Participant is removed from the Competition Leaderboard, additional winning features associated with the Kaggle competition platform, for example Kaggle points or medals, may also not be awarded. f. The final leaderboard list will be publicly displayed at Kaggle.com. Determinations of Competition Sponsor are final and binding.
+
+9. PRIZES
+
+a. Prize(s) are as described on the Competition Website and are only available for winning during the time period described on the Competition Website. The odds of winning any Prize depends on the number of eligible Submissions received during the Competition Period and the skill of the Participants. b. All Prizes are subject to Competition Sponsor's review and verification of the Participant’s eligibility and compliance with these Rules, and the compliance of the winning Submissions with the Submissions Requirements. In the event that the Submission demonstrates non-compliance with these Competition Rules, Competition Sponsor may at its discretion take either of the following actions: (i) disqualify the Submission(s); or (ii) require the potential winner to remediate within one week after notice all issues identified in the Submission(s) (including, without limitation, the resolution of license conflicts, the fulfillment of all obligations required by software licenses, and the removal of any software that violates the software restrictions). c. A potential winner may decline to be nominated as a Competition winner in accordance with Section 3.8. d. Potential winners must return all required Prize acceptance documents within two (2) weeks following notification of such required documents, or such potential winner will be deemed to have forfeited the prize and another potential winner will be selected. Prize(s) will be awarded within approximately thirty (30) days after receipt by Competition Sponsor or Kaggle of the required Prize acceptance documents. Transfer or assignment of a Prize is not allowed. e. You are not eligible to receive any Prize if you do not meet the Eligibility requirements in Section 2.7 and Section 3.1 above. f. If a Team wins a monetary Prize, the Prize money will be allocated in even shares between the eligible Team members, unless the Team unanimously opts for a different Prize split and notifies Kaggle before Prizes are issued.
+
+10. TAXES
+
+a. ALL TAXES IMPOSED ON PRIZES ARE THE SOLE RESPONSIBILITY OF THE WINNERS. Payments to potential winners are subject to the express requirement that they submit all documentation requested by Competition Sponsor or Kaggle for compliance with applicable state, federal, local and foreign (including provincial) tax reporting and withholding requirements. Prizes will be net of any taxes that Competition Sponsor is required by law to withhold. If a potential winner fails to provide any required documentation or comply with applicable laws, the Prize may be forfeited and Competition Sponsor may select an alternative potential winner. Any winners who are U.S. residents will receive an IRS Form-1099 in the amount of their Prize.
+
+11. GENERAL CONDITIONS
+
+a. All federal, state, provincial and local laws and regulations apply.
+
+12. PUBLICITY
+
+a. You agree that Competition Sponsor, Kaggle and its affiliates may use your name and likeness for advertising and promotional purposes without additional compensation, unless prohibited by law.
+
+13. PRIVACY
+
+a. You acknowledge and agree that Competition Sponsor and Kaggle may collect, store, share and otherwise use personally identifiable information provided by you during the Kaggle account registration process and the Competition, including but not limited to, name, mailing address, phone number, and email address (“Personal Information”). Kaggle acts as an independent controller with regard to its collection, storage, sharing, and other use of this Personal Information, and will use this Personal Information in accordance with its Privacy Policy <www.kaggle.com/privacy>, including for administering the Competition. As a Kaggle.com account holder, you have the right to request access to, review, rectification, portability or deletion of any personal data held by Kaggle about you by logging into your account and/or contacting Kaggle Support at <www.kaggle.com/contact>. b. As part of Competition Sponsor performing this contract between you and the Competition Sponsor, Kaggle will transfer your Personal Information to Competition Sponsor, which acts as an independent controller with regard to this Personal Information. As a controller of such Personal Information, Competition Sponsor agrees to comply with all U.S. and foreign data protection obligations with regard to your Personal Information. Kaggle will transfer your Personal Information to Competition Sponsor in the country specified in the Competition Sponsor Address listed above, which may be a country outside the country of your residence. Such country may not have privacy laws and regulations similar to those of the country of your residence.
+
+14. WARRANTY, INDEMNITY AND RELEASE
+
+a. You warrant that your Submission is your own original work and, as such, you are the sole and exclusive owner and rights holder of the Submission, and you have the right to make the Submission and grant all required licenses. You agree not to make any Submission that: (i) infringes any third party proprietary rights, intellectual property rights, industrial property rights, personal or moral rights or any other rights, including without limitation, copyright, trademark, patent, trade secret, privacy, publicity or confidentiality obligations, or defames any person; or (ii) otherwise violates any applicable U.S. or foreign state or federal law. b. To the maximum extent permitted by law, you indemnify and agree to keep indemnified Competition Entities at all times from and against any liability, claims, demands, losses, damages, costs and expenses resulting from any of your acts, defaults or omissions and/or a breach of any warranty set forth herein. To the maximum extent permitted by law, you agree to defend, indemnify and hold harmless the Competition Entities from and against any and all claims, actions, suits or proceedings, as well as any and all losses, liabilities, damages, costs and expenses (including reasonable attorneys fees) arising out of or accruing from: (a) your Submission or other material uploaded or otherwise provided by you that infringes any third party proprietary rights, intellectual property rights, industrial property rights, personal or moral rights or any other rights, including without limitation, copyright, trademark, patent, trade secret, privacy, publicity or confidentiality obligations, or defames any person; (b) any misrepresentation made by you in connection with the Competition; (c) any non-compliance by you with these Rules or any applicable U.S. or foreign state or federal law; (d) claims brought by persons or entities other than the parties to these Rules arising from or related to your involvement with the Competition; and (e) your acceptance, possession, misuse or use of any Prize, or your participation in the Competition and any Competition-related activity. c. You hereby release Competition Entities from any liability associated with: (a) any malfunction or other problem with the Competition Website; (b) any error in the collection, processing, or retention of any Submission; or (c) any typographical or other error in the printing, offering or announcement of any Prize or winners.
+
+15. INTERNET
+
+a. Competition Entities are not responsible for any malfunction of the Competition Website or any late, lost, damaged, misdirected, incomplete, illegible, undeliverable, or destroyed Submissions or entry materials due to system errors, failed, incomplete or garbled computer or other telecommunication transmission malfunctions, hardware or software failures of any kind, lost or unavailable network connections, typographical or system/human errors and failures, technical malfunction(s) of any telephone network or lines, cable connections, satellite transmissions, servers or providers, or computer equipment, traffic congestion on the Internet or at the Competition Website, or any combination thereof, which may limit a Participant’s ability to participate.
+
+16. RIGHT TO CANCEL, MODIFY OR DISQUALIFY
+
+a. If for any reason the Competition is not capable of running as planned, including infection by computer virus, bugs, tampering, unauthorized intervention, fraud, technical failures, or any other causes which corrupt or affect the administration, security, fairness, integrity, or proper conduct of the Competition, Competition Sponsor reserves the right to cancel, terminate, modify or suspend the Competition. Competition Sponsor further reserves the right to disqualify any Participant who tampers with the submission process or any other part of the Competition or Competition Website. Any attempt by a Participant to deliberately damage any website, including the Competition Website, or undermine the legitimate operation of the Competition is a violation of criminal and civil laws. Should such an attempt be made, Competition Sponsor and Kaggle each reserves the right to seek damages from any such Participant to the fullest extent of the applicable law.
+
+17. NOT AN OFFER OR CONTRACT OF EMPLOYMENT
+
+a. Under no circumstances will the entry of a Submission, the awarding of a Prize, or anything in these Rules be construed as an offer or contract of employment with Competition Sponsor or any of the Competition Entities. You acknowledge that you have submitted your Submission voluntarily and not in confidence or in trust. You acknowledge that no confidential, fiduciary, agency, employment or other similar relationship is created between you and Competition Sponsor or any of the Competition Entities by your acceptance of these Rules or your entry of your Submission.
+
+18. DEFINITIONS
+
+a. "Competition Data" are the data or datasets available from the Competition Website for the purpose of use in the Competition, including any prototype or executable code provided on the Competition Website. The Competition Data will contain private and public test sets. Which data belongs to which set will not be made available to Participants. b. An “Entry” is when a Participant has joined, signed up, or accepted the rules of a competition. Entry is required to make a Submission to a competition. c. A “Final Submission” is the Submission selected by the user, or automatically selected by Kaggle in the event not selected by the user, that is/are used for final placement on the competition leaderboard. d. A “Participant” or “Participant User” is an individual who participates in a competition by entering the competition and making a Submission. e. The “Private Leaderboard” is a ranked display of Participants’ Submission scores against the private test set. The Private Leaderboard determines the final standing in the competition. f. The “Public Leaderboard” is a ranked display of Participants’ Submission scores against a representative sample of the test data. This leaderboard is visible throughout the competition. g. A “Sponsor” is responsible for hosting the competition, which includes but is not limited to providing the data for the competition, determining winners, and enforcing competition rules. h. A “Submission” is anything provided by the Participant to the Sponsor to be evaluated for competition purposes and determine leaderboard position. A Submission may be made as a model, notebook, prediction file, or other format as determined by the Sponsor. i. A “Team” is one or more Participants participating together in a Kaggle competition, by officially merging together as a Team within the competition platform.
+
+Rules
+
+ 
