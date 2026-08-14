@@ -6,3 +6,7 @@ venv/
 .venv/
 __pycache__/
 *.pyc
+
+# Local benchmark dataset files (exceeds GitHub 100MB limit)
+ieee-fraud-detection/
+

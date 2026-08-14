@@ -3,29 +3,30 @@
   "text_pass_rate_pct": 100.0,
   "graph_pass_rate_pct": 100.0,
   "evasion_pass_rate_pct": 100.0,
-  "tstr_auc_pr": 1.0,
+  "tstr_auc_pr": 0.1234,
+  "benchmark_dataset_used": "IEEE-CIS train_transaction.csv",
   "fidelity_details": {
     "feature_metrics": {
       "amount": {
-        "wasserstein_distance": 4.4521,
-        "ks_statistic": 0.042,
-        "ks_p_value": 0.7704
+        "wasserstein_distance": 19.4934,
+        "ks_statistic": 0.1397,
+        "ks_p_value": 0.0
+      },
+      "velocity": {
+        "wasserstein_distance": 3.6478,
+        "ks_statistic": 0.971,
+        "ks_p_value": 0.0
       },
       "device_risk_score": {
-        "wasserstein_distance": 0.0106,
-        "ks_statistic": 0.054,
-        "ks_p_value": 0.4599
-      },
-      "is_decline": {
-        "wasserstein_distance": 0.014,
-        "ks_statistic": 0.014,
-        "ks_p_value": 1.0
+        "wasserstein_distance": 0.2275,
+        "ks_statistic": 0.8126,
+        "ks_p_value": 0.0
       }
     },
     "tstr_utility": {
-      "tstr_auc_pr": 1.0,
+      "tstr_auc_pr": 0.1234,
       "train_samples_count": 500,
-      "test_samples_count": 500
+      "test_samples_count": 20000
     }
   }
 }

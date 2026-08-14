@@ -30,6 +30,9 @@ def evaluate_distribution_fidelity(
         "ks_p_value": float(np.round(ks_res.pvalue, 4))
     }
 
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import average_precision_score
+
 def compute_tstr_score(
     df_synthetic_train: pd.DataFrame,
     df_real_test: pd.DataFrame,
@@ -46,13 +49,16 @@ def compute_tstr_score(
     X_test = df_real_test[feature_cols].fillna(0)
     y_test = df_real_test[target_col]
     
-    clf = RandomForestClassifier(n_estimators=50, random_state=42)
-    clf.fit(X_train, y_train)
+    scaler = StandardScaler()
+    X_train_scaled = scaler.fit_transform(X_train)
+    X_test_scaled = scaler.transform(X_test)
     
-    y_pred_proba = clf.predict_proba(X_test)[:, 1] if len(clf.classes_) > 1 else np.zeros(len(X_test))
+    clf = RandomForestClassifier(n_estimators=100, class_weight="balanced", random_state=42)
+    clf.fit(X_train_scaled, y_train)
     
-    precision, recall, _ = precision_recall_curve(y_test, y_pred_proba)
-    auc_pr = float(np.round(auc(recall, precision), 4))
+    y_pred_proba = clf.predict_proba(X_test_scaled)[:, 1] if len(clf.classes_) > 1 else np.zeros(len(X_test))
+    
+    auc_pr = float(np.round(average_precision_score(y_test, y_pred_proba), 4))
     
     return {
         "tstr_auc_pr": auc_pr,

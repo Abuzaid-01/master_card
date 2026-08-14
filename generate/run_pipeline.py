@@ -6,6 +6,7 @@ and exports synthetic datasets & JSON reports to data/synthetic/.
 
 import os
 import json
+import numpy as np
 import pandas as pd
 from generate.generator_tabular import generate_tabular_card_testing
 from generate.generator_text import generate_text_prompt_injections
@@ -51,13 +52,32 @@ def run_step2_generation_pipeline(
     val_evasion = validate_domain_constraints(df_evasion)
     print(f"      -> Generated perturbed dataset. Domain Pass Rate: {val_evasion['pass_rate_pct']}%")
     
-    # 5. Compute Fidelity Benchmark Report
-    print("\n[Fidelity Suite] Computing Wasserstein Distances & TSTR Score...")
-    df_real_baseline = generate_tabular_card_testing(num_samples=num_samples_per_vector, random_seed=999)
+    # 5. Compute Authentic Fidelity Benchmark Report using Real IEEE-CIS Dataset
+    print("\n[Fidelity Suite] Loading REAL IEEE-CIS Dataset (train_transaction.csv)...")
+    ieee_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ieee-fraud-detection", "train_transaction.csv")
+    
+    if os.path.exists(ieee_path):
+        print(f"      -> Found benchmark file: {ieee_path}")
+        # Sample real transactions preserving class distributions
+        df_real_raw = pd.read_csv(ieee_path, usecols=["TransactionID", "isFraud", "TransactionAmt", "C12", "V201"], nrows=20000)
+        
+        # Normalize/map IEEE-CIS features to our schema
+        df_real_baseline = pd.DataFrame({
+            "amount": df_real_raw["TransactionAmt"].fillna(50.0),
+            "velocity": df_real_raw["C12"].fillna(1.0),
+            "device_risk_score": df_real_raw["V201"].fillna(0.0) / 10.0,
+            "is_decline": np.random.choice([0, 1], size=len(df_real_raw), p=[0.95, 0.05]),
+            "is_fraud": df_real_raw["isFraud"].astype(int)
+        })
+        print(f"      -> Loaded {len(df_real_baseline)} REAL IEEE-CIS benchmark transactions (Fraud ratio: {df_real_baseline['is_fraud'].mean():.2%})")
+    else:
+        print("[Warning] IEEE-CIS dataset file not found. Falling back to synthetic baseline.")
+        df_real_baseline = generate_tabular_card_testing(num_samples=num_samples_per_vector, random_seed=999)
+        
     fidelity_report = generate_fidelity_report(
         df_real_baseline,
         df_tabular,
-        feature_cols=["amount", "device_risk_score", "is_decline"]
+        feature_cols=["amount", "velocity", "device_risk_score"]
     )
     
     summary = {
@@ -66,6 +86,7 @@ def run_step2_generation_pipeline(
         "graph_pass_rate_pct": val_graph["pass_rate_pct"],
         "evasion_pass_rate_pct": val_evasion["pass_rate_pct"],
         "tstr_auc_pr": fidelity_report["tstr_utility"]["tstr_auc_pr"],
+        "benchmark_dataset_used": "IEEE-CIS train_transaction.csv" if os.path.exists(ieee_path) else "Synthetic Baseline",
         "fidelity_details": fidelity_report
     }
     
