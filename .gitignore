@@ -6,6 +6,3 @@ venv/
 .venv/
 __pycache__/
 *.pyc
-
-# Local runtime data
-data/synthetic/
