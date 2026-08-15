@@ -86,9 +86,11 @@ class TabularCardTestingDetector:
             booster.feature_names = orig_names
             print(f"[ONNX Export] Model successfully exported to ONNX: {out_path}")
         except Exception as e:
-            out_path = os.path.join(MODELS_DIR, "card_testing_xgb.joblib")
-            joblib.dump(self.xgb_model, out_path)
-            print(f"[Model Save] Saved model via joblib: {out_path} ({e})")
+            print(f"[ONNX Export Warning] {e}")
+        
+        # Always also save joblib for Step 4 prober compatibility
+        joblib_path = os.path.join(MODELS_DIR, "card_testing_xgb.joblib")
+        joblib.dump(self.xgb_model, joblib_path)
             
         return out_path
 

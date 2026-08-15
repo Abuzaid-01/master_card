@@ -1,66 +1,66 @@
 {
   "tabular_detector": {
     "onnx_model_path": "defend/models/card_testing_xgb.onnx",
-    "auc_pr": 0.9768,
-    "f1_score": 0.875,
-    "false_positive_rate": 0.0283,
-    "onnx_runtime_latency_ms": 0.0057,
-    "xgboost_raw_latency_ms": 0.5811,
-    "inference_latency_ms": 0.0057,
+    "auc_pr": 0.975,
+    "f1_score": 0.8923,
+    "false_positive_rate": 0.0282,
+    "onnx_runtime_latency_ms": 0.0056,
+    "xgboost_raw_latency_ms": 0.8335,
+    "inference_latency_ms": 0.0056,
     "sub_50ms_sla_met": true
   },
   "text_detector": {
     "model_path": "defend/models/text_detector.joblib",
-    "tfidf_baseline_auc_pr": 0.8974,
-    "semantic_embedding_auc_pr": 0.9126,
-    "semantic_lift_pct": 1.69,
-    "paraphrased_only_tfidf_auc_pr": 0.7908,
-    "paraphrased_only_semantic_auc_pr": 0.8629,
-    "paraphrased_only_lift_pct": 9.12,
+    "tfidf_baseline_auc_pr": 0.9295,
+    "semantic_embedding_auc_pr": 0.9569,
+    "semantic_lift_pct": 2.95,
+    "paraphrased_only_tfidf_auc_pr": 0.7992,
+    "paraphrased_only_semantic_auc_pr": 0.8978,
+    "paraphrased_only_lift_pct": 12.34,
     "num_paraphrased_attacks": 15,
     "paraphrased_attacks_injected": 15
   },
   "graph_detector": {
     "model_path": "defend/models/graph_detector.joblib",
-    "auc_pr": 0.6118,
-    "f1_score": 0.6452
+    "auc_pr": 0.8759,
+    "f1_score": 0.8235
   },
   "financial_cost_optimization": {
-    "optimal_threshold_tau": 0.17,
-    "min_financial_loss_usd": 120.0,
-    "default_050_loss_usd": 442.99,
-    "savings_usd": 322.99
+    "optimal_threshold_tau": 0.37,
+    "min_financial_loss_usd": 316.97,
+    "default_050_loss_usd": 1039.28,
+    "savings_usd": 722.31
   },
   "explainability": {
     "global_feature_importance": {
-      "device_risk_score": 0.8284000158309937,
-      "velocity": 0.08760000020265579,
-      "amount": 0.05700000002980232,
-      "is_decline": 0.027000000700354576
+      "device_risk_score": 0.741599977016449,
+      "velocity": 0.11599999666213989,
+      "is_decline": 0.09319999814033508,
+      "amount": 0.04910000041127205
     },
     "sample_waterfall_explanation": [
       {
         "feature": "amount",
-        "feature_value": 31.56,
-        "shap_attribution": -1.4320000410079956,
+        "feature_value": 11.46,
+        "shap_attribution": -1.3738000392913818,
         "impact": "Decreases Risk"
       },
       {
         "feature": "velocity",
-        "feature_value": 1.94,
-        "shap_attribution": -1.9275000095367432,
+        "feature_value": 1.03,
+        "shap_attribution": -3.012200117111206,
         "impact": "Decreases Risk"
       },
       {
         "feature": "device_risk_score",
-        "feature_value": 0.06,
-        "shap_attribution": -2.824399948120117,
+        "feature_value": 0.2,
+        "shap_attribution": -3.144399881362915,
         "impact": "Decreases Risk"
       },
       {
         "feature": "is_decline",
         "feature_value": 0.0,
-        "shap_attribution": -0.3522999882698059,
+        "shap_attribution": -0.23399999737739563,
         "impact": "Decreases Risk"
       }
     ],

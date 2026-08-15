@@ -18,7 +18,7 @@ from generate.fidelity_eval import generate_fidelity_report
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "synthetic")
 
 def run_step2_generation_pipeline(
-    num_samples_per_vector: int = 500,
+    num_samples_per_vector: int = 3000,
     export_data: bool = True
 ) -> dict:
     """Runs the complete Step 2 Generation Pipeline end-to-end."""

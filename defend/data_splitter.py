@@ -15,7 +15,8 @@ def split_and_preserve_holdout(
     df: pd.DataFrame,
     target_col: str = "is_fraud",
     dataset_name: str = "tabular",
-    random_seed: int = 42
+    random_seed: int = 42,
+    verbose: bool = True
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Splits dataframe into Train (60%), Validation (20%), and Step 4 Holdout (20%).
@@ -43,7 +44,8 @@ def split_and_preserve_holdout(
     holdout_path = os.path.join(DEFEND_DATA_DIR, f"step4_holdout_{dataset_name}.csv")
     df_holdout.to_csv(holdout_path, index=False)
     
-    print(f"[Data Splitter] {dataset_name.upper()} Dataset split: Train={len(df_train)}, Val={len(df_val)}, Step4 Holdout={len(df_holdout)} (Saved to: {holdout_path})")
+    if verbose:
+        print(f"[Data Splitter] {dataset_name.upper()} Dataset split: Train={len(df_train)}, Val={len(df_val)}, Step4 Holdout={len(df_holdout)} (Saved to: {holdout_path})")
     
     return df_train, df_val, df_holdout
 

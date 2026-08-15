@@ -1,0 +1,116 @@
+{
+  "step4_closed_loop": {
+    "holdout_partition_sizes": {
+      "tabular": {
+        "mine_total": 364,
+        "mine_fraud": 45,
+        "eval_total": 364,
+        "eval_fraud": 45
+      },
+      "text": {
+        "mine_total": 48,
+        "mine_fraud": 6,
+        "eval_total": 49,
+        "eval_fraud": 6
+      },
+      "graph": {
+        "mine_total": 217,
+        "mine_fraud": 7,
+        "eval_total": 218,
+        "eval_fraud": 8
+      }
+    },
+    "blind_spot_mining": {
+      "tabular": {
+        "n_fraud_probed": 45,
+        "n_evaded": 41,
+        "evasion_rate": 0.9111
+      },
+      "graph": {
+        "n_fraud_probed": 7,
+        "n_evaded": 1,
+        "evasion_rate": 0.1429
+      },
+      "text": {
+        "n_fraud_probed": 6,
+        "n_evaded": 3,
+        "evasion_rate": 0.5
+      }
+    },
+    "round2_retraining": {
+      "tabular": {
+        "original_train_size": 2181,
+        "augmented_train_size": 2541,
+        "adversarial_samples_added": 360
+      },
+      "graph": {
+        "original_train_size": 1305,
+        "augmented_train_size": 1516,
+        "adversarial_samples_added": 211
+      },
+      "text": {
+        "original_train_size": 288,
+        "augmented_train_size": 74,
+        "adversarial_samples_added": 3
+      }
+    },
+    "round1_vs_round2": {
+      "tabular": {
+        "adversarial_eval": {
+          "n_fraud_total": 45,
+          "n_legit_total": 319,
+          "r1_caught": 3,
+          "r1_catch_rate": 0.0667,
+          "r2_caught": 29,
+          "r2_catch_rate": 0.6444,
+          "net_caught_delta": 26,
+          "r1_auc_pr": 0.653,
+          "r2_auc_pr": 0.917,
+          "auc_delta": 0.264
+        },
+        "catastrophic_forgetting_check": {
+          "baseline_r1_auc_pr": 0.9743,
+          "baseline_r2_auc_pr": 0.9708,
+          "baseline_auc_delta": -0.0035,
+          "baseline_r1_fpr": 0.0282,
+          "baseline_r2_fpr": 0.0172,
+          "baseline_fpr_delta": -0.011,
+          "catastrophic_forgetting": false
+        }
+      },
+      "graph": {
+        "adversarial_eval": {
+          "n_fraud_total": 8,
+          "n_legit_total": 210,
+          "r1_caught": 6,
+          "r1_catch_rate": 0.75,
+          "r2_caught": 3,
+          "r2_catch_rate": 0.375,
+          "net_caught_delta": -3,
+          "r1_auc_pr": 0.4288,
+          "r2_auc_pr": 0.3584,
+          "auc_delta": -0.0704
+        },
+        "catastrophic_forgetting_check": {
+          "baseline_r1_auc_pr": 0.5274,
+          "baseline_r2_auc_pr": 0.8386,
+          "baseline_auc_delta": 0.3112,
+          "catastrophic_forgetting": false
+        }
+      },
+      "text": {
+        "adversarial_eval": {
+          "n_fraud_total": 6,
+          "r1_caught": 4,
+          "r1_catch_rate": 0.6667,
+          "r2_caught": 4,
+          "r2_catch_rate": 0.6667,
+          "net_caught_delta": 0,
+          "r1_auc_pr": 1.0,
+          "r2_auc_pr": 0.9762,
+          "auc_delta": -0.0238
+        }
+      }
+    }
+  }
+}
