@@ -1,0 +1,64 @@
+{
+  "tabular_detector": {
+    "onnx_model_path": "/Users/abuzaid/Desktop/final/master/defend/models/card_testing_xgb.onnx",
+    "inference_latency_ms": 0.3815,
+    "sub_50ms_sla_met": true
+  },
+  "text_detector": {
+    "model_path": "/Users/abuzaid/Desktop/final/master/defend/models/text_detector.joblib",
+    "tfidf_baseline_auc_pr": 1.0,
+    "semantic_embedding_auc_pr": 1.0,
+    "semantic_lift_pct": 0.0
+  },
+  "graph_detector": {
+    "model_path": "/Users/abuzaid/Desktop/final/master/defend/models/graph_detector.joblib",
+    "auc_pr": 1.0,
+    "f1_score": 1.0
+  },
+  "financial_cost_optimization": {
+    "optimal_threshold_tau": 0.36,
+    "min_financial_loss_usd": 0.0,
+    "default_050_loss_usd": 0.0,
+    "savings_usd": 0.0
+  },
+  "explainability": {
+    "global_feature_importance": {
+      "device_risk_score": 0.9171000123023987,
+      "velocity": 0.07069999724626541,
+      "amount": 0.01209999993443489,
+      "is_decline": 0.0
+    },
+    "sample_waterfall_explanation": [
+      {
+        "feature": "amount",
+        "feature_value": 329.93,
+        "shap_attribution": -0.35040000081062317,
+        "impact": "Decreases Risk"
+      },
+      {
+        "feature": "velocity",
+        "feature_value": 1.39,
+        "shap_attribution": -1.988700032234192,
+        "impact": "Decreases Risk"
+      },
+      {
+        "feature": "device_risk_score",
+        "feature_value": 0.12,
+        "shap_attribution": -3.9321999549865723,
+        "impact": "Decreases Risk"
+      },
+      {
+        "feature": "is_decline",
+        "feature_value": 0.0,
+        "shap_attribution": 0.0,
+        "impact": "Decreases Risk"
+      }
+    ],
+    "pci_dss_compliance_reasoning": "Model meets PCI-DSS Requirement 10 & Fair Credit Reporting Act interpretability standards by providing per-transaction SHAP feature attributions."
+  },
+  "holdout_data_splits": {
+    "tabular_holdout_path": "/Users/abuzaid/Desktop/final/master/data/defend/step4_holdout_tabular.csv",
+    "text_holdout_path": "/Users/abuzaid/Desktop/final/master/data/defend/step4_holdout_text.csv",
+    "graph_holdout_path": "/Users/abuzaid/Desktop/final/master/data/defend/step4_holdout_graph.csv"
+  }
+}
