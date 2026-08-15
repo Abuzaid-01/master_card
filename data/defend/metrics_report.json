@@ -1,19 +1,29 @@
 {
   "tabular_detector": {
-    "onnx_model_path": "/Users/abuzaid/Desktop/final/master/defend/models/card_testing_xgb.onnx",
-    "inference_latency_ms": 0.3815,
+    "onnx_model_path": "defend/models/card_testing_xgb.onnx",
+    "auc_pr": 1.0,
+    "f1_score": 1.0,
+    "false_positive_rate": 0.0,
+    "onnx_runtime_latency_ms": 0.0055,
+    "xgboost_raw_latency_ms": 0.5867,
+    "inference_latency_ms": 0.0055,
     "sub_50ms_sla_met": true
   },
   "text_detector": {
-    "model_path": "/Users/abuzaid/Desktop/final/master/defend/models/text_detector.joblib",
-    "tfidf_baseline_auc_pr": 1.0,
-    "semantic_embedding_auc_pr": 1.0,
-    "semantic_lift_pct": 0.0
+    "model_path": "defend/models/text_detector.joblib",
+    "tfidf_baseline_auc_pr": 0.9908,
+    "semantic_embedding_auc_pr": 0.8892,
+    "semantic_lift_pct": -10.25,
+    "paraphrased_only_tfidf_auc_pr": 0.9833,
+    "paraphrased_only_semantic_auc_pr": 0.8403,
+    "paraphrased_only_lift_pct": -14.54,
+    "num_paraphrased_attacks": 15,
+    "paraphrased_attacks_injected": 15
   },
   "graph_detector": {
-    "model_path": "/Users/abuzaid/Desktop/final/master/defend/models/graph_detector.joblib",
-    "auc_pr": 1.0,
-    "f1_score": 1.0
+    "model_path": "defend/models/graph_detector.joblib",
+    "auc_pr": 0.6118,
+    "f1_score": 0.6452
   },
   "financial_cost_optimization": {
     "optimal_threshold_tau": 0.36,
@@ -57,8 +67,8 @@
     "pci_dss_compliance_reasoning": "Model meets PCI-DSS Requirement 10 & Fair Credit Reporting Act interpretability standards by providing per-transaction SHAP feature attributions."
   },
   "holdout_data_splits": {
-    "tabular_holdout_path": "/Users/abuzaid/Desktop/final/master/data/defend/step4_holdout_tabular.csv",
-    "text_holdout_path": "/Users/abuzaid/Desktop/final/master/data/defend/step4_holdout_text.csv",
-    "graph_holdout_path": "/Users/abuzaid/Desktop/final/master/data/defend/step4_holdout_graph.csv"
+    "tabular_holdout_path": "data/defend/step4_holdout_tabular.csv",
+    "text_holdout_path": "data/defend/step4_holdout_text.csv",
+    "graph_holdout_path": "data/defend/step4_holdout_graph.csv"
   }
 }

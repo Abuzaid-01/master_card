@@ -92,19 +92,65 @@ class TabularCardTestingDetector:
             
         return out_path
 
-    def benchmark_inference_latency(self, df_sample: pd.DataFrame, num_runs: int = 100) -> Dict[str, float]:
-        """Benchmarks inference latency in milliseconds (proves sub-50ms SLA)."""
-        X_sample = df_sample[self.feature_cols].fillna(0).head(1)
+    def benchmark_inference_latency(self, df_sample: pd.DataFrame, onnx_path: str = None, num_runs: int = 100) -> Dict[str, float]:
+        """Benchmarks REAL ONNX Runtime inference latency (not raw XGBoost)."""
+        X_sample = df_sample[self.feature_cols].fillna(0).head(1).values.astype(np.float32)
         
-        start_time = time.perf_counter()
+        # Benchmark raw XGBoost for comparison
+        start_xgb = time.perf_counter()
         for _ in range(num_runs):
-            _ = self.xgb_model.predict_proba(X_sample)
-        end_time = time.perf_counter()
+            _ = self.xgb_model.predict_proba(df_sample[self.feature_cols].fillna(0).head(1))
+        end_xgb = time.perf_counter()
+        xgb_latency_ms = ((end_xgb - start_xgb) / num_runs) * 1000.0
         
-        avg_latency_ms = ((end_time - start_time) / num_runs) * 1000.0
+        # Benchmark actual ONNX Runtime
+        onnx_latency_ms = None
+        onnx_path = onnx_path or os.path.join(MODELS_DIR, "card_testing_xgb.onnx")
+        if os.path.exists(onnx_path):
+            try:
+                import onnxruntime as ort
+                sess = ort.InferenceSession(onnx_path)
+                input_name = sess.get_inputs()[0].name
+                
+                # Warmup
+                for _ in range(10):
+                    sess.run(None, {input_name: X_sample})
+                
+                start_onnx = time.perf_counter()
+                for _ in range(num_runs):
+                    sess.run(None, {input_name: X_sample})
+                end_onnx = time.perf_counter()
+                onnx_latency_ms = ((end_onnx - start_onnx) / num_runs) * 1000.0
+            except Exception as e:
+                print(f"[Warning] ONNX Runtime benchmark failed ({e}), using XGBoost latency.")
+        
+        primary_latency = onnx_latency_ms if onnx_latency_ms is not None else xgb_latency_ms
         return {
-            "avg_latency_ms": float(np.round(avg_latency_ms, 4)),
-            "sub_50ms_sla_met": avg_latency_ms < 50.0
+            "onnx_runtime_latency_ms": float(np.round(onnx_latency_ms, 4)) if onnx_latency_ms else None,
+            "xgboost_raw_latency_ms": float(np.round(xgb_latency_ms, 4)),
+            "avg_latency_ms": float(np.round(primary_latency, 4)),
+            "sub_50ms_sla_met": primary_latency < 50.0
+        }
+
+    def evaluate_performance(self, df_test: pd.DataFrame, target_col: str = "is_fraud") -> Dict[str, float]:
+        """Computes AUC-PR, F1, and False Positive Rate on test data."""
+        y_test = df_test[target_col].values
+        y_prob = self.predict_proba(df_test)
+        y_pred = (y_prob >= 0.50).astype(int)
+        
+        auc_pr = float(np.round(average_precision_score(y_test, y_prob), 4))
+        f1 = float(np.round(f1_score(y_test, y_pred, zero_division=0), 4))
+        
+        # False Positive Rate = FP / (FP + TN)
+        fp = int(np.sum((y_pred == 1) & (y_test == 0)))
+        tn = int(np.sum((y_pred == 0) & (y_test == 0)))
+        fpr = float(np.round(fp / max(1, fp + tn), 4))
+        
+        return {
+            "tabular_auc_pr": auc_pr,
+            "tabular_f1_score": f1,
+            "tabular_false_positive_rate": fpr,
+            "test_samples_count": len(df_test)
         }
 
 if __name__ == "__main__":
@@ -119,5 +165,6 @@ if __name__ == "__main__":
     det.fit(df_dummy)
     probs = det.predict_proba(df_dummy)
     print("Probabilities:", probs)
-    bench = det.benchmark_inference_latency(df_dummy)
-    print("Latency Benchmark:", bench)
+    perf = det.evaluate_performance(df_dummy)
+    print("Performance:", perf)
+

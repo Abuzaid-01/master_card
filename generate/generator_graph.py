@@ -90,7 +90,46 @@ def generate_money_mule_graph(
             
     df_tx = pd.DataFrame(records)
     
-    # 3. Compute Graph Topological Features
+    # 3. Inject Hard-Negative Fast-but-Legitimate Transactions
+    # These overlap with mule timing (10-120s) AND amounts, but have clean graph topology,
+    # forcing the classifier to learn a real boundary instead of one obvious rule.
+    hard_neg_records = []
+    num_hard_negatives = num_mule_rings * ring_depth * 5  # ~5x the mule transactions
+    for hn_idx in range(num_hard_negatives):
+        src, dst = np.random.choice(users, size=2, replace=False)
+        hn_type = np.random.choice(["instant_p2p", "payroll_batch", "merchant_settlement", "corporate_wire"])
+        
+        if hn_type == "instant_p2p":
+            amount = np.round(np.random.uniform(5.0, 500.0), 2)  # Small P2P (Venmo-style)
+            delay = np.random.uniform(10.0, 90.0)  # Near-instant but legitimate
+        elif hn_type == "payroll_batch":
+            amount = np.round(np.random.uniform(1500.0, 8000.0), 2)  # Payroll deposits
+            delay = np.random.uniform(30.0, 120.0)  # Batch processed quickly
+        elif hn_type == "corporate_wire":
+            amount = np.round(np.random.uniform(5000.0, 30000.0), 2)  # High-value corporate wire
+            delay = np.random.uniform(5.0, 45.0)  # Fast corporate treasury operations
+        else:  # merchant_settlement
+            amount = np.round(np.random.uniform(200.0, 5000.0), 2)  # Merchant batch
+            delay = np.random.uniform(15.0, 60.0)  # Fast merchant clearing
+            
+        timestamp = np.random.uniform(0, 86400)
+        G.add_edge(src, dst, amount=amount, timestamp=timestamp)
+        hard_neg_records.append({
+            "transaction_id": f"TX_HARDNEG_{tx_id_counter:06d}",
+            "sender_account": src,
+            "receiver_account": dst,
+            "amount": amount,
+            "timestamp_sec": timestamp,
+            "pass_through_delay_sec": delay,
+            "is_fraud": 0,
+            "attack_vector": f"legitimate_{hn_type}"
+        })
+        tx_id_counter += 1
+    
+    df_hard_neg = pd.DataFrame(hard_neg_records)
+    df_tx = pd.concat([df_tx, df_hard_neg], ignore_index=True)
+    
+    # 4. Compute Graph Topological Features
     in_degrees = dict(G.in_degree())
     out_degrees = dict(G.out_degree())
     

@@ -42,7 +42,7 @@ def run_step2_generation_pipeline(
     
     # 3. Vector 2: AI Money Mule Networks (Graph)
     print("[3/4] Generating Vector 2: Multi-Hop Money Mule Graph Network...")
-    df_graph = generate_money_mule_graph(num_users=num_samples_per_vector // 5, num_mule_rings=10)
+    df_graph = generate_money_mule_graph(num_users=num_samples_per_vector // 5, num_mule_rings=15, ring_depth=4)
     val_graph = validate_domain_constraints(df_graph)
     print(f"      -> Generated {len(df_graph)} graph transfers. Domain Pass Rate: {val_graph['pass_rate_pct']}%")
     
