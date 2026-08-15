@@ -3,8 +3,9 @@ Vector 1 Detector: Semantic Embedding Detector vs. TF-IDF Baseline
 Detects indirect prompt injections, chatbot overrides, and jailbreaks using Sentence Transformers embeddings (primary)
 and compares performance against a TF-IDF + Logistic Regression baseline.
 
-Semantic approach uses cosine-similarity-to-attack-cluster centroids, which generalizes better than
-LogReg on embeddings when training data is small (< 100 samples).
+Semantic approach: max-cosine-similarity to any individual known attack embedding (k-NN style).
+This is zero-shot robust — no classifier training needed, works with as few as 5 attack examples,
+and catches paraphrased attacks because the embedding space encodes INTENT not keywords.
 """
 
 import os
@@ -23,10 +24,10 @@ class TextPromptInjectionDetector:
     """
     Semantic Text Classifier for Banking Chatbot Prompt Injection Defense.
     
-    Semantic approach: Encodes all training attack prompts into a centroid embedding,
-    then scores test prompts by cosine similarity to the attack centroid vs. the
-    legitimate centroid. This captures *intent similarity* rather than keyword overlap,
-    making it robust to paraphrased attacks that avoid typical fraud keywords.
+    Semantic approach: Stores ALL individual known attack embeddings from training.
+    At inference, scores each test prompt by its MAX cosine similarity to any known attack
+    minus MAX cosine similarity to any known legitimate prompt. This is k-NN style scoring
+    that preserves the full diversity of attack patterns — no information is averaged away.
     
     TF-IDF baseline: Standard n-gram word-frequency classifier for comparison.
     """
@@ -34,8 +35,8 @@ class TextPromptInjectionDetector:
         self.tfidf_vectorizer = None
         self.tfidf_model = None
         self.encoder = None
-        self.attack_centroid = None
-        self.legit_centroid = None
+        self.attack_embeddings = None   # ALL individual attack embeddings
+        self.legit_embeddings = None    # ALL individual legit embeddings
         
     def _init_sentence_transformer(self):
         if self.encoder is None:
@@ -59,20 +60,21 @@ class TextPromptInjectionDetector:
         self.tfidf_model = LogisticRegression(class_weight="balanced", random_state=42)
         self.tfidf_model.fit(X_tfidf, y_train)
         
-        # 2. Train Primary: Cosine-Similarity-to-Cluster-Centroid (few-shot robust)
+        # 2. Store all individual attack and legit embeddings for k-NN similarity scoring
         self._init_sentence_transformer()
         if self.encoder is not None:
             print("[Text Detector] Encoding training prompts via SentenceTransformer...")
             X_embed_all = self.encoder.encode(X_text, show_progress_bar=False)
             
-            # Compute centroid of attack embeddings and centroid of legit embeddings
             attack_mask = y_train == 1
             legit_mask = y_train == 0
             
             if attack_mask.sum() > 0:
-                self.attack_centroid = X_embed_all[attack_mask].mean(axis=0, keepdims=True)
+                self.attack_embeddings = X_embed_all[attack_mask]  # Store ALL, don't average
+                print(f"      -> Stored {self.attack_embeddings.shape[0]} individual attack embeddings for k-NN scoring")
             if legit_mask.sum() > 0:
-                self.legit_centroid = X_embed_all[legit_mask].mean(axis=0, keepdims=True)
+                self.legit_embeddings = X_embed_all[legit_mask]    # Store ALL
+                print(f"      -> Stored {self.legit_embeddings.shape[0]} individual legit embeddings for k-NN scoring")
             
     def predict_proba_tfidf(self, df_test: pd.DataFrame, text_col: str = "prompt_text") -> np.ndarray:
         """Returns baseline TF-IDF detection probabilities."""
@@ -82,29 +84,35 @@ class TextPromptInjectionDetector:
 
     def predict_proba_semantic(self, df_test: pd.DataFrame, text_col: str = "prompt_text") -> np.ndarray:
         """
-        Returns semantic detection scores using cosine similarity to attack cluster centroid.
-        Score = cos_sim(prompt, attack_centroid) - cos_sim(prompt, legit_centroid), normalized to [0,1].
+        k-NN style semantic scoring:
+        For each test prompt, compute max cosine similarity to ANY known attack embedding
+        and max cosine similarity to ANY known legit embedding.
+        Score = max_sim_attack - max_sim_legit, mapped to [0, 1] via sigmoid.
+        
+        This catches paraphrased attacks because if a prompt is semantically close to
+        EVEN ONE known attack (not the average), it gets flagged.
         """
         X_text = df_test[text_col].fillna("").astype(str).tolist()
         
-        if self.encoder is None or self.attack_centroid is None:
+        if self.encoder is None or self.attack_embeddings is None:
             return self.predict_proba_tfidf(df_test, text_col)
             
         X_embed_te = self.encoder.encode(X_text, show_progress_bar=False)
         
-        # Cosine similarity to attack and legit centroids
-        sim_attack = cosine_similarity(X_embed_te, self.attack_centroid).flatten()
-        sim_legit = cosine_similarity(X_embed_te, self.legit_centroid).flatten()
+        # Max cosine similarity to ANY individual attack example
+        sim_to_attacks = cosine_similarity(X_embed_te, self.attack_embeddings)  # (n_test, n_attacks)
+        max_sim_attack = sim_to_attacks.max(axis=1)  # Closest attack for each test prompt
         
-        # Differential score: how much more similar to attack than to legit
-        raw_score = sim_attack - sim_legit
+        # Max cosine similarity to ANY individual legit example  
+        sim_to_legit = cosine_similarity(X_embed_te, self.legit_embeddings)    # (n_test, n_legit)
+        max_sim_legit = sim_to_legit.max(axis=1)     # Closest legit for each test prompt
         
-        # Normalize to [0, 1] probability range using min-max
-        score_min, score_max = raw_score.min(), raw_score.max()
-        if score_max - score_min < 1e-6:
-            return np.full(len(raw_score), 0.5)
+        # Differential score: how much closer to nearest attack than nearest legit
+        raw_score = max_sim_attack - max_sim_legit
         
-        probs = (raw_score - score_min) / (score_max - score_min)
+        # Sigmoid normalization to [0, 1] — preserves score distribution better than min-max
+        # Scale factor 10 gives good separation
+        probs = 1.0 / (1.0 + np.exp(-10.0 * raw_score))
         return probs
 
     def compare_semantic_vs_tfidf(self, df_test: pd.DataFrame, text_col: str = "prompt_text", target_col: str = "is_fraud") -> Dict[str, Any]:
@@ -160,8 +168,8 @@ class TextPromptInjectionDetector:
         save_data = {
             "tfidf_vectorizer": self.tfidf_vectorizer,
             "tfidf_model": self.tfidf_model,
-            "attack_centroid": self.attack_centroid,
-            "legit_centroid": self.legit_centroid,
+            "attack_embeddings": self.attack_embeddings,
+            "legit_embeddings": self.legit_embeddings,
         }
         joblib.dump(save_data, out_path)
         return out_path

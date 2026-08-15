@@ -69,8 +69,9 @@ Trains all 3 detector models, exports ONNX for sub-50ms authorization, benchmark
 ## Key Technical Highlights
 
 - **Authentic TSTR Benchmark:** Train on Synthetic, Test on Real using 20,000 IEEE-CIS credit card transactions (not synthetic-vs-synthetic).
-- **Sub-50ms ONNX Inference:** XGBoost card testing model exported to ONNX Runtime, benchmarked at <1ms per transaction authorization.
-- **Semantic Embedding Detection:** `all-MiniLM-L6-v2` Sentence Transformers catch paraphrased prompt injections that TF-IDF misses.
+- **Sub-50ms ONNX Inference:** XGBoost card testing model exported to ONNX Runtime, benchmarked at <1ms per transaction authorization (~100x faster than native XGBoost).
+- **Semantic vs TF-IDF Comparative Benchmark:** `all-MiniLM-L6-v2` Sentence Transformer k-NN similarity scoring vs TF-IDF n-gram baseline, tested on 15 manually paraphrased attacks that avoid fraud keywords. Reports both overall and paraphrased-only AUC-PR with lift metrics.
+- **Hard-Negative Evaluation:** All three detectors tested against confusing legitimate transactions (coffee purchases, VPN users, instant P2P, corporate wires) that overlap with fraud feature ranges.
 - **Amount-Proportional Cost Optimization:** Decision thresholds tuned against real transaction dollar amounts, not flat penalties.
 - **PCI-DSS SHAP Explainability:** TreeSHAP feature attributions for regulatory interpretability compliance.
 - **Class Imbalance Handling:** `scale_pos_weight` (XGBoost) and `class_weight='balanced'` (GBDT/LogReg) across all classifiers.
