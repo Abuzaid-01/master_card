@@ -230,6 +230,88 @@ def demo_text(req: TextRequest):
     }
 
 
+# ══════════════════════════════════════════
+# LIVE PIPELINE ENDPOINTS
+# ══════════════════════════════════════════
+
+from api.pipeline_runner import PipelineRunner
+
+_pipeline = PipelineRunner()
+
+
+class PipelineGenerateRequest(BaseModel):
+    vector: str = Field(default="tabular", description="Attack vector to generate")
+    n_samples: int = Field(default=2000, ge=500, le=5000, description="Number of samples")
+    fraud_pct: float = Field(default=0.15, ge=0.05, le=0.30, description="Fraud ratio")
+
+
+@app.post("/api/pipeline/generate")
+def pipeline_generate(req: PipelineGenerateRequest):
+    """Step B: Generate synthetic attack data."""
+    try:
+        _pipeline.reset()
+        result = _pipeline.generate(req.vector, req.n_samples, req.fraud_pct)
+        return {"step": "generate", "status": "success", **result}
+    except Exception as e:
+        raise HTTPException(500, f"Generation failed: {str(e)}")
+
+
+@app.post("/api/pipeline/train")
+def pipeline_train():
+    """Step C: Train Round 1 defender."""
+    try:
+        result = _pipeline.train_round1()
+        return {"step": "train_r1", "status": "success", **result}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:
+        raise HTTPException(500, f"Training failed: {str(e)}")
+
+
+@app.post("/api/pipeline/attack")
+def pipeline_attack():
+    """Step D: Run adversarial probing against Round 1."""
+    try:
+        result = _pipeline.attack_round1()
+        return {"step": "attack", "status": "success", **result}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:
+        raise HTTPException(500, f"Attack failed: {str(e)}")
+
+
+@app.post("/api/pipeline/retrain")
+def pipeline_retrain():
+    """Step E: Retrain Round 2 with augmented data."""
+    try:
+        result = _pipeline.retrain_round2()
+        return {"step": "retrain_r2", "status": "success", **result}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:
+        raise HTTPException(500, f"Retrain failed: {str(e)}")
+
+
+@app.post("/api/pipeline/evaluate")
+def pipeline_evaluate():
+    """Step F: Final R1 vs R2 comparison on unseen holdout."""
+    try:
+        result = _pipeline.evaluate()
+        return {"step": "evaluate", "status": "success", **result}
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+    except Exception as e:
+        raise HTTPException(500, f"Evaluation failed: {str(e)}")
+
+
+@app.post("/api/pipeline/reset")
+def pipeline_reset():
+    """Reset the pipeline state for a fresh run."""
+    _pipeline.reset()
+    return {"status": "reset"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+

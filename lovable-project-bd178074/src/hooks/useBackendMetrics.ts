@@ -124,3 +124,50 @@ export function useTextDemo() {
     },
   });
 }
+
+// ── Pipeline Hooks ──
+
+export interface PipelineGenerateInput {
+  vector: string;
+  n_samples: number;
+  fraud_pct: number;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function usePipelineMutation<TInput = void>(endpoint: string) {
+  return useMutation({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    mutationFn: async (input?: TInput): Promise<any> => {
+      const res = await fetch(`${API_BASE}/pipeline/${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: input ? JSON.stringify(input) : "{}",
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      return res.json();
+    },
+  });
+}
+
+export function usePipelineGenerate() {
+  return usePipelineMutation<PipelineGenerateInput>("generate");
+}
+export function usePipelineTrain() {
+  return usePipelineMutation("train");
+}
+export function usePipelineAttack() {
+  return usePipelineMutation("attack");
+}
+export function usePipelineRetrain() {
+  return usePipelineMutation("retrain");
+}
+export function usePipelineEvaluate() {
+  return usePipelineMutation("evaluate");
+}
+export function usePipelineReset() {
+  return usePipelineMutation("reset");
+}
+

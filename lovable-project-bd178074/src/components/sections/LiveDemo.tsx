@@ -9,7 +9,9 @@ import {
   Send,
   Loader2,
   Activity,
+  FlaskConical,
 } from "lucide-react";
+import { LivePipeline } from "@/components/sections/LivePipeline";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
 import {
   useTabularDemo,
@@ -527,7 +529,7 @@ function TextPanel() {
 
 /* ── Main LiveDemo Section ── */
 export function LiveDemo() {
-  const [activeTab, setActiveTab] = useState<"tabular" | "text">("tabular");
+  const [activeTab, setActiveTab] = useState<"tabular" | "text" | "pipeline">("tabular");
   const health = useHealthCheck();
   const isOnline = health.data?.status === "ok";
 
@@ -584,12 +586,18 @@ export function LiveDemo() {
               icon={MessageSquare}
               label="Prompt Injection"
             />
+            <Tab
+              active={activeTab === "pipeline"}
+              onClick={() => setActiveTab("pipeline")}
+              icon={FlaskConical}
+              label="Live Pipeline"
+            />
           </div>
         </Reveal>
 
         <Reveal delay={0.1}>
           <AnimatePresence mode="wait">
-            {activeTab === "tabular" ? (
+            {activeTab === "tabular" && (
               <motion.div
                 key="tabular"
                 initial={{ opacity: 0, x: -20 }}
@@ -599,7 +607,8 @@ export function LiveDemo() {
               >
                 <TabularPanel />
               </motion.div>
-            ) : (
+            )}
+            {activeTab === "text" && (
               <motion.div
                 key="text"
                 initial={{ opacity: 0, x: 20 }}
@@ -608,6 +617,17 @@ export function LiveDemo() {
                 transition={{ duration: 0.3 }}
               >
                 <TextPanel />
+              </motion.div>
+            )}
+            {activeTab === "pipeline" && (
+              <motion.div
+                key="pipeline"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                <LivePipeline />
               </motion.div>
             )}
           </AnimatePresence>
