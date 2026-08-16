@@ -1,0 +1,10 @@
+fastapi>=0.110.0
+uvicorn[standard]>=0.28.0
+pydantic>=2.0
+pandas
+numpy
+xgboost
+joblib
+scikit-learn
+shap
+sentence-transformers
