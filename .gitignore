@@ -10,4 +10,8 @@ __pycache__/
 # Local benchmark dataset files (exceeds GitHub 100MB limit)
 ieee-fraud-detection/
 
-lovable-project-bd178074/node_modules/
+# Frontend build and dependencies
+frontend/node_modules/
+frontend/.nitro/
+frontend/.output/
+frontend/dist/
