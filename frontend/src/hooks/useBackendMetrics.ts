@@ -131,6 +131,7 @@ export interface PipelineGenerateInput {
   vector: string;
   n_samples: number;
   fraud_pct: number;
+  llm_model?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -170,4 +171,67 @@ export function usePipelineEvaluate() {
 export function usePipelineReset() {
   return usePipelineMutation("reset");
 }
+
+// ── LLM Red Team Model Hooks ──
+
+export interface LLMModel {
+  id: string;
+  name: string;
+  provider: "groq" | "gemini";
+  provider_display: string;
+  badge: string;
+  description: string;
+  speed: string;
+  available: boolean;
+}
+
+export interface LLMGenerateInput {
+  provider: string;
+  model: string;
+  num_samples?: number;
+}
+
+export interface GeneratedPrompt {
+  prompt_text: string;
+  attack_type: string;
+  severity: string;
+}
+
+export interface LLMGenerateResult {
+  status: string;
+  provider: string;
+  model: string;
+  prompts: GeneratedPrompt[];
+  count: number;
+}
+
+export function useLLMModels() {
+  return useQuery<{ models: LLMModel[] }>({
+    queryKey: ["llm-models"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/llm/models`);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      return res.json();
+    },
+    staleTime: 60_000,
+  });
+}
+
+export function useLLMGenerate() {
+  return useMutation({
+    mutationFn: async (input: LLMGenerateInput): Promise<LLMGenerateResult> => {
+      const res = await fetch(`${API_BASE}/llm/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(input),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      return res.json();
+    },
+  });
+}
+
 

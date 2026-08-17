@@ -140,6 +140,8 @@ function MetricBadge({
 /* ── Main LivePipeline Component ── */
 export function LivePipeline() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [vector, setVector] = useState<"tabular" | "text">("tabular");
+  const [selectedLLM, setSelectedLLM] = useState("openai/gpt-oss-120b");
   const [nSamples, setNSamples] = useState(2000);
   const [fraudPct, setFraudPct] = useState(0.15);
 
@@ -155,9 +157,10 @@ export function LivePipeline() {
 
   const handleGenerate = () => {
     const input: PipelineGenerateInput = {
-      vector: "tabular",
+      vector,
       n_samples: nSamples,
       fraud_pct: fraudPct,
+      llm_model: vector === "text" ? selectedLLM : undefined,
     };
     generate.mutate(input, {
       onSuccess: (data) => {
@@ -242,6 +245,89 @@ export function LivePipeline() {
                 <Database className="h-4 w-4" /> Pipeline Configuration
               </h4>
               <div className="mt-5 space-y-5">
+                {/* Attack Vector Selector */}
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-2">
+                    Select Target Threat Vector
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => {
+                        setVector("tabular");
+                        setNSamples(2000);
+                      }}
+                      className={`flex flex-col rounded-xl p-3 text-left transition-all border ${
+                        vector === "tabular"
+                          ? "bg-cyan/15 border-cyan text-cyan shadow-sm shadow-cyan/20"
+                          : "bg-secondary/40 border-transparent text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <span className="font-mono text-xs font-semibold">
+                        💳 Evasive Card Testing
+                      </span>
+                      <span className="text-[10px] opacity-70 mt-0.5">
+                        Tabular features · ONNX XGBoost
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setVector("text");
+                        setNSamples(100);
+                      }}
+                      className={`flex flex-col rounded-xl p-3 text-left transition-all border ${
+                        vector === "text"
+                          ? "bg-ai-violet/20 border-ai-violet text-ai-violet shadow-sm shadow-ai-violet/20"
+                          : "bg-secondary/40 border-transparent text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <span className="font-mono text-xs font-semibold">
+                        💬 Prompt Injection (LLM)
+                      </span>
+                      <span className="text-[10px] opacity-70 mt-0.5">
+                        Groq & Gemini Generator · Embeddings
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* LLM Selector if Text Vector */}
+                {vector === "text" && (
+                  <div className="rounded-xl border border-ai-violet/30 bg-ai-violet/5 p-3.5">
+                    <label className="text-[11px] font-mono text-foreground flex items-center justify-between mb-2">
+                      <span>Red Team LLM Generator:</span>
+                      <span className="text-[10px] text-cyan">
+                        {selectedLLM.includes("gemini") ? "🌟 Google Gemini" : "⚡ Groq Cloud"}
+                      </span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+                      {[
+                        { id: "openai/gpt-oss-120b", name: "GPT OSS 120B", provider: "groq" },
+                        { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "gemini" },
+                        { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", provider: "groq" },
+                        { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "gemini" },
+                      ].map((m) => (
+                        <button
+                          key={m.id}
+                          onClick={() => setSelectedLLM(m.id)}
+                          className={`rounded-lg px-2.5 py-1.5 text-left text-xs font-mono transition-all ${
+                            selectedLLM === m.id
+                              ? m.provider === "gemini"
+                                ? "bg-cyan/20 border border-cyan text-cyan"
+                                : "bg-mc-orange/20 border border-mc-orange text-mc-orange"
+                              : "bg-secondary/60 text-muted-foreground hover:bg-secondary hover:text-foreground"
+                          }`}
+                        >
+                          <div className="text-[9px] uppercase tracking-wider opacity-60">
+                            {m.provider === "gemini" ? "Google" : "Groq"}
+                          </div>
+                          <div className="font-semibold truncate">{m.name}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div>
                   <div className="flex items-baseline justify-between">
                     <label className="text-xs text-muted-foreground">
@@ -253,9 +339,9 @@ export function LivePipeline() {
                   </div>
                   <input
                     type="range"
-                    min={500}
-                    max={5000}
-                    step={100}
+                    min={vector === "text" ? 20 : 500}
+                    max={vector === "text" ? 200 : 5000}
+                    step={vector === "text" ? 10 : 100}
                     value={nSamples}
                     onChange={(e) => setNSamples(parseInt(e.target.value))}
                     className="mt-2 w-full accent-cyan"
@@ -273,7 +359,7 @@ export function LivePipeline() {
                   <input
                     type="range"
                     min={0.05}
-                    max={0.3}
+                    max={0.4}
                     step={0.01}
                     value={fraudPct}
                     onChange={(e) => setFraudPct(parseFloat(e.target.value))}
@@ -282,12 +368,8 @@ export function LivePipeline() {
                 </div>
                 <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
                   <p>
-                    <strong className="text-foreground">Vector:</strong> Evasive
-                    Card Testing (Tabular)
-                  </p>
-                  <p className="mt-1">
-                    Data will auto-split: 60% train · 20% validation · 10%
-                    mining · 10% final eval
+                    <strong className="text-foreground">Pipeline Split:</strong>{" "}
+                    60% train · 20% validation · 10% mining · 10% untouched final holdout
                   </p>
                 </div>
               </div>
@@ -316,7 +398,7 @@ export function LivePipeline() {
                 <Zap className="h-4 w-4" /> Generating Synthetic Attacks
               </h4>
               <p className="mt-2 text-sm text-muted-foreground">
-                Creating {nSamples.toLocaleString()} card testing transactions
+                Creating {nSamples.toLocaleString()} {vector === "text" ? "prompt injection logs with " + selectedLLM : "card testing transactions"}{" "}
                 with {(fraudPct * 100).toFixed(0)}% fraud ratio...
               </p>
               <div className="mt-4">

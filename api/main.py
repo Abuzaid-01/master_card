@@ -231,6 +231,115 @@ def demo_text(req: TextRequest):
 
 
 # ══════════════════════════════════════════
+# LLM MODEL CATALOG & RED TEAM GENERATION
+# ══════════════════════════════════════════
+
+def _get_available_llm_models():
+    from generate.generator_text import load_env_file
+    load_env_file()
+    has_groq = bool(os.getenv("GROQ_API_KEY"))
+    has_gemini = bool(os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY"))
+
+    return [
+        {
+            "id": "openai/gpt-oss-120b",
+            "name": "GPT OSS 120B",
+            "provider": "groq",
+            "provider_display": "Groq Cloud",
+            "badge": "120B Open Weights",
+            "description": "High-capacity 120-billion parameter reasoning model on Groq LPU inference.",
+            "speed": "Fast (Groq LPU)",
+            "available": has_groq,
+        },
+        {
+            "id": "gemini-2.5-flash",
+            "name": "Gemini 2.5 Flash",
+            "provider": "gemini",
+            "provider_display": "Google Gemini",
+            "badge": "Next-Gen Speed",
+            "description": "Google's ultra-fast multimodal model with deep financial domain reasoning.",
+            "speed": "Ultra-Fast (Google API)",
+            "available": has_gemini,
+        },
+        {
+            "id": "llama-3.3-70b-versatile",
+            "name": "Llama 3.3 70B",
+            "provider": "groq",
+            "provider_display": "Groq Cloud",
+            "badge": "70B Versatile",
+            "description": "Meta's flagship 70B instruction model on Groq's high-speed tensor engine.",
+            "speed": "Ultra-Fast (Groq LPU)",
+            "available": has_groq,
+        },
+        {
+            "id": "gemini-2.5-pro",
+            "name": "Gemini 2.5 Pro",
+            "provider": "gemini",
+            "provider_display": "Google Gemini",
+            "badge": "Deep Reasoning",
+            "description": "Google's most capable reasoning model for advanced adversarial boundary probing.",
+            "speed": "Standard (Google API)",
+            "available": has_gemini,
+        },
+    ]
+
+
+class LLMGenerateRequest(BaseModel):
+    provider: str = Field(default="auto", description="'groq', 'gemini', or 'auto'")
+    model: str = Field(default="openai/gpt-oss-120b", description="Model ID")
+    num_samples: int = Field(default=3, ge=1, le=10, description="Number of attacks to generate")
+
+
+@app.get("/api/llm/models")
+def get_llm_models():
+    """Returns available LLM red-team models across Groq and Google Gemini."""
+    return {"models": _get_available_llm_models()}
+
+
+@app.post("/api/llm/generate")
+def generate_llm_prompts(req: LLMGenerateRequest):
+    """Generates synthetic adversarial prompt injections on demand using the chosen LLM."""
+    from generate.generator_text import (
+        generate_via_groq,
+        generate_via_gemini,
+        FALLBACK_INJECTION_TEMPLATES,
+        load_env_file,
+    )
+    load_env_file()
+    groq_key = os.getenv("GROQ_API_KEY")
+    gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+
+    provider = req.provider.lower()
+    if provider == "auto":
+        if "gemini" in req.model.lower():
+            provider = "gemini"
+        else:
+            provider = "groq"
+
+    try:
+        if provider == "gemini" and gemini_key:
+            prompts = generate_via_gemini(gemini_key, model=req.model, num_samples=req.num_samples)
+        elif provider == "groq" and groq_key:
+            prompts = generate_via_groq(groq_key, model=req.model, num_samples=req.num_samples)
+        elif gemini_key:
+            prompts = generate_via_gemini(gemini_key, model="gemini-2.5-flash", num_samples=req.num_samples)
+        elif groq_key:
+            prompts = generate_via_groq(groq_key, model="openai/gpt-oss-120b", num_samples=req.num_samples)
+        else:
+            prompts = FALLBACK_INJECTION_TEMPLATES[:req.num_samples]
+
+        return {
+            "status": "success",
+            "provider": provider,
+            "model": req.model,
+            "prompts": prompts,
+            "count": len(prompts),
+        }
+    except Exception as e:
+        raise HTTPException(500, f"LLM Generation failed: {str(e)}")
+
+
+# ══════════════════════════════════════════
 # LIVE PIPELINE ENDPOINTS
 # ══════════════════════════════════════════
 
@@ -240,9 +349,10 @@ _pipeline = PipelineRunner()
 
 
 class PipelineGenerateRequest(BaseModel):
-    vector: str = Field(default="tabular", description="Attack vector to generate")
-    n_samples: int = Field(default=2000, ge=500, le=5000, description="Number of samples")
-    fraud_pct: float = Field(default=0.15, ge=0.05, le=0.30, description="Fraud ratio")
+    vector: str = Field(default="tabular", description="Attack vector to generate (tabular / text)")
+    n_samples: int = Field(default=2000, ge=50, le=5000, description="Number of samples")
+    fraud_pct: float = Field(default=0.15, ge=0.05, le=0.50, description="Fraud ratio")
+    llm_model: Optional[str] = Field(default=None, description="LLM model ID when vector is text")
 
 
 @app.post("/api/pipeline/generate")
@@ -250,7 +360,7 @@ def pipeline_generate(req: PipelineGenerateRequest):
     """Step B: Generate synthetic attack data."""
     try:
         _pipeline.reset()
-        result = _pipeline.generate(req.vector, req.n_samples, req.fraud_pct)
+        result = _pipeline.generate(req.vector, req.n_samples, req.fraud_pct, req.llm_model)
         return {"step": "generate", "status": "success", **result}
     except Exception as e:
         raise HTTPException(500, f"Generation failed: {str(e)}")

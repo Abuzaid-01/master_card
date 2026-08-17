@@ -36,22 +36,28 @@ class PipelineRunner:
     # STEP A → B: GENERATE
     # ═══════════════════════════════════════════════
     def generate(self, vector: str = "tabular", n_samples: int = 2000,
-                 fraud_pct: float = 0.15) -> Dict[str, Any]:
+                 fraud_pct: float = 0.15, llm_model: Optional[str] = None) -> Dict[str, Any]:
         """Generate synthetic attack data using existing generators."""
         import sys, os
         sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-        self.config = {"vector": vector, "n_samples": n_samples, "fraud_pct": fraud_pct}
+        self.config = {"vector": vector, "n_samples": n_samples, "fraud_pct": fraud_pct, "llm_model": llm_model}
         t0 = time.time()
 
-        if vector == "tabular":
+        if vector in ["text", "prompt_injection"]:
+            from generate.generator_text import generate_text_prompt_injections
+            seed = int(time.time()) % 100000
+            # For live pipeline text demo, keep n_samples capped reasonably for real-time speed
+            actual_n = min(n_samples, 200)
+            self.dataset = generate_text_prompt_injections(
+                num_samples=actual_n, fraud_ratio=fraud_pct, model_name=llm_model, random_seed=seed
+            )
+        else:
             from generate.generator_tabular import generate_tabular_card_testing
             seed = int(time.time()) % 100000
             self.dataset = generate_tabular_card_testing(
                 num_samples=n_samples, fraud_ratio=fraud_pct, random_seed=seed
             )
-        else:
-            raise ValueError(f"Vector '{vector}' not supported in live pipeline yet.")
 
         gen_time = round(time.time() - t0, 2)
 
@@ -74,14 +80,17 @@ class PipelineRunner:
         )
 
         # Sample rows for display
-        sample_rows = self.dataset.head(5)[["amount", "velocity", "device_risk_score",
-                                            "is_decline", "is_fraud"]].to_dict("records")
-        for row in sample_rows:
-            for k, v in row.items():
-                if isinstance(v, (np.integer,)):
-                    row[k] = int(v)
-                elif isinstance(v, (np.floating,)):
-                    row[k] = round(float(v), 4)
+        if vector in ["text", "prompt_injection"]:
+            sample_rows = self.dataset.head(5)[["prompt_text", "attack_type", "severity", "is_fraud"]].to_dict("records")
+        else:
+            sample_rows = self.dataset.head(5)[["amount", "velocity", "device_risk_score",
+                                                "is_decline", "is_fraud"]].to_dict("records")
+            for row in sample_rows:
+                for k, v in row.items():
+                    if isinstance(v, (np.integer,)):
+                        row[k] = int(v)
+                    elif isinstance(v, (np.floating,)):
+                        row[k] = round(float(v), 4)
 
         return {
             "total_rows": len(self.dataset),
@@ -95,6 +104,7 @@ class PipelineRunner:
             "sample_rows": sample_rows,
             "generation_time_sec": gen_time,
             "pass_rate": 100.0,
+            "llm_model": llm_model,
         }
 
     # ═══════════════════════════════════════════════

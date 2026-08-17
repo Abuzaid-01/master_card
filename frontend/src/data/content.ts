@@ -234,8 +234,12 @@ export const techGroups = [
     accent: "violet" as const,
   },
   {
-    group: "LLM",
-    items: ["Groq Cloud (Llama-3.3 70B)", "Hugging Face (all-MiniLM-L6-v2)"],
+    group: "LLM Red Team",
+    items: [
+      "Groq Cloud (GPT OSS 120B & Llama 3.3 70B)",
+      "Google Gemini (2.5 Flash & Pro)",
+      "Hugging Face (all-MiniLM-L6-v2)",
+    ],
     accent: "orange" as const,
   },
   {

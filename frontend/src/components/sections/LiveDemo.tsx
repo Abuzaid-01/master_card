@@ -10,6 +10,9 @@ import {
   Loader2,
   Activity,
   FlaskConical,
+  Sparkles,
+  Bot,
+  Cpu,
 } from "lucide-react";
 import { LivePipeline } from "@/components/sections/LivePipeline";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
@@ -17,6 +20,8 @@ import {
   useTabularDemo,
   useTextDemo,
   useHealthCheck,
+  useLLMModels,
+  useLLMGenerate,
   type TabularDemoResult,
   type TextDemoResult,
 } from "@/hooks/useBackendMetrics";
@@ -335,8 +340,52 @@ function TabularPanel() {
 /* ── Text Demo Panel ── */
 function TextPanel() {
   const [prompt, setPrompt] = useState("");
+  const [selectedModel, setSelectedModel] = useState("openai/gpt-oss-120b");
+  const [lastGeneratedMeta, setLastGeneratedMeta] = useState<{
+    model: string;
+    attack_type?: string;
+    severity?: string;
+  } | null>(null);
+
   const mutation = useTextDemo();
+  const llmModelsQuery = useLLMModels();
+  const llmGenerateMutation = useLLMGenerate();
   const result = mutation.data as TextDemoResult | undefined;
+
+  const models = llmModelsQuery.data?.models || [
+    {
+      id: "openai/gpt-oss-120b",
+      name: "GPT OSS 120B",
+      provider: "groq",
+      provider_display: "Groq",
+      badge: "120B Weights",
+      available: true,
+    },
+    {
+      id: "gemini-2.5-flash",
+      name: "Gemini 2.5 Flash",
+      provider: "gemini",
+      provider_display: "Google",
+      badge: "Next-Gen Flash",
+      available: true,
+    },
+    {
+      id: "llama-3.3-70b-versatile",
+      name: "Llama 3.3 70B",
+      provider: "groq",
+      provider_display: "Groq",
+      badge: "70B Versatile",
+      available: true,
+    },
+    {
+      id: "gemini-2.5-pro",
+      name: "Gemini 2.5 Pro",
+      provider: "gemini",
+      provider_display: "Google",
+      badge: "Deep Reasoning",
+      available: true,
+    },
+  ];
 
   const presets = [
     {
@@ -361,45 +410,168 @@ function TextPanel() {
     },
   ];
 
+  const handleGenerateNovelAttack = () => {
+    const currentModelObj = models.find((m) => m.id === selectedModel);
+    const provider = currentModelObj?.provider || "auto";
+
+    llmGenerateMutation.mutate(
+      {
+        provider,
+        model: selectedModel,
+        num_samples: 1,
+      },
+      {
+        onSuccess: (data) => {
+          if (data.prompts && data.prompts.length > 0) {
+            const chosen = data.prompts[0];
+            setPrompt(chosen.prompt_text);
+            setLastGeneratedMeta({
+              model: currentModelObj?.name || selectedModel,
+              attack_type: chosen.attack_type,
+              severity: chosen.severity,
+            });
+            // Automatically trigger blue-team defense inference
+            mutation.mutate({ prompt_text: chosen.prompt_text });
+          }
+        },
+      }
+    );
+  };
+
+  const selectedModelObj = models.find((m) => m.id === selectedModel);
+
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Input Panel */}
       <div className="glass-panel rounded-2xl p-6">
-        <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
-          <MessageSquare className="h-4 w-4" />
-          Chat Prompt Input
-        </h4>
+        <div className="flex items-center justify-between">
+          <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
+            <MessageSquare className="h-4 w-4" />
+            Chat Prompt Input
+          </h4>
+          <span className="font-mono text-[10px] text-ai-violet flex items-center gap-1">
+            <Bot className="h-3 w-3" /> AI Red Team Engine
+          </span>
+        </div>
 
-        <div className="mt-4 flex flex-wrap gap-2">
-          {presets.map((p) => (
-            <button
-              key={p.label}
-              onClick={() => setPrompt(p.text)}
-              className="rounded-full bg-secondary px-3 py-1 text-[10px] text-muted-foreground transition-all hover:bg-secondary/80 hover:text-foreground"
-            >
-              {p.label}
-            </button>
-          ))}
+        {/* LLM Model Selector */}
+        <div className="mt-4 rounded-xl border border-ai-violet/20 bg-ai-violet/5 p-3">
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground mb-2">
+            <span className="flex items-center gap-1 font-mono uppercase tracking-wider text-[10px] text-foreground">
+              <Cpu className="h-3.5 w-3.5 text-ai-violet" /> Select Red Team LLM
+            </span>
+            <span className="text-[10px] font-mono text-cyan">
+              {selectedModelObj?.provider_display} · {selectedModelObj?.name}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
+            {models.map((m) => {
+              const active = selectedModel === m.id;
+              const isGemini = m.provider === "gemini";
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedModel(m.id)}
+                  className={`flex flex-col items-start rounded-lg px-2.5 py-1.5 text-left transition-all ${
+                    active
+                      ? isGemini
+                        ? "bg-cyan/20 border border-cyan/60 text-cyan shadow-sm shadow-cyan/20"
+                        : "bg-mc-orange/20 border border-mc-orange/60 text-mc-orange shadow-sm shadow-mc-orange/20"
+                      : "bg-secondary/60 border border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  }`}
+                >
+                  <span className="text-[9px] font-mono uppercase tracking-widest opacity-70">
+                    {m.provider === "gemini" ? "🌟 Google" : "⚡ Groq"}
+                  </span>
+                  <span className="font-mono text-[11px] font-semibold truncate w-full">
+                    {m.name}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          <button
+            onClick={handleGenerateNovelAttack}
+            disabled={llmGenerateMutation.isPending}
+            className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-ai-violet/20 py-2 font-mono text-xs font-medium text-ai-violet transition-all hover:bg-ai-violet/30 disabled:opacity-50"
+          >
+            {llmGenerateMutation.isPending ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5" />
+            )}
+            {llmGenerateMutation.isPending
+              ? "Generating with " + (selectedModelObj?.name || "LLM") + "..."
+              : "⚡ Generate Novel Attack with " + (selectedModelObj?.name || "LLM")}
+          </button>
+        </div>
+
+        {/* Quick Presets */}
+        <div className="mt-4">
+          <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
+            Or Test Hand-Crafted Presets:
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {presets.map((p) => (
+              <button
+                key={p.label}
+                onClick={() => {
+                  setPrompt(p.text);
+                  setLastGeneratedMeta(null);
+                }}
+                className="rounded-full bg-secondary px-2.5 py-1 text-[10px] text-muted-foreground transition-all hover:bg-secondary/80 hover:text-foreground"
+              >
+                {p.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Type a customer chat prompt to analyze..."
-          className="mt-4 h-32 w-full resize-none rounded-xl border border-glass-border bg-background/50 p-4 font-mono text-sm text-foreground placeholder:text-muted-foreground/50 focus:border-cyan focus:outline-none"
+          placeholder="Type a customer chat prompt or click Generate with AI above..."
+          className="mt-3 h-28 w-full resize-none rounded-xl border border-glass-border bg-background/50 p-3.5 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 focus:border-cyan focus:outline-none"
         />
+
+        {lastGeneratedMeta && (
+          <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md bg-secondary/40 px-3 py-1.5 font-mono text-[10px] text-muted-foreground">
+            <span>
+              Generated by:{" "}
+              <strong className="text-cyan">{lastGeneratedMeta.model}</strong>
+            </span>
+            {lastGeneratedMeta.attack_type && (
+              <span>
+                · Type:{" "}
+                <strong className="text-mc-orange">
+                  {lastGeneratedMeta.attack_type}
+                </strong>
+              </span>
+            )}
+            {lastGeneratedMeta.severity && (
+              <span>
+                · Severity:{" "}
+                <strong className="text-mc-red">
+                  {lastGeneratedMeta.severity}
+                </strong>
+              </span>
+            )}
+          </div>
+        )}
 
         <button
           onClick={() => mutation.mutate({ prompt_text: prompt })}
           disabled={mutation.isPending || !prompt.trim()}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-ai-violet/15 px-4 py-3 font-mono text-sm text-ai-violet transition-all hover:bg-ai-violet/25 disabled:opacity-50"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-cyan/15 px-4 py-2.5 font-mono text-sm text-cyan transition-all hover:bg-cyan/25 disabled:opacity-50"
         >
           {mutation.isPending ? (
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <Send className="h-4 w-4" />
           )}
-          Analyze Prompt
+          Analyze with Blue Team Detector
         </button>
       </div>
 
@@ -407,7 +579,7 @@ function TextPanel() {
       <div className="glass-panel rounded-2xl p-6">
         <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
           <Activity className="h-4 w-4" />
-          Detection Result
+          Detection Result (Blue Team Defense)
         </h4>
         <AnimatePresence mode="wait">
           {result ? (
@@ -440,7 +612,7 @@ function TextPanel() {
                 <div>
                   <div className="flex items-baseline justify-between font-mono text-[10px]">
                     <span className="text-muted-foreground">
-                      TF-IDF (Keyword)
+                      TF-IDF (Keyword Baseline)
                     </span>
                     <span
                       className={
@@ -468,7 +640,7 @@ function TextPanel() {
                 <div>
                   <div className="flex items-baseline justify-between font-mono text-[10px]">
                     <span className="text-muted-foreground">
-                      Semantic (Intent)
+                      Semantic Embeddings (Intent Defense)
                     </span>
                     <span
                       className={
@@ -483,7 +655,7 @@ function TextPanel() {
                   </div>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-secondary">
                     <motion.div
-                      className="h-full rounded-full bg-ai-violet"
+                      className="h-full rounded-full bg-cyan glow-cyan"
                       initial={{ width: 0 }}
                       animate={{
                         width: `${result.semantic_score * 100}%`,
@@ -497,12 +669,12 @@ function TextPanel() {
                   <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.6 }}
-                    className="mt-3 rounded-lg bg-ai-violet/10 p-3 text-center font-mono text-xs text-ai-violet"
+                    transition={{ delay: 0.4 }}
+                    className="mt-3 rounded-lg bg-cyan/10 p-3 text-center font-mono text-xs text-cyan border border-cyan/20"
                   >
-                    Semantic detected what TF-IDF missed (+
+                    🚀 Semantic AI caught what keyword filters missed (+
                     {(result.analysis.semantic_advantage * 100).toFixed(1)}%
-                    advantage)
+                    lift)
                   </motion.div>
                 )}
               </div>
@@ -512,12 +684,12 @@ function TextPanel() {
               key="placeholder"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="flex min-h-[280px] flex-col items-center justify-center text-muted-foreground"
+              className="flex min-h-[280px] flex-col items-center justify-center text-muted-foreground text-center"
             >
-              <MessageSquare className="mb-3 h-8 w-8 opacity-30" />
-              <p className="text-sm">Select a preset or type a prompt</p>
+              <MessageSquare className="mb-3 h-8 w-8 opacity-30 text-cyan" />
+              <p className="text-sm">Select an LLM above and click Generate</p>
               <p className="mt-1 text-xs opacity-60">
-                Sentence Transformers vs TF-IDF comparison
+                Tests Google Gemini & Groq LLMs vs Blue Team Sentence Transformers
               </p>
             </motion.div>
           )}
