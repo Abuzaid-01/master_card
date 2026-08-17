@@ -303,9 +303,9 @@ export function LivePipeline() {
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                       {[
                         { id: "openai/gpt-oss-120b", name: "GPT OSS 120B", provider: "groq" },
-                        { id: "gemini-2.5-flash", name: "Gemini 2.5 Flash", provider: "gemini" },
+                        { id: "gemini-3.5-flash-lite", name: "Gemini 3.5 Flash Lite", provider: "gemini" },
+                        { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite", provider: "gemini" },
                         { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", provider: "groq" },
-                        { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "gemini" },
                       ].map((m) => (
                         <button
                           key={m.id}

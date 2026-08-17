@@ -128,7 +128,7 @@ def _extract_json_from_text(text: str) -> Any:
         text = "\n".join(lines).strip()
     return json.loads(text)
 
-def generate_via_gemini(api_key: str, model: str = "gemini-2.5-flash", num_samples: int = 5) -> List[Dict[str, Any]]:
+def generate_via_gemini(api_key: str, model: str = "gemini-3.5-flash-lite", num_samples: int = 5) -> List[Dict[str, Any]]:
     """Generates synthetic adversarial prompt injections using Google Gemini API."""
     url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
     headers = {"Content-Type": "application/json"}
@@ -262,7 +262,7 @@ def generate_text_prompt_injections(
             effective_provider = "gemini"
 
     if effective_provider == "gemini" and gemini_key:
-        m = model_name or os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+        m = model_name or os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
         print(f"[Info] Generating synthetic prompts via Google Gemini API (Model: {m})...")
         raw_injections = generate_via_gemini(gemini_key, model=m, num_samples=num_fraud)
     elif effective_provider == "groq" and groq_key:

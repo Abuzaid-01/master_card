@@ -237,7 +237,7 @@ export const techGroups = [
     group: "LLM Red Team",
     items: [
       "Groq Cloud (GPT OSS 120B & Llama 3.3 70B)",
-      "Google Gemini (2.5 Flash & Pro)",
+      "Google Gemini (3.5 & 3.1 Flash Lite)",
       "Hugging Face (all-MiniLM-L6-v2)",
     ],
     accent: "orange" as const,
