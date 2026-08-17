@@ -450,7 +450,9 @@ export function LivePipeline() {
                   <ShieldCheck className="h-4 w-4" /> Train Round 1 Defender
                 </h4>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  XGBoost + Isolation Forest on{" "}
+                  {vector === "text"
+                    ? "Sentence Transformers (all-MiniLM-L6-v2) + TF-IDF on "
+                    : "XGBoost + Isolation Forest on "}
                   {results.generate?.train_size ?? "?"} training samples
                 </p>
                 <div className="mt-4">
@@ -504,8 +506,9 @@ export function LivePipeline() {
                   <Crosshair className="h-4 w-4" /> Adversarial Probing
                 </h4>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  3 strategies: Velocity Dilution, Amount Structuring, Device
-                  Cloaking
+                  {vector === "text"
+                    ? "3 NLP evasion strategies: Conversational Framing, Admin Roleplay, Obfuscation"
+                    : "3 tabular strategies: Velocity Dilution, Amount Structuring, Device Cloaking"}
                 </p>
                 <div className="mt-4">
                   <StepButton
