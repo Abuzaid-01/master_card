@@ -131,9 +131,8 @@ def retrain_round2(
         missed_indices = text_result["missed_indices"]
         df_missed = text_result["df_mine_fraud"].iloc[missed_indices] if missed_indices else pd.DataFrame()
         
-        # Augment training data with the missed prompts
+        # Augment training data with the missed prompts (preserve original dataset integrity)
         df_augmented = pd.concat([df_orig_train, df_missed], ignore_index=True)
-        df_augmented = df_augmented.drop_duplicates(subset=["prompt_text"]).reset_index(drop=True)
         
         # Retrain text detector with expanded embedding index
         from defend.detector_text import TextPromptInjectionDetector
@@ -147,6 +146,7 @@ def retrain_round2(
             "joblib_path": text_model_path,
             "augmented_train_size": len(df_augmented),
             "original_train_size": len(df_orig_train),
+            "adversarial_samples_added": len(df_missed),
             "missed_prompts_added": len(df_missed),
         }
         print(f"      -> Round 2 Text Detector trained on {len(df_augmented)} prompts "

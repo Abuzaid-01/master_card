@@ -10,10 +10,14 @@ Orchestrates the full closed-loop workflow:
 """
 
 import os
+import sys
 import json
 import pandas as pd
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 DEFEND_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "defend")
 LOOP_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "data", "loop")
 SYNTHETIC_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "synthetic")

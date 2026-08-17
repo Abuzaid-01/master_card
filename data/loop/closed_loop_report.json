@@ -50,7 +50,7 @@
       },
       "text": {
         "original_train_size": 288,
-        "augmented_train_size": 74,
+        "augmented_train_size": 291,
         "adversarial_samples_added": 3
       }
     },
