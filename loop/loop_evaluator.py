@@ -1,15 +1,22 @@
 """
-Loop Evaluator: Compares Round 1 vs Round 2 performance on:
+Loop Evaluator: Compares Round 1 vs Round 2 (and multi-round) performance on:
   1. Unseen adversarial final test set (evasion robustness gain)
   2. Original Step 3 baseline validation set (catastrophic forgetting check)
 Reports raw sample counts alongside percentages.
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 from typing import Dict, Any
 from sklearn.metrics import average_precision_score, f1_score
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from generate.generator_tabular import TABULAR_FEATURE_COLS
 
 
 def evaluate_round_comparison(
@@ -30,8 +37,12 @@ def evaluate_round_comparison(
     # ── TABULAR ──
     if "tabular" in round2_models and "tabular" in partitions:
         print("\n[Loop Evaluator] TABULAR: Round 1 vs Round 2 Comparison...")
-        feature_cols = ["amount", "velocity", "device_risk_score", "is_decline"]
-        df_eval = partitions["tabular"]["df_eval"]
+        feature_cols = list(TABULAR_FEATURE_COLS)
+        df_eval = partitions["tabular"]["df_eval"].copy()
+        for col in feature_cols:
+            if col not in df_eval.columns:
+                df_eval[col] = 0.0
+
         df_eval_fraud = df_eval[df_eval["is_fraud"] == 1].copy()
         df_eval_legit = df_eval[df_eval["is_fraud"] == 0].copy()
 
@@ -43,7 +54,7 @@ def evaluate_round_comparison(
         # Reconstruct full eval set with adversarial fraud + original legit
         df_eval_adv = pd.concat([df_eval_fraud_adv, df_eval_legit], ignore_index=True)
         y_true = df_eval_adv["is_fraud"].values
-        X_eval = df_eval_adv[feature_cols].values.astype(float)
+        X_eval = df_eval_adv[feature_cols].values.astype(np.float32)
 
         # Round 1 predictions
         r1_probs = prober._tabular_predict_proba(X_eval)
@@ -60,9 +71,12 @@ def evaluate_round_comparison(
         # Catastrophic forgetting check on baseline
         tab_baseline = {}
         if "tabular" in baseline_val_data:
-            df_base = baseline_val_data["tabular"]
+            df_base = baseline_val_data["tabular"].copy()
+            for col in feature_cols:
+                if col not in df_base.columns:
+                    df_base[col] = 0.0
             y_base = df_base["is_fraud"].values
-            X_base = df_base[feature_cols].values.astype(float)
+            X_base = df_base[feature_cols].values.astype(np.float32)
             r1_base_probs = prober._tabular_predict_proba(X_base)
             r2_base_probs = r2_model.predict_proba(X_base)[:, 1]
             
@@ -78,7 +92,7 @@ def evaluate_round_comparison(
                 "baseline_r1_fpr": r1_base_fpr,
                 "baseline_r2_fpr": r2_base_fpr,
                 "baseline_fpr_delta": float(np.round(r2_base_fpr - r1_base_fpr, 4)),
-                "catastrophic_forgetting": r2_base_auc < r1_base_auc - 0.05,
+                "catastrophic_forgetting": bool(r2_base_auc < r1_base_auc - 0.05),
             }
 
         report["tabular"] = {
@@ -141,7 +155,7 @@ def evaluate_round_comparison(
             graph_baseline = {
                 "baseline_r1_auc_pr": r1_base_auc, "baseline_r2_auc_pr": r2_base_auc,
                 "baseline_auc_delta": float(np.round(r2_base_auc - r1_base_auc, 4)),
-                "catastrophic_forgetting": r2_base_auc < r1_base_auc - 0.05,
+                "catastrophic_forgetting": bool(r2_base_auc < r1_base_auc - 0.05),
             }
 
         report["graph"] = {
@@ -173,7 +187,7 @@ def evaluate_round_comparison(
         # Round 2: use retrained detector
         r2_det = round2_models["text"]["detector"]
         r2_probs = r2_det.predict_proba_semantic(df_eval)
-        r2_caught = int((r2_probs[y_true == 1] >= 0.5).sum())
+        r2_caught = int((r2_probs[y_true == 1] >= r2_det.optimal_threshold).sum())
         
         r2_auc = float(np.round(average_precision_score(y_true, r2_probs), 4))
         
@@ -184,6 +198,8 @@ def evaluate_round_comparison(
         if isinstance(r1_data, dict):
             r1_det.tfidf_vectorizer = r1_data.get("tfidf_vectorizer")
             r1_det.tfidf_model = r1_data.get("tfidf_model")
+            r1_det.calibrated_classifier = r1_data.get("calibrated_classifier")
+            r1_det.optimal_threshold = r1_data.get("optimal_threshold", 0.5)
             r1_det.attack_embeddings = r1_data.get("attack_embeddings")
             r1_det.legit_embeddings = r1_data.get("legit_embeddings")
             r1_det._init_sentence_transformer()

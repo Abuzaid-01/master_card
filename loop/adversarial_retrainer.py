@@ -1,16 +1,23 @@
 """
-Adversarial Retrainer: Augments original training pool with mined adversarial failures
-and trains Round 2 defense models.
+Adversarial Retrainer: Augments training pool with mined adversarial failures
+and trains Round 2 & Round 3 defense models across Tabular, Text, and Graph vectors.
 """
 
 import os
+import sys
 import numpy as np
 import pandas as pd
 import joblib
 from typing import Dict, Any
 
-DEFEND_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "defend")
-LOOP_MODELS_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "loop", "models")
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
+from generate.generator_tabular import TABULAR_FEATURE_COLS
+
+DEFEND_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "defend")
+LOOP_MODELS_DIR = os.path.join(PROJECT_ROOT, "data", "loop", "models")
 
 
 def retrain_round2(
@@ -18,7 +25,7 @@ def retrain_round2(
     original_training_data: dict,
 ) -> Dict[str, Any]:
     """
-    Augments original Step 3 training data with mined adversarial failure samples.
+    Augments original training data with mined adversarial failure samples.
     Retrains Round 2 models and exports them.
     """
     os.makedirs(LOOP_MODELS_DIR, exist_ok=True)
@@ -33,19 +40,24 @@ def retrain_round2(
         
         # Augment: combine original training + evaded adversarial samples
         df_augmented = pd.concat([df_orig_train, df_failures], ignore_index=True)
-        df_augmented = df_augmented.drop_duplicates().sample(frac=1.0, random_state=42).reset_index(drop=True)
+        df_augmented = df_augmented.sample(frac=1.0, random_state=42).reset_index(drop=True)
         
-        feature_cols = ["amount", "velocity", "device_risk_score", "is_decline"]
-        X_train = df_augmented[feature_cols].values.astype(float)
+        feature_cols = list(TABULAR_FEATURE_COLS)
+        for col in feature_cols:
+            if col not in df_augmented.columns:
+                df_augmented[col] = 0.0
+
+        X_train = df_augmented[feature_cols].values.astype(np.float32)
         y_train = df_augmented["is_fraud"].values
         
         n_pos = (y_train == 1).sum()
         n_neg = (y_train == 0).sum()
-        spw = max(1.0, n_neg / max(1, n_pos))
+        spw = max(1.0, float(n_neg / max(1, n_pos)))
         
         import xgboost as xgb
         model_r2 = xgb.XGBClassifier(
-            n_estimators=200, max_depth=5, learning_rate=0.1,
+            n_estimators=300, max_depth=6, learning_rate=0.06,
+            subsample=0.85, colsample_bytree=0.85,
             scale_pos_weight=spw, eval_metric="aucpr",
             random_state=42, use_label_encoder=False
         )
@@ -67,7 +79,7 @@ def retrain_round2(
         
         # Save joblib
         joblib_path = os.path.join(LOOP_MODELS_DIR, "card_testing_xgb_round2.joblib")
-        joblib.dump({"xgb_model": model_r2}, joblib_path)
+        joblib.dump({"xgb_model": model_r2, "feature_cols": feature_cols}, joblib_path)
         
         round2_models["tabular"] = {
             "model": model_r2,
@@ -88,7 +100,7 @@ def retrain_round2(
         df_failures = blind_spot_results["graph"]["df_failures"]
         
         df_augmented = pd.concat([df_orig_train, df_failures], ignore_index=True)
-        df_augmented = df_augmented.drop_duplicates().sample(frac=1.0, random_state=42).reset_index(drop=True)
+        df_augmented = df_augmented.sample(frac=1.0, random_state=42).reset_index(drop=True)
         
         graph_features = [c for c in ["amount", "sender_in_degree", "sender_out_degree",
                                        "receiver_in_degree", "receiver_out_degree",
@@ -102,10 +114,10 @@ def retrain_round2(
         n_pos = (y_train == 1).sum()
         n_neg = (y_train == 0).sum()
         
-        sample_weights = np.where(y_train == 1, n_neg / max(1, n_pos), 1.0)
+        sample_weights = np.where(y_train == 1, float(n_neg / max(1, n_pos)), 1.0)
         
         model_r2 = HistGradientBoostingClassifier(
-            max_iter=200, max_depth=5, learning_rate=0.1, random_state=42
+            max_iter=200, max_depth=5, learning_rate=0.08, random_state=42
         )
         model_r2.fit(X_train, y_train, sample_weight=sample_weights)
         
@@ -131,7 +143,7 @@ def retrain_round2(
         missed_indices = text_result["missed_indices"]
         df_missed = text_result["df_mine_fraud"].iloc[missed_indices] if missed_indices else pd.DataFrame()
         
-        # Augment training data with the missed prompts (preserve original dataset integrity)
+        # Augment training data with the missed prompts
         df_augmented = pd.concat([df_orig_train, df_missed], ignore_index=True)
         
         # Retrain text detector with expanded embedding index

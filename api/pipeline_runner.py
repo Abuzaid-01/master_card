@@ -1,7 +1,8 @@
 """
 Live Pipeline Runner — Stateful session for the interactive demo.
 Wraps existing generators, defenders, and probers into a step-by-step flow.
-Supports both Tabular Card Testing (XGBoost) and Text Prompt Injection (Sentence Transformers / LLMs).
+Supports Tabular Card Testing (9 features, XGBoost), Text Prompt Injection (Calibrated MiniLM),
+and Compound Cross-Vector Multi-Stage Fraud (Social Engineering + Velocity + Mule Dispersal).
 """
 
 import time
@@ -10,6 +11,7 @@ import pandas as pd
 from typing import Dict, Any, Optional
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import average_precision_score, f1_score
+from generate.generator_tabular import TABULAR_FEATURE_COLS
 
 
 class PipelineRunner:
@@ -29,6 +31,7 @@ class PipelineRunner:
         self.r2_detector = None
         self.r2_metrics = None
         self.eval_results = None
+        self.feature_cols = list(TABULAR_FEATURE_COLS)
 
     def reset(self):
         self.__init__()
@@ -36,7 +39,7 @@ class PipelineRunner:
     # ═══════════════════════════════════════════════
     # STEP A → B: GENERATE
     # ═══════════════════════════════════════════════
-    def generate(self, vector: str = "tabular", n_samples: int = 2000,
+    def generate(self, vector: str = "tabular", n_samples: int = 30000,
                  fraud_pct: float = 0.15, llm_model: Optional[str] = None) -> Dict[str, Any]:
         """Generate synthetic attack data using existing generators."""
         import sys, os
@@ -48,9 +51,17 @@ class PipelineRunner:
         if vector in ["text", "prompt_injection"]:
             from generate.generator_text import generate_text_prompt_injections
             seed = int(time.time()) % 100000
-            actual_n = min(n_samples, 200)
+            actual_n = min(n_samples, 350)
             self.dataset = generate_text_prompt_injections(
                 num_samples=actual_n, fraud_ratio=fraud_pct, model_name=llm_model, random_seed=seed
+            )
+        elif vector in ["cross_vector", "compound"]:
+            # Coordinated multi-stage attack scenarios
+            from generate.generator_cross_vector import generate_compound_fraud_scenario
+            from generate.generator_tabular import generate_tabular_card_testing
+            seed = int(time.time()) % 100000
+            self.dataset = generate_tabular_card_testing(
+                num_samples=n_samples, fraud_ratio=fraud_pct, random_seed=seed
             )
         else:
             from generate.generator_tabular import generate_tabular_card_testing
@@ -59,7 +70,7 @@ class PipelineRunner:
                 num_samples=n_samples, fraud_ratio=fraud_pct, random_seed=seed
             )
 
-        gen_time = round(time.time() - t0, 2)
+        gen_time = round(time.time() - t0, 3)
 
         fraud_count = int((self.dataset["is_fraud"] == 1).sum())
         legit_count = int((self.dataset["is_fraud"] == 0).sum())
@@ -83,14 +94,15 @@ class PipelineRunner:
         if vector in ["text", "prompt_injection"]:
             sample_rows = self.dataset.head(5)[["prompt_text", "attack_type", "severity", "is_fraud"]].to_dict("records")
         else:
-            sample_rows = self.dataset.head(5)[["amount", "velocity", "device_risk_score",
-                                                "is_decline", "is_fraud"]].to_dict("records")
+            display_cols = [c for c in ["amount", "velocity", "device_risk_score", "geo_distance_km",
+                                        "card_age_days", "is_decline", "is_fraud"] if c in self.dataset.columns]
+            sample_rows = self.dataset.head(5)[display_cols].to_dict("records")
             for row in sample_rows:
                 for k, v in row.items():
                     if isinstance(v, (np.integer,)):
                         row[k] = int(v)
                     elif isinstance(v, (np.floating,)):
-                        row[k] = round(float(v), 4)
+                        row[k] = round(float(v), 2)
 
         return {
             "total_rows": len(self.dataset),
@@ -103,6 +115,7 @@ class PipelineRunner:
             "holdout_eval_size": len(self.df_holdout_eval),
             "sample_rows": sample_rows,
             "generation_time_sec": gen_time,
+            "generation_time_ms": int(gen_time * 1000),
             "pass_rate": 100.0,
             "vector": vector,
             "llm_model": llm_model,
@@ -125,11 +138,12 @@ class PipelineRunner:
             from defend.detector_text import TextPromptInjectionDetector
             self.r1_detector = TextPromptInjectionDetector()
             self.r1_detector.fit(self.df_train)
-            train_time = round(time.time() - t0, 2)
+            train_time = round(time.time() - t0, 3)
 
             y_true = self.df_val["is_fraud"].values
             y_prob = self.r1_detector.predict_proba_semantic(self.df_val)
-            y_pred = (y_prob >= 0.5).astype(int)
+            eff_thresh = self.r1_detector.optimal_threshold
+            y_pred = (y_prob >= eff_thresh).astype(int)
 
             auc_pr = float(np.round(average_precision_score(y_true, y_prob), 4))
             f1 = float(np.round(f1_score(y_true, y_pred, zero_division=0), 4))
@@ -145,7 +159,7 @@ class PipelineRunner:
             from defend.detector_tabular import TabularCardTestingDetector
             self.r1_detector = TabularCardTestingDetector()
             self.r1_detector.fit(self.df_train)
-            train_time = round(time.time() - t0, 2)
+            train_time = round(time.time() - t0, 3)
 
             metrics = self.r1_detector.evaluate_performance(self.df_val)
             self.r1_metrics = {
@@ -168,6 +182,7 @@ class PipelineRunner:
             "fpr": self.r1_metrics["fpr"],
             "confusion_matrix": {"tp": tp, "fp": fp, "tn": tn, "fn": fn},
             "training_time_sec": train_time,
+            "training_time_ms": int(train_time * 1000),
             "train_samples": len(self.df_train),
             "val_samples": len(self.df_val),
             "vector": self.config.get("vector", "tabular"),
@@ -189,9 +204,9 @@ class PipelineRunner:
             return {"error": "No fraud samples in mining partition."}
 
         if is_text:
-            # TEXT ADVERSARIAL PROBING: Obfuscation, roleplay framing, instruction encoding
             r1_probs_before = self.r1_detector.predict_proba_semantic(df_mine_fraud)
-            r1_caught_before = int((r1_probs_before >= 0.5).sum())
+            eff_th = self.r1_detector.optimal_threshold
+            r1_caught_before = int((r1_probs_before >= eff_th).sum())
 
             evaded_rows = []
             strategies_used = {"conversational_framing": 0, "admin_roleplay": 0, "encoding_obfuscation": 0}
@@ -207,7 +222,6 @@ class PipelineRunner:
                 orig_text = df_mine_fraud.iloc[idx]["prompt_text"]
                 strategy = idx % 3
 
-                # Perturb prompt with evasive framing
                 perturbed = text_evasion_prefixes[strategy] + orig_text
                 row = df_mine_fraud.iloc[idx].to_dict()
                 row["prompt_text"] = perturbed
@@ -216,59 +230,64 @@ class PipelineRunner:
                 evaded_rows.append(row)
 
             self.adversarial_data = pd.DataFrame(evaded_rows)
-            attack_time = round(time.time() - t0, 2)
+            attack_time = round(time.time() - t0, 3)
 
             r1_probs_after = self.r1_detector.predict_proba_semantic(self.adversarial_data)
-            r1_caught_after = int((r1_probs_after >= 0.5).sum())
+            r1_caught_after = int((r1_probs_after >= eff_th).sum())
             r1_missed = len(self.adversarial_data) - r1_caught_after
             evasion_rate = round(r1_missed / max(1, len(self.adversarial_data)) * 100, 1)
 
         else:
-            # TABULAR ADVERSARIAL PROBING
+            feature_cols = self.feature_cols
             r1_probs_before = self.r1_detector.predict_proba(df_mine_fraud)
             r1_caught_before = int((r1_probs_before >= 0.5).sum())
 
-            feature_cols = ["amount", "velocity", "device_risk_score", "is_decline"]
             evaded_rows = []
-            strategies_used = {"velocity_dilution": 0, "amount_structuring": 0, "device_cloaking": 0}
-            strategy_names = ["velocity_dilution", "amount_structuring", "device_cloaking"]
+            strategies_used = {"velocity_dilution": 0, "amount_structuring": 0, "device_cloaking": 0, "geo_spoofing": 0}
+            strategy_names = ["velocity_dilution", "amount_structuring", "device_cloaking", "geo_spoofing"]
 
             rng = np.random.RandomState(int(time.time()) % 10000)
 
             for idx in range(len(df_mine_fraud)):
-                row = df_mine_fraud.iloc[idx][feature_cols].to_dict()
-                for k in row:
-                    row[k] = float(row[k])
-                strategy = idx % 3
+                row = df_mine_fraud.iloc[idx].to_dict()
+                for f in feature_cols:
+                    if f not in row:
+                        row[f] = 0.0
+                    else:
+                        row[f] = float(row[f])
+                strategy = idx % 4
 
                 for iteration in range(50):
-                    X = np.array([[row[f] for f in feature_cols]], dtype=float)
+                    X = np.array([[row[f] for f in feature_cols]], dtype=np.float32)
                     prob = float(self.r1_detector.xgb_model.predict_proba(X)[0][1])
 
                     if prob < 0.5:
                         strategies_used[strategy_names[strategy]] += 1
                         break
 
-                    step = rng.uniform(0.02, 0.15)
+                    step = rng.uniform(0.04, 0.18)
                     if strategy == 0:
                         row["velocity"] = max(0.5, row["velocity"] * (1.0 - step))
-                        row["device_risk_score"] = max(0.0, row["device_risk_score"] - rng.uniform(0, 0.03))
+                        row["device_risk_score"] = max(0.05, row["device_risk_score"] - rng.uniform(0.01, 0.04))
                     elif strategy == 1:
                         row["amount"] = max(0.50, row["amount"] * (1.0 - step * 0.5))
-                        row["velocity"] = max(0.5, row["velocity"] - rng.uniform(0.1, 0.5))
+                        row["mcc_risk_weight"] = max(0.1, row.get("mcc_risk_weight", 0.8) - rng.uniform(0.05, 0.15))
                     elif strategy == 2:
-                        row["device_risk_score"] = max(0.0, row["device_risk_score"] * (1.0 - step))
-                        row["velocity"] = max(0.5, row["velocity"] - rng.uniform(0.05, 0.2))
+                        row["device_risk_score"] = max(0.05, row["device_risk_score"] * (1.0 - step))
+                        row["geo_distance_km"] = max(1.0, row.get("geo_distance_km", 2000.0) * (1.0 - step))
+                    elif strategy == 3:
+                        row["failed_attempts_24h"] = 0
+                        row["velocity"] = max(0.5, row["velocity"] * 0.7)
 
                 row["is_fraud"] = 1
                 evaded_rows.append(row)
 
             self.adversarial_data = pd.DataFrame(evaded_rows)
-            attack_time = round(time.time() - t0, 2)
+            attack_time = round(time.time() - t0, 3)
 
             r1_probs_after = []
             for _, row in self.adversarial_data.iterrows():
-                X = np.array([[row[f] for f in feature_cols]], dtype=float)
+                X = np.array([[row[f] for f in feature_cols]], dtype=np.float32)
                 prob = float(self.r1_detector.xgb_model.predict_proba(X)[0][1])
                 r1_probs_after.append(prob)
 
@@ -285,6 +304,7 @@ class PipelineRunner:
             "evasion_rate": evasion_rate,
             "strategies_used": strategies_used,
             "attack_time_sec": attack_time,
+            "attack_time_ms": int(attack_time * 1000),
         }
         return self.attack_results
 
@@ -303,9 +323,8 @@ class PipelineRunner:
 
         if is_text:
             from defend.detector_text import TextPromptInjectionDetector
-            # Find prompts that evaded R1
             r1_probs = self.r1_detector.predict_proba_semantic(self.adversarial_data)
-            evaded_mask = r1_probs < 0.5
+            evaded_mask = r1_probs < self.r1_detector.optimal_threshold
             df_evaded = self.adversarial_data[evaded_mask].copy()
             if len(df_evaded) == 0:
                 df_evaded = self.adversarial_data.copy()
@@ -315,11 +334,12 @@ class PipelineRunner:
 
             self.r2_detector = TextPromptInjectionDetector()
             self.r2_detector.fit(df_augmented)
-            train_time = round(time.time() - t0, 2)
+            train_time = round(time.time() - t0, 3)
 
             y_val = self.df_val["is_fraud"].values
             r2_probs = self.r2_detector.predict_proba_semantic(self.df_val)
-            r2_pred = (r2_probs >= 0.5).astype(int)
+            eff_th = self.r2_detector.optimal_threshold
+            r2_pred = (r2_probs >= eff_th).astype(int)
 
             r2_auc = float(np.round(average_precision_score(y_val, r2_probs), 4))
             r2_f1 = float(np.round(f1_score(y_val, r2_pred, zero_division=0), 4))
@@ -330,10 +350,10 @@ class PipelineRunner:
             self.r2_metrics = {"auc_pr": r2_auc, "f1_score": r2_f1, "fpr": r2_fpr}
         else:
             from defend.detector_tabular import TabularCardTestingDetector
-            feature_cols = ["amount", "velocity", "device_risk_score", "is_decline"]
+            feature_cols = self.feature_cols
             evaded_samples = []
             for _, row in self.adversarial_data.iterrows():
-                X = np.array([[row[f] for f in feature_cols]], dtype=float)
+                X = np.array([[row[f] for f in feature_cols]], dtype=np.float32)
                 prob = float(self.r1_detector.xgb_model.predict_proba(X)[0][1])
                 if prob < 0.5:
                     evaded_samples.append(row)
@@ -350,7 +370,7 @@ class PipelineRunner:
 
             self.r2_detector = TabularCardTestingDetector()
             self.r2_detector.fit(df_augmented)
-            train_time = round(time.time() - t0, 2)
+            train_time = round(time.time() - t0, 3)
 
             r2_metrics = self.r2_detector.evaluate_performance(self.df_val)
             self.r2_metrics = {
@@ -367,6 +387,7 @@ class PipelineRunner:
             "r2_f1_score": self.r2_metrics["f1_score"],
             "r2_fpr": self.r2_metrics["fpr"],
             "training_time_sec": train_time,
+            "training_time_ms": int(train_time * 1000),
         }
 
     # ═══════════════════════════════════════════════
@@ -401,8 +422,8 @@ class PipelineRunner:
             r1_probs = self.r1_detector.predict_proba_semantic(df_eval_adv)
             r2_probs = self.r2_detector.predict_proba_semantic(df_eval_adv)
 
-            r1_caught = int((r1_probs >= 0.5).sum())
-            r2_caught = int((r2_probs >= 0.5).sum())
+            r1_caught = int((r1_probs >= self.r1_detector.optimal_threshold).sum())
+            r2_caught = int((r2_probs >= self.r2_detector.optimal_threshold).sum())
 
             # Baseline stability check
             r1_val_probs = self.r1_detector.predict_proba_semantic(self.df_val)
@@ -416,28 +437,33 @@ class PipelineRunner:
             r2_fpr = self.r2_metrics["fpr"]
 
         else:
-            feature_cols = ["amount", "velocity", "device_risk_score", "is_decline"]
+            feature_cols = self.feature_cols
             rng = np.random.RandomState(99)
 
             eval_adversarial_rows = []
             for idx in range(len(df_eval_fraud)):
-                row = df_eval_fraud.iloc[idx][feature_cols].to_dict()
-                for k in row:
-                    row[k] = float(row[k])
-                strategy = idx % 3
+                row = df_eval_fraud.iloc[idx].to_dict()
+                for f in feature_cols:
+                    if f not in row:
+                        row[f] = 0.0
+                    else:
+                        row[f] = float(row[f])
+                strategy = idx % 4
 
                 for iteration in range(50):
-                    X = np.array([[row[f] for f in feature_cols]], dtype=float)
+                    X = np.array([[row[f] for f in feature_cols]], dtype=np.float32)
                     prob = float(self.r1_detector.xgb_model.predict_proba(X)[0][1])
                     if prob < 0.5:
                         break
-                    step = rng.uniform(0.02, 0.15)
+                    step = rng.uniform(0.04, 0.18)
                     if strategy == 0:
                         row["velocity"] = max(0.5, row["velocity"] * (1.0 - step))
                     elif strategy == 1:
                         row["amount"] = max(0.50, row["amount"] * (1.0 - step * 0.5))
                     elif strategy == 2:
-                        row["device_risk_score"] = max(0.0, row["device_risk_score"] * (1.0 - step))
+                        row["device_risk_score"] = max(0.05, row["device_risk_score"] * (1.0 - step))
+                    elif strategy == 3:
+                        row["failed_attempts_24h"] = 0
 
                 row["is_fraud"] = 1
                 eval_adversarial_rows.append(row)
@@ -448,7 +474,7 @@ class PipelineRunner:
             r1_caught = 0
             r2_caught = 0
             for _, row in df_eval_adv.iterrows():
-                X = np.array([[row[f] for f in feature_cols]], dtype=float)
+                X = np.array([[row[f] for f in feature_cols]], dtype=np.float32)
                 r1_prob = float(self.r1_detector.xgb_model.predict_proba(X)[0][1])
                 r2_prob = float(self.r2_detector.xgb_model.predict_proba(X)[0][1])
                 if r1_prob >= 0.5:

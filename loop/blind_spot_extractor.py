@@ -35,10 +35,14 @@ def extract_blind_spots(
                                           strategy_seed=mining_strategy_seed)
         
         # Check which evaded samples actually fooled Round 1
-        feature_cols = ["amount", "velocity", "device_risk_score", "is_decline"]
+        feature_cols = prober.tabular_feature_cols
+        for col in feature_cols:
+            if col not in df_evaded.columns:
+                df_evaded[col] = 0.0
+
         if prober.tabular_model is not None:
             probs_after = prober._tabular_predict_proba(
-                df_evaded[feature_cols].values.astype(float)
+                df_evaded[feature_cols].values.astype(np.float32)
             )
             evaded_mask = probs_after < threshold_tabular
             n_evaded = int(evaded_mask.sum())

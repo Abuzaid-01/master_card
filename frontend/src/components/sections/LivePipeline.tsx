@@ -140,9 +140,9 @@ function MetricBadge({
 /* ── Main LivePipeline Component ── */
 export function LivePipeline() {
   const [currentStep, setCurrentStep] = useState(0);
-  const [vector, setVector] = useState<"tabular" | "text">("tabular");
+  const [vector, setVector] = useState<"tabular" | "text" | "cross_vector">("tabular");
   const [selectedLLM, setSelectedLLM] = useState("openai/gpt-oss-120b");
-  const [nSamples, setNSamples] = useState(2000);
+  const [nSamples, setNSamples] = useState(30000);
   const [fraudPct, setFraudPct] = useState(0.15);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -250,11 +250,11 @@ export function LivePipeline() {
                   <label className="text-xs text-muted-foreground block mb-2">
                     Select Target Threat Vector
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <button
                       onClick={() => {
                         setVector("tabular");
-                        setNSamples(2000);
+                        setNSamples(30000);
                       }}
                       className={`flex flex-col rounded-xl p-3 text-left transition-all border ${
                         vector === "tabular"
@@ -266,14 +266,14 @@ export function LivePipeline() {
                         💳 Evasive Card Testing
                       </span>
                       <span className="text-[10px] opacity-70 mt-0.5">
-                        Tabular features · ONNX XGBoost
+                        9 domain features · ONNX XGBoost
                       </span>
                     </button>
 
                     <button
                       onClick={() => {
                         setVector("text");
-                        setNSamples(100);
+                        setNSamples(150);
                       }}
                       className={`flex flex-col rounded-xl p-3 text-left transition-all border ${
                         vector === "text"
@@ -285,7 +285,26 @@ export function LivePipeline() {
                         💬 Prompt Injection (LLM)
                       </span>
                       <span className="text-[10px] opacity-70 mt-0.5">
-                        Groq & Gemini Generator · Embeddings
+                        Calibrated MiniLM · LLM Red Team
+                      </span>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        setVector("cross_vector");
+                        setNSamples(30000);
+                      }}
+                      className={`flex flex-col rounded-xl p-3 text-left transition-all border ${
+                        vector === "cross_vector"
+                          ? "bg-mc-orange/20 border-mc-orange text-mc-orange shadow-sm shadow-mc-orange/20"
+                          : "bg-secondary/40 border-transparent text-muted-foreground hover:bg-secondary"
+                      }`}
+                    >
+                      <span className="font-mono text-xs font-semibold">
+                        ⚡ Cross-Vector Compound
+                      </span>
+                      <span className="text-[10px] opacity-70 mt-0.5">
+                        Injection + Burst + Mule Network
                       </span>
                     </button>
                   </div>
@@ -339,9 +358,9 @@ export function LivePipeline() {
                   </div>
                   <input
                     type="range"
-                    min={vector === "text" ? 20 : 500}
-                    max={vector === "text" ? 200 : 5000}
-                    step={vector === "text" ? 10 : 100}
+                    min={vector === "text" ? 20 : 5000}
+                    max={vector === "text" ? 350 : 60000}
+                    step={vector === "text" ? 10 : 1000}
                     value={nSamples}
                     onChange={(e) => setNSamples(parseInt(e.target.value))}
                     className="mt-2 w-full accent-cyan"

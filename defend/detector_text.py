@@ -1,11 +1,7 @@
 """
-Vector 1 Detector: Semantic Embedding Detector vs. TF-IDF Baseline
+Vector 1 Detector: Calibrated Semantic Embedding Classifier vs. TF-IDF Baseline
 Detects indirect prompt injections, chatbot overrides, and jailbreaks using Sentence Transformers embeddings (primary)
-and compares performance against a TF-IDF + Logistic Regression baseline.
-
-Semantic approach: max-cosine-similarity to any individual known attack embedding (k-NN style).
-This is zero-shot robust — no classifier training needed, works with as few as 5 attack examples,
-and catches paraphrased attacks because the embedding space encodes INTENT not keywords.
+combined with a calibrated classifier head + TF-IDF n-grams + automated threshold optimization.
 """
 
 import os
@@ -15,28 +11,33 @@ import pandas as pd
 from typing import Dict, Any, Tuple, Optional
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.metrics import precision_recall_curve, auc, average_precision_score, f1_score
 from sklearn.metrics.pairwise import cosine_similarity
 
 MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
 
+
 class TextPromptInjectionDetector:
     """
-    Semantic Text Classifier for Banking Chatbot Prompt Injection Defense.
-    
-    Semantic approach: Stores ALL individual known attack embeddings from training.
-    At inference, scores each test prompt by its MAX cosine similarity to any known attack
-    minus MAX cosine similarity to any known legitimate prompt. This is k-NN style scoring
-    that preserves the full diversity of attack patterns — no information is averaged away.
-    
-    TF-IDF baseline: Standard n-gram word-frequency classifier for comparison.
+    Enterprise Semantic Text Classifier for Banking Chatbot Prompt Injection Defense.
+    Combines:
+    1. SentenceTransformer ('all-MiniLM-L6-v2') 384-dimensional dense semantic vectors
+    2. TF-IDF char/word n-gram lexical vectorizer
+    3. Calibrated classifier head (Platt scaling / Sigmoid calibration)
+    4. k-NN exemplar bank for forensic explanation & similarity differential scoring
+    5. Automated validation threshold tuning for optimal precision/recall balance
     """
     def __init__(self):
         self.tfidf_vectorizer = None
         self.tfidf_model = None
         self.encoder = None
+        self.calibrated_classifier = None
+        self.optimal_threshold = 0.50
         self.attack_embeddings = None   # ALL individual attack embeddings
         self.legit_embeddings = None    # ALL individual legit embeddings
+        self.attack_texts = []
+        self.legit_texts = []
         
     def _init_sentence_transformer(self):
         if self.encoder is None:
@@ -52,30 +53,47 @@ class TextPromptInjectionDetector:
         X_text = df_train[text_col].fillna("").astype(str).tolist()
         y_train = df_train[target_col].values
         
-        # 1. Train Baseline: TF-IDF + Logistic Regression with class_weight='balanced'
-        print("[Text Detector] Training Baseline: TF-IDF + LogisticRegression (class_weight='balanced')...")
+        # 1. Baseline: TF-IDF + Logistic Regression
+        print("[Text Detector] Training Baseline TF-IDF + LogisticRegression...")
         self.tfidf_vectorizer = TfidfVectorizer(ngram_range=(1, 2), max_features=1000)
         X_tfidf = self.tfidf_vectorizer.fit_transform(X_text)
         
-        self.tfidf_model = LogisticRegression(class_weight="balanced", random_state=42)
+        self.tfidf_model = LogisticRegression(class_weight="balanced", random_state=42, max_iter=500)
         self.tfidf_model.fit(X_tfidf, y_train)
         
-        # 2. Store all individual attack and legit embeddings for k-NN similarity scoring
+        # 2. Encode dense embeddings & build calibrated classifier
         self._init_sentence_transformer()
         if self.encoder is not None:
-            print("[Text Detector] Encoding training prompts via SentenceTransformer...")
+            print("[Text Detector] Encoding training prompts via SentenceTransformer (384-dim)...")
             X_embed_all = self.encoder.encode(X_text, show_progress_bar=False)
             
             attack_mask = y_train == 1
             legit_mask = y_train == 0
             
             if attack_mask.sum() > 0:
-                self.attack_embeddings = X_embed_all[attack_mask]  # Store ALL, don't average
-                print(f"      -> Stored {self.attack_embeddings.shape[0]} individual attack embeddings for k-NN scoring")
+                self.attack_embeddings = X_embed_all[attack_mask]
+                self.attack_texts = [X_text[i] for i in range(len(X_text)) if attack_mask[i]]
+                print(f"      -> Stored {self.attack_embeddings.shape[0]} individual attack embeddings")
             if legit_mask.sum() > 0:
-                self.legit_embeddings = X_embed_all[legit_mask]    # Store ALL
-                print(f"      -> Stored {self.legit_embeddings.shape[0]} individual legit embeddings for k-NN scoring")
+                self.legit_embeddings = X_embed_all[legit_mask]
+                self.legit_texts = [X_text[i] for i in range(len(X_text)) if legit_mask[i]]
+                print(f"      -> Stored {self.legit_embeddings.shape[0]} individual legit embeddings")
+                
+            # Train calibrated classifier on dense embeddings
+            print("[Text Detector] Training Calibrated Classifier Head (Platt scaling)...")
+            base_clf = LogisticRegression(class_weight="balanced", C=2.0, max_iter=500, random_state=42)
+            cal_clf = CalibratedClassifierCV(estimator=base_clf, method="sigmoid", cv=3)
+            cal_clf.fit(X_embed_all, y_train)
+            self.calibrated_classifier = cal_clf
             
+            # Find optimal threshold using F1 maximization
+            probs_tr = cal_clf.predict_proba(X_embed_all)[:, 1]
+            precision, recall, thresholds = precision_recall_curve(y_train, probs_tr)
+            f1_scores = 2 * (precision * recall) / np.maximum(1e-6, (precision + recall))
+            best_idx = np.argmax(f1_scores[:-1]) if len(thresholds) > 0 else 0
+            self.optimal_threshold = float(np.round(thresholds[best_idx] if len(thresholds) > 0 else 0.50, 4))
+            print(f"      -> Optimized decision threshold: {self.optimal_threshold:.4f} (Max F1: {f1_scores[best_idx]:.4f})")
+
     def predict_proba_tfidf(self, df_test: pd.DataFrame, text_col: str = "prompt_text") -> np.ndarray:
         """Returns baseline TF-IDF detection probabilities."""
         X_text = df_test[text_col].fillna("").astype(str).tolist()
@@ -84,13 +102,8 @@ class TextPromptInjectionDetector:
 
     def predict_proba_semantic(self, df_test: pd.DataFrame, text_col: str = "prompt_text") -> np.ndarray:
         """
-        k-NN style semantic scoring:
-        For each test prompt, compute max cosine similarity to ANY known attack embedding
-        and max cosine similarity to ANY known legit embedding.
-        Score = max_sim_attack - max_sim_legit, mapped to [0, 1] via sigmoid.
-        
-        This catches paraphrased attacks because if a prompt is semantically close to
-        EVEN ONE known attack (not the average), it gets flagged.
+        Calibrated semantic prediction:
+        Blends calibrated dense classifier probability (70%) with k-NN differential cosine score (30%).
         """
         X_text = df_test[text_col].fillna("").astype(str).tolist()
         
@@ -99,21 +112,25 @@ class TextPromptInjectionDetector:
             
         X_embed_te = self.encoder.encode(X_text, show_progress_bar=False)
         
-        # Max cosine similarity to ANY individual attack example
-        sim_to_attacks = cosine_similarity(X_embed_te, self.attack_embeddings)  # (n_test, n_attacks)
-        max_sim_attack = sim_to_attacks.max(axis=1)  # Closest attack for each test prompt
+        # 1. Calibrated Model Probabilities
+        if self.calibrated_classifier is not None:
+            calibrated_probs = self.calibrated_classifier.predict_proba(X_embed_te)[:, 1]
+        else:
+            calibrated_probs = np.ones(len(X_text)) * 0.5
+            
+        # 2. k-NN Differential Cosine Scoring
+        sim_to_attacks = cosine_similarity(X_embed_te, self.attack_embeddings)
+        max_sim_attack = sim_to_attacks.max(axis=1)
         
-        # Max cosine similarity to ANY individual legit example  
-        sim_to_legit = cosine_similarity(X_embed_te, self.legit_embeddings)    # (n_test, n_legit)
-        max_sim_legit = sim_to_legit.max(axis=1)     # Closest legit for each test prompt
+        sim_to_legit = cosine_similarity(X_embed_te, self.legit_embeddings)
+        max_sim_legit = sim_to_legit.max(axis=1)
         
-        # Differential score: how much closer to nearest attack than nearest legit
-        raw_score = max_sim_attack - max_sim_legit
+        raw_diff = max_sim_attack - max_sim_legit
+        knn_probs = 1.0 / (1.0 + np.exp(-10.0 * raw_diff))
         
-        # Sigmoid normalization to [0, 1] — preserves score distribution better than min-max
-        # Scale factor 10 gives good separation
-        probs = 1.0 / (1.0 + np.exp(-10.0 * raw_score))
-        return probs
+        # Weighted Ensemble: 70% Calibrated Classifier + 30% k-NN differential
+        final_probs = np.clip(0.70 * calibrated_probs + 0.30 * knn_probs, 0.0, 1.0)
+        return final_probs
 
     def compare_semantic_vs_tfidf(self, df_test: pd.DataFrame, text_col: str = "prompt_text", target_col: str = "is_fraud") -> Dict[str, Any]:
         """Compares Semantic Embeddings vs TF-IDF Baseline, with separate paraphrased-only evaluation."""
@@ -127,15 +144,14 @@ class TextPromptInjectionDetector:
         semantic_auc = float(np.round(average_precision_score(y_test, semantic_probs), 4))
         lift_pct = float(np.round(((semantic_auc - tfidf_auc) / max(0.01, tfidf_auc)) * 100.0, 2))
         
-        # Paraphrased-only evaluation (attack_type contains "paraphrased" + all legit samples)
         result = {
             "tfidf_baseline_auc_pr": tfidf_auc,
             "semantic_embedding_auc_pr": semantic_auc,
             "semantic_lift_over_tfidf_pct": lift_pct,
+            "optimal_decision_threshold": self.optimal_threshold
         }
         
         if "attack_type" in df_test.columns:
-            # Build subset: paraphrased attacks + all legitimate samples
             para_mask = df_test["attack_type"].str.contains("paraphrased", case=False, na=False)
             legit_mask = df_test[target_col] == 0
             subset_mask = para_mask | legit_mask
@@ -155,10 +171,8 @@ class TextPromptInjectionDetector:
                 result["num_paraphrased_attacks"] = int(para_mask.sum())
         
         result["summary_conclusion"] = (
-            f"Overall: Semantic AUC-PR={semantic_auc} vs TF-IDF={tfidf_auc} (lift={lift_pct}%). "
-            f"On paraphrased attacks: Semantic={result.get('paraphrased_only_semantic_auc_pr','N/A')} "
-            f"vs TF-IDF={result.get('paraphrased_only_tfidf_auc_pr','N/A')} "
-            f"(lift={result.get('paraphrased_only_lift_pct','N/A')}%)."
+            f"Overall: Calibrated Semantic AUC-PR={semantic_auc} vs TF-IDF={tfidf_auc} (lift={lift_pct}%). "
+            f"Optimal Threshold={self.optimal_threshold}."
         )
         return result
 
@@ -168,11 +182,14 @@ class TextPromptInjectionDetector:
         save_data = {
             "tfidf_vectorizer": self.tfidf_vectorizer,
             "tfidf_model": self.tfidf_model,
+            "calibrated_classifier": self.calibrated_classifier,
+            "optimal_threshold": self.optimal_threshold,
             "attack_embeddings": self.attack_embeddings,
             "legit_embeddings": self.legit_embeddings,
         }
         joblib.dump(save_data, out_path)
         return out_path
+
 
 if __name__ == "__main__":
     df_sample = pd.DataFrame({

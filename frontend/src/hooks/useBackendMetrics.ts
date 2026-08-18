@@ -8,6 +8,12 @@ export interface TabularDemoInput {
   velocity: number;
   device_risk_score: number;
   is_decline: number;
+  hour_of_day_sin?: number;
+  hour_of_day_cos?: number;
+  mcc_risk_weight?: number;
+  geo_distance_km?: number;
+  card_age_days?: number;
+  failed_attempts_24h?: number;
 }
 
 export interface TabularDemoResult {

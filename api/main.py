@@ -1,6 +1,7 @@
 """
 FastAPI Backend for GenAI Fraud Shield
-Serves live metrics from JSON reports and runs real-time model inference.
+Serves live metrics from JSON reports, real-time model inference,
+cross-vector compound attack simulations, and multi-round active learning pipelines.
 """
 
 import os
@@ -11,18 +12,21 @@ import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 # Ensure project root is importable
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, PROJECT_ROOT)
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
-app = FastAPI(title="GenAI Fraud Shield API", version="1.0.0")
+from generate.generator_tabular import TABULAR_FEATURE_COLS
+
+app = FastAPI(title="GenAI Fraud Shield API", version="2.0.0")
 
 # CORS for React dev server
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:4173"],
+    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:4173", "http://localhost:8080"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -50,8 +54,8 @@ def _load_tabular_model():
         data = joblib.load(path)
         if isinstance(data, xgb.XGBClassifier):
             _tabular_model = data
-        elif isinstance(data, dict) and "xgb_model" in data:
-            _tabular_model = data["xgb_model"]
+        elif isinstance(data, dict):
+            _tabular_model = data.get("xgb_model", data.get("model"))
         else:
             _tabular_model = data
     return _tabular_model
@@ -65,12 +69,13 @@ def _load_text_detector():
     path = os.path.join(MODELS_DIR, "text_detector.joblib")
     if os.path.exists(path):
         data = joblib.load(path)
-        # Reconstruct the detector from saved dict
         from defend.detector_text import TextPromptInjectionDetector
         det = TextPromptInjectionDetector()
         if isinstance(data, dict):
             det.tfidf_vectorizer = data.get("tfidf_vectorizer")
             det.tfidf_model = data.get("tfidf_model")
+            det.calibrated_classifier = data.get("calibrated_classifier")
+            det.optimal_threshold = data.get("optimal_threshold", 0.50)
             det.attack_embeddings = data.get("attack_embeddings")
             det.legit_embeddings = data.get("legit_embeddings")
             det._init_sentence_transformer()
@@ -141,6 +146,12 @@ class TabularRequest(BaseModel):
     velocity: float = Field(default=3.0, ge=0, description="Transactions per hour")
     device_risk_score: float = Field(default=0.5, ge=0, le=1, description="Device risk 0-1")
     is_decline: int = Field(default=0, ge=0, le=1, description="Previous decline flag")
+    hour_of_day_sin: float = Field(default=0.0, description="Cyclical diurnal sin")
+    hour_of_day_cos: float = Field(default=1.0, description="Cyclical diurnal cos")
+    mcc_risk_weight: float = Field(default=0.40, description="Merchant category risk weight (0-1)")
+    geo_distance_km: float = Field(default=12.5, ge=0, description="Distance from home address (km)")
+    card_age_days: float = Field(default=365.0, ge=0, description="Account card age in days")
+    failed_attempts_24h: int = Field(default=0, ge=0, description="Failed CVV/PIN attempts in last 24h")
 
 
 class TextRequest(BaseModel):
@@ -149,29 +160,31 @@ class TextRequest(BaseModel):
 
 @app.post("/api/demo/tabular")
 def demo_tabular(req: TabularRequest):
-    """Live XGBoost fraud detection inference with SHAP explanation."""
+    """Live XGBoost fraud detection inference with SHAP explanation across 9 features."""
     model = _load_tabular_model()
     if model is None:
         raise HTTPException(503, "Tabular model not loaded. Run defend pipeline first.")
 
-    features = np.array([[req.amount, req.velocity, req.device_risk_score, req.is_decline]], dtype=float)
+    feature_names = list(TABULAR_FEATURE_COLS)
+    req_dict = req.model_dump()
+    features = np.array([[req_dict.get(f, 0.0) for f in feature_names]], dtype=np.float32)
     prob = float(model.predict_proba(features)[0][1])
     verdict = "FRAUD" if prob >= 0.5 else "SAFE"
 
     # SHAP explanation
-    shap_values = None
+    shap_values = []
     try:
         import shap
         explainer = shap.TreeExplainer(model)
         sv = explainer.shap_values(features)
-        feature_names = ["amount", "velocity", "device_risk_score", "is_decline"]
-        shap_values = [
-            {"feature": fn, "value": float(req.__dict__[fn] if fn != "is_decline" else req.is_decline),
-             "shap": float(sv[0][i]),
-             "impact": "Increases Risk" if sv[0][i] > 0 else "Decreases Risk"}
-            for i, fn in enumerate(feature_names)
-        ]
-        # Sort by absolute impact
+        for i, fn in enumerate(feature_names):
+            s_val = float(sv[0][i])
+            shap_values.append({
+                "feature": fn,
+                "value": float(req_dict.get(fn, 0.0)),
+                "shap": s_val,
+                "impact": "Increases Risk" if s_val > 0 else "Decreases Risk"
+            })
         shap_values.sort(key=lambda x: abs(x["shap"]), reverse=True)
     except Exception:
         pass
@@ -180,8 +193,8 @@ def demo_tabular(req: TabularRequest):
         "fraud_probability": round(prob, 4),
         "verdict": verdict,
         "threshold": 0.5,
-        "optimal_threshold": 0.37,
-        "verdict_optimized": "FRAUD" if prob >= 0.37 else "SAFE",
+        "optimal_threshold": 0.35,
+        "verdict_optimized": "FRAUD" if prob >= 0.35 else "SAFE",
         "shap_explanation": shap_values,
         "input": req.model_dump(),
     }
@@ -189,7 +202,7 @@ def demo_tabular(req: TabularRequest):
 
 @app.post("/api/demo/text")
 def demo_text(req: TextRequest):
-    """Live prompt injection detection using TF-IDF and Semantic models."""
+    """Live prompt injection detection using Calibrated Semantic model vs TF-IDF."""
     detector = _load_text_detector()
     if detector is None:
         raise HTTPException(503, "Text detector not loaded. Run defend pipeline first.")
@@ -207,27 +220,40 @@ def demo_text(req: TextRequest):
     # Semantic score
     semantic_prob = 0.0
     try:
-        if hasattr(detector, "attack_embeddings") and detector.attack_embeddings is not None:
+        if hasattr(detector, "predict_proba_semantic"):
             semantic_prob = float(detector.predict_proba_semantic(df_input)[0])
     except Exception:
         pass
 
-    # Combined verdict (use semantic as primary)
-    combined = max(tfidf_prob, semantic_prob)
-    verdict = "BLOCKED" if combined >= 0.5 else "SAFE"
+    # Decision threshold from calibrated detector
+    eff_threshold = getattr(detector, "optimal_threshold", 0.50)
+    verdict = "BLOCKED" if semantic_prob >= eff_threshold else "SAFE"
 
     return {
         "tfidf_score": round(tfidf_prob, 4),
         "semantic_score": round(semantic_prob, 4),
-        "combined_score": round(combined, 4),
+        "combined_score": round(semantic_prob, 4),
+        "optimal_threshold": round(eff_threshold, 4),
         "verdict": verdict,
         "prompt_text": req.prompt_text,
         "analysis": {
             "tfidf_verdict": "BLOCKED" if tfidf_prob >= 0.5 else "SAFE",
-            "semantic_verdict": "BLOCKED" if semantic_prob >= 0.5 else "SAFE",
+            "semantic_verdict": "BLOCKED" if semantic_prob >= eff_threshold else "SAFE",
             "semantic_advantage": round(semantic_prob - tfidf_prob, 4),
         }
     }
+
+
+# ══════════════════════════════════════════
+# CROSS-VECTOR COMPOUND FRAUD SIMULATION (#7)
+# ══════════════════════════════════════════
+
+@app.get("/api/simulate/cross_vector")
+def simulate_cross_vector_scenario(scenario_id: int = 1):
+    """Simulates a coordinated multi-stage cross-vector fraud attack scenario."""
+    from generate.generator_cross_vector import generate_compound_fraud_scenario
+    scenario = generate_compound_fraud_scenario(scenario_id=scenario_id)
+    return scenario
 
 
 # ══════════════════════════════════════════
@@ -322,7 +348,7 @@ def generate_llm_prompts(req: LLMGenerateRequest):
         elif provider == "groq" and groq_key:
             prompts = generate_via_groq(groq_key, model=req.model, num_samples=req.num_samples)
         elif gemini_key:
-            prompts = generate_via_gemini(gemini_key, model="gemini-2.5-flash", num_samples=req.num_samples)
+            prompts = generate_via_gemini(gemini_key, model="gemini-3.5-flash-lite", num_samples=req.num_samples)
         elif groq_key:
             prompts = generate_via_groq(groq_key, model="openai/gpt-oss-120b", num_samples=req.num_samples)
         else:
@@ -349,8 +375,8 @@ _pipeline = PipelineRunner()
 
 
 class PipelineGenerateRequest(BaseModel):
-    vector: str = Field(default="tabular", description="Attack vector to generate (tabular / text)")
-    n_samples: int = Field(default=2000, ge=50, le=5000, description="Number of samples")
+    vector: str = Field(default="tabular", description="Attack vector to generate (tabular / text / cross_vector)")
+    n_samples: int = Field(default=30000, ge=50, le=100000, description="Number of samples")
     fraud_pct: float = Field(default=0.15, ge=0.05, le=0.50, description="Fraud ratio")
     llm_model: Optional[str] = Field(default=None, description="LLM model ID when vector is text")
 
@@ -424,4 +450,3 @@ def pipeline_reset():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
-

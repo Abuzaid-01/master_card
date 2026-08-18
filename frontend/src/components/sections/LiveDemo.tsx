@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CreditCard,
@@ -189,6 +189,11 @@ function TabularPanel() {
   const [velocity, setVelocity] = useState(3);
   const [deviceRisk, setDeviceRisk] = useState(0.5);
   const [isDecline, setIsDecline] = useState(0);
+  const [geoDistance, setGeoDistance] = useState(15);
+  const [cardAge, setCardAge] = useState(365);
+  const [failedAttempts, setFailedAttempts] = useState(0);
+  const [mccRisk, setMccRisk] = useState(0.35);
+
   const mutation = useTabularDemo();
   const result = mutation.data as TabularDemoResult | undefined;
 
@@ -198,46 +203,104 @@ function TabularPanel() {
       velocity,
       device_risk_score: deviceRisk,
       is_decline: isDecline,
+      geo_distance_km: geoDistance,
+      card_age_days: cardAge,
+      failed_attempts_24h: failedAttempts,
+      mcc_risk_weight: mccRisk,
     });
   };
+
+  // Run initial inference on mount
+  useEffect(() => {
+    handleSubmit();
+  }, []);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
       {/* Input Panel */}
       <div className="glass-panel rounded-2xl p-6">
-        <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
-          <CreditCard className="h-4 w-4" />
-          Transaction Parameters
-        </h4>
-        <div className="mt-5 space-y-5">
+        <div className="flex items-center justify-between">
+          <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
+            <CreditCard className="h-4 w-4" />
+            9-Feature Transaction Parameters
+          </h4>
+          <span className="font-mono text-[10px] text-cyan bg-cyan/10 px-2 py-0.5 rounded-full">
+            ONNX Quantized
+          </span>
+        </div>
+        <div className="mt-5 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SliderField
+              label="Amount ($)"
+              value={amount}
+              onChange={setAmount}
+              min={0.5}
+              max={5000}
+              step={0.5}
+              unit="$"
+            />
+            <SliderField
+              label="Velocity (tx/hr)"
+              value={velocity}
+              onChange={setVelocity}
+              min={0}
+              max={30}
+              step={0.5}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SliderField
+              label="Device Risk Score"
+              value={deviceRisk}
+              onChange={setDeviceRisk}
+              min={0}
+              max={1}
+              step={0.01}
+            />
+            <SliderField
+              label="Geo Displacement"
+              value={geoDistance}
+              onChange={setGeoDistance}
+              min={0.5}
+              max={5000}
+              step={1}
+              unit=" km"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <SliderField
+              label="Card Age"
+              value={cardAge}
+              onChange={setCardAge}
+              min={1}
+              max={1800}
+              step={1}
+              unit=" days"
+            />
+            <SliderField
+              label="Failed Attempts (24h)"
+              value={failedAttempts}
+              onChange={setFailedAttempts}
+              min={0}
+              max={8}
+              step={1}
+            />
+          </div>
+
           <SliderField
-            label="Amount"
-            value={amount}
-            onChange={setAmount}
-            min={0.5}
-            max={5000}
-            step={0.5}
-            unit="$"
+            label="Merchant Category (MCC) Risk Weight"
+            value={mccRisk}
+            onChange={setMccRisk}
+            min={0.05}
+            max={0.95}
+            step={0.05}
           />
-          <SliderField
-            label="Velocity (txns/hr)"
-            value={velocity}
-            onChange={setVelocity}
-            min={0}
-            max={30}
-            step={0.5}
-          />
-          <SliderField
-            label="Device Risk Score"
-            value={deviceRisk}
-            onChange={setDeviceRisk}
-            min={0}
-            max={1}
-            step={0.01}
-          />
-          <div className="flex items-center justify-between">
+
+          <div className="flex items-center justify-between pt-1">
             <span className="text-xs text-muted-foreground">
-              Previous Decline
+              Previous Auth Decline
             </span>
             <button
               onClick={() => setIsDecline(isDecline === 0 ? 1 : 0)}
@@ -247,7 +310,7 @@ function TabularPanel() {
                   : "bg-secondary text-muted-foreground"
               }`}
             >
-              {isDecline ? "Yes" : "No"}
+              {isDecline ? "Yes (Flagged)" : "No"}
             </button>
           </div>
         </div>
@@ -261,7 +324,7 @@ function TabularPanel() {
           ) : (
             <Zap className="h-4 w-4" />
           )}
-          Run Inference
+          Run ONNX Inference
         </button>
       </div>
 

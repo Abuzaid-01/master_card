@@ -6,10 +6,15 @@ computes tabular AUC-PR/F1/FPR, runs amount-proportional cost optimization, and 
 """
 
 import os
+import sys
 import json
 import pandas as pd
 import numpy as np
 from sklearn.metrics import average_precision_score, f1_score
+
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
 
 from defend.data_splitter import split_and_preserve_holdout
 from defend.detector_tabular import TabularCardTestingDetector
@@ -18,7 +23,6 @@ from defend.detector_graph import MuleNetworkGraphDetector
 from defend.cost_optimizer import find_optimal_threshold
 from defend.explainability import compute_model_explainability
 
-PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SYNTHETIC_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "synthetic")
 DEFEND_OUTPUT_DIR = os.path.join(PROJECT_ROOT, "data", "defend")
 
