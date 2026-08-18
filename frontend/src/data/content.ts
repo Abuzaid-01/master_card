@@ -206,15 +206,6 @@ export const loopRows = [
   },
 ];
 
-export const loopStages = [
-  "Red Team Attacks",
-  "Round 1 Defender",
-  "Find Blind Spots",
-  "Retrain",
-  "Round 2 Defender",
-  "Test on Unseen Attacks",
-];
-
 export const techGroups = [
   {
     group: "ML / AI",

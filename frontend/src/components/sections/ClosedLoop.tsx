@@ -1,83 +1,6 @@
-import { motion } from "motion/react";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
 import { Counter } from "@/components/shared/Counter";
-import { loopRows, loopStages } from "@/data/content";
-
-function LoopDiagram() {
-  return (
-    <div className="relative mx-auto w-full max-w-3xl">
-      <svg viewBox="0 0 400 200" className="w-full" aria-hidden="true">
-        <ellipse
-          cx="200"
-          cy="100"
-          rx="160"
-          ry="70"
-          fill="none"
-          stroke="var(--ai-violet)"
-          strokeOpacity="0.35"
-          strokeWidth="1.5"
-          strokeDasharray="7 7"
-        />
-        <motion.ellipse
-          cx="200"
-          cy="100"
-          rx="160"
-          ry="70"
-          fill="none"
-          stroke="var(--ai-violet)"
-          strokeWidth="2.5"
-          strokeLinecap="round"
-          style={{ filter: "drop-shadow(0 0 6px var(--ai-violet))" }}
-          strokeDasharray="90 650"
-          animate={{ strokeDashoffset: [0, -740] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "linear" }}
-        />
-        {[0, 1, 2].map((i) => {
-          const steps = 24;
-          const cx: number[] = [];
-          const cy: number[] = [];
-          for (let s = 0; s <= steps; s++) {
-            const t = (s / steps) * Math.PI * 2;
-            cx.push(200 + 160 * Math.cos(t));
-            cy.push(100 + 70 * Math.sin(t));
-          }
-          return (
-            <motion.circle
-              key={i}
-              r="4"
-              fill={i === 1 ? "var(--mc-orange)" : "var(--neon-cyan)"}
-              animate={{ cx, cy }}
-              transition={{
-                duration: 6,
-                repeat: Infinity,
-                ease: "linear",
-                delay: i * 2,
-              }}
-            />
-          );
-        })}
-      </svg>
-
-
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-        {loopStages.map((s, i) => (
-          <motion.div
-            key={s}
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.12, duration: 0.4 }}
-            className="glass-panel rounded-full px-3 py-1.5 font-mono text-[10px] tracking-wider uppercase sm:text-[11px]"
-          >
-            <span className={i >= 4 ? "text-cyan" : "text-foreground/80"}>
-              {s}
-            </span>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
+import { loopRows } from "@/data/content";
 
 export function ClosedLoop() {
   return (
@@ -101,9 +24,7 @@ export function ClosedLoop() {
           accent="violet"
         />
 
-        <LoopDiagram />
-
-        <Reveal className="mt-12 text-center">
+        <Reveal className="mt-8 text-center">
           <div className="font-mono text-3xl leading-tight font-bold sm:text-5xl">
             <span className="text-glow-red">
               Round 1: <Counter value={3} />
