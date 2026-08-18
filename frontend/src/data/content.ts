@@ -252,6 +252,5 @@ export const navSections = [
   { id: "defend", label: "Defend" },
   { id: "loop", label: "Closed Loop" },
   { id: "demo", label: "Live Demo" },
-  { id: "stack", label: "Stack" },
   { id: "team", label: "Team" },
 ];

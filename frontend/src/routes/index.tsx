@@ -6,7 +6,6 @@ import { Generate } from "@/components/sections/Generate";
 import { Defend } from "@/components/sections/Defend";
 import { ClosedLoop } from "@/components/sections/ClosedLoop";
 import { LiveDemo } from "@/components/sections/LiveDemo";
-import { Stack } from "@/components/sections/Stack";
 import { Team } from "@/components/sections/Team";
 
 const title = "GenAI Fraud Shield — Adversarial Fraud Defense Engine";
@@ -37,7 +36,6 @@ function Index() {
       <Defend />
       <ClosedLoop />
       <LiveDemo />
-      <Stack />
       <Team />
     </main>
   );
