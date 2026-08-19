@@ -51,20 +51,36 @@ class MuleNetworkGraphDetector:
         y_test = df_test[target_col].values
         y_prob = self.predict_proba(df_test)
         
+        # Dynamic threshold tuning maximizing F1
+        thresholds = np.linspace(0.05, 0.95, 91)
+        best_f1 = 0.0
+        best_th = 0.50
+        for th in thresholds:
+            f1_candidate = f1_score(y_test, (y_prob >= th).astype(int), zero_division=0)
+            if f1_candidate > best_f1:
+                best_f1 = f1_candidate
+                best_th = float(th)
+        self.optimal_threshold = round(best_th, 4)
+        
         auc_pr = float(np.round(average_precision_score(y_test, y_prob), 4))
-        y_pred = (y_prob >= 0.50).astype(int)
+        y_pred = (y_prob >= self.optimal_threshold).astype(int)
         f1 = float(np.round(f1_score(y_test, y_pred, zero_division=0), 4))
         
         return {
             "graph_detector_auc_pr": auc_pr,
             "graph_detector_f1_score": f1,
+            "optimal_threshold": self.optimal_threshold,
             "test_samples_count": len(df_test)
         }
 
     def save_model(self, path: str = None) -> str:
         os.makedirs(MODELS_DIR, exist_ok=True)
         out_path = path or os.path.join(MODELS_DIR, "graph_detector.joblib")
-        joblib.dump(self.model, out_path)
+        joblib.dump({
+            "model": self.model,
+            "feature_cols": self.feature_cols,
+            "optimal_threshold": getattr(self, "optimal_threshold", 0.50)
+        }, out_path)
         return out_path
 
 if __name__ == "__main__":

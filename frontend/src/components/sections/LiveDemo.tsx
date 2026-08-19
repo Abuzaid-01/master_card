@@ -15,6 +15,7 @@ import {
   Cpu,
 } from "lucide-react";
 import { LivePipeline } from "@/components/sections/LivePipeline";
+import { CrossVectorPanel } from "@/components/sections/CrossVectorPanel";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
 import {
   useTabularDemo,
@@ -764,7 +765,7 @@ function TextPanel() {
 
 /* ── Main LiveDemo Section ── */
 export function LiveDemo() {
-  const [activeTab, setActiveTab] = useState<"tabular" | "text" | "pipeline">("tabular");
+  const [activeTab, setActiveTab] = useState<"cross_vector" | "tabular" | "text" | "pipeline">("cross_vector");
   const health = useHealthCheck();
   const isOnline = health.data?.status === "ok";
 
@@ -808,7 +809,13 @@ export function LiveDemo() {
 
         {/* Tab Switcher */}
         <Reveal>
-          <div className="mb-6 flex gap-2">
+          <div className="mb-6 flex flex-wrap gap-2">
+            <Tab
+              active={activeTab === "cross_vector"}
+              onClick={() => setActiveTab("cross_vector")}
+              icon={Zap}
+              label="⚡ Cross-Vector Attack"
+            />
             <Tab
               active={activeTab === "tabular"}
               onClick={() => setActiveTab("tabular")}
@@ -832,6 +839,17 @@ export function LiveDemo() {
 
         <Reveal delay={0.1}>
           <AnimatePresence mode="wait">
+            {activeTab === "cross_vector" && (
+              <motion.div
+                key="cross_vector"
+                initial={{ opacity: 0, y: 15 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -15 }}
+                transition={{ duration: 0.3 }}
+              >
+                <CrossVectorPanel />
+              </motion.div>
+            )}
             {activeTab === "tabular" && (
               <motion.div
                 key="tabular"

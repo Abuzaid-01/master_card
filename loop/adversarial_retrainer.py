@@ -102,11 +102,8 @@ def retrain_round2(
         df_augmented = pd.concat([df_orig_train, df_failures], ignore_index=True)
         df_augmented = df_augmented.sample(frac=1.0, random_state=42).reset_index(drop=True)
         
-        graph_features = [c for c in ["amount", "sender_in_degree", "sender_out_degree",
-                                       "receiver_in_degree", "receiver_out_degree",
-                                       "receiver_mule_funnel_score",
-                                       "pass_through_delay_sec"] if c in df_augmented.columns]
-        
+        from generate.generator_graph import GRAPH_FEATURE_COLS
+        graph_features = list(GRAPH_FEATURE_COLS)
         X_train = df_augmented[graph_features].values.astype(float)
         y_train = df_augmented["is_fraud"].values
         
@@ -117,7 +114,7 @@ def retrain_round2(
         sample_weights = np.where(y_train == 1, float(n_neg / max(1, n_pos)), 1.0)
         
         model_r2 = HistGradientBoostingClassifier(
-            max_iter=200, max_depth=5, learning_rate=0.08, random_state=42
+            max_iter=300, min_samples_leaf=5, learning_rate=0.06, random_state=42
         )
         model_r2.fit(X_train, y_train, sample_weight=sample_weights)
         

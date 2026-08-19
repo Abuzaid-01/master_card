@@ -1,108 +1,108 @@
 {
   "tabular_detector": {
     "onnx_model_path": "defend/models/card_testing_xgb.onnx",
-    "auc_pr": 1.0,
-    "f1_score": 0.9978,
-    "false_positive_rate": 0.0006,
-    "onnx_runtime_latency_ms": 0.0058,
-    "xgboost_raw_latency_ms": 0.481,
-    "inference_latency_ms": 0.0058,
+    "auc_pr": 0.9999,
+    "f1_score": 0.9983,
+    "false_positive_rate": 0.0005,
+    "onnx_runtime_latency_ms": 0.0057,
+    "xgboost_raw_latency_ms": 0.1752,
+    "inference_latency_ms": 0.0057,
     "sub_50ms_sla_met": true
   },
   "text_detector": {
     "model_path": "defend/models/text_detector.joblib",
-    "tfidf_baseline_auc_pr": 0.91,
-    "semantic_embedding_auc_pr": 0.9933,
-    "semantic_lift_pct": 9.15,
-    "paraphrased_only_tfidf_auc_pr": 0.7949,
-    "paraphrased_only_semantic_auc_pr": 1.0,
-    "paraphrased_only_lift_pct": 25.8,
+    "tfidf_baseline_auc_pr": 0.9966,
+    "semantic_embedding_auc_pr": 0.9998,
+    "semantic_lift_pct": 0.32,
+    "paraphrased_only_tfidf_auc_pr": 0.9251,
+    "paraphrased_only_semantic_auc_pr": 0.9958,
+    "paraphrased_only_lift_pct": 7.64,
     "num_paraphrased_attacks": 15,
     "paraphrased_attacks_injected": 15
   },
   "graph_detector": {
     "model_path": "defend/models/graph_detector.joblib",
-    "auc_pr": 0.8573,
+    "auc_pr": 0.8544,
     "f1_score": 0.8571
   },
   "financial_cost_optimization": {
-    "optimal_threshold_tau": 0.82,
-    "min_financial_loss_usd": 0.0,
-    "default_050_loss_usd": 30.0,
-    "savings_usd": 30.0
+    "optimal_threshold_tau": 0.57,
+    "min_financial_loss_usd": 45.0,
+    "default_050_loss_usd": 60.0,
+    "savings_usd": 15.0
   },
   "explainability": {
     "global_feature_importance": {
-      "failed_attempts_24h": 0.651199996471405,
-      "velocity": 0.24950000643730164,
-      "device_risk_score": 0.043800000101327896,
-      "hour_of_day_cos": 0.017899999395012856,
-      "mcc_risk_weight": 0.01720000058412552,
-      "hour_of_day_sin": 0.006599999964237213,
-      "geo_distance_km": 0.005400000140070915,
-      "card_age_days": 0.00419999985024333,
-      "is_decline": 0.003100000089034438,
-      "amount": 0.0010999999940395355
+      "failed_attempts_24h": 0.6794999837875366,
+      "velocity": 0.22529999911785126,
+      "device_risk_score": 0.05000000074505806,
+      "mcc_risk_weight": 0.014700000174343586,
+      "hour_of_day_sin": 0.010200000368058681,
+      "geo_distance_km": 0.007000000216066837,
+      "is_decline": 0.005400000140070915,
+      "card_age_days": 0.0035000001080334187,
+      "amount": 0.00279999990016222,
+      "hour_of_day_cos": 0.001500000013038516
     },
     "sample_waterfall_explanation": [
       {
         "feature": "amount",
-        "feature_value": 107.84,
-        "shap_attribution": -0.4172999858856201,
+        "feature_value": 33.37,
+        "shap_attribution": -0.9254000186920166,
         "impact": "Decreases Risk"
       },
       {
         "feature": "velocity",
-        "feature_value": 2.27,
-        "shap_attribution": -2.0529000759124756,
-        "impact": "Decreases Risk"
+        "feature_value": 6.89,
+        "shap_attribution": 0.46549999713897705,
+        "impact": "Increases Risk"
       },
       {
         "feature": "device_risk_score",
-        "feature_value": 0.25,
-        "shap_attribution": -1.4502999782562256,
+        "feature_value": 0.14,
+        "shap_attribution": -3.2344000339508057,
         "impact": "Decreases Risk"
       },
       {
         "feature": "is_decline",
         "feature_value": 0.0,
-        "shap_attribution": -0.24529999494552612,
+        "shap_attribution": -0.1906999945640564,
         "impact": "Decreases Risk"
       },
       {
         "feature": "hour_of_day_sin",
-        "feature_value": -1.0,
-        "shap_attribution": 0.125,
+        "feature_value": -0.5,
+        "shap_attribution": 0.019700000062584877,
         "impact": "Increases Risk"
       },
       {
         "feature": "hour_of_day_cos",
-        "feature_value": -0.09,
-        "shap_attribution": -0.5591999888420105,
+        "feature_value": -0.87,
+        "shap_attribution": -0.014399999752640724,
         "impact": "Decreases Risk"
       },
       {
         "feature": "mcc_risk_weight",
         "feature_value": 0.4,
-        "shap_attribution": -0.9769999980926514,
+        "shap_attribution": -0.6276999711990356,
         "impact": "Decreases Risk"
       },
       {
         "feature": "geo_distance_km",
-        "feature_value": 6.62,
-        "shap_attribution": -0.4032000005245209,
+        "feature_value": 13.38,
+        "shap_attribution": -0.7523000240325928,
         "impact": "Decreases Risk"
       },
       {
         "feature": "card_age_days",
-        "feature_value": 1127.0,
-        "shap_attribution": -0.07180000096559525,
+        "feature_value": 380.0,
+        "shap_attribution": -0.1363999992609024,
         "impact": "Decreases Risk"
       },
       {
         "feature": "failed_attempts_24h",
         "feature_value": 0.0,
-        "shap_attribution": -4.119100093841553,
+        "shap_attribution": -5.167300224304199,
         "impact": "Decreases Risk"
       }
     ],

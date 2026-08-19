@@ -43,15 +43,15 @@ def run_step2_generation_pipeline(
     val_tabular = validate_domain_constraints(df_tabular)
     print(f"      -> Generated {len(df_tabular):,} rows. Domain Pass Rate: {val_tabular['pass_rate_pct']}%")
     
-    # 2. Vector 1: Indirect Prompt Injection (Text) - 480 prompts
-    print("[2/5] Generating Vector 1: Indirect Prompt Injection Payloads...")
-    df_text = generate_text_prompt_injections(num_samples=480)
+    # 2. Vector 1: Indirect Prompt Injection (Text) - 1,200 prompts
+    print("[2/5] Generating Vector 1: Indirect Prompt Injection Payloads (1,200 prompts)...")
+    df_text = generate_text_prompt_injections(num_samples=1200)
     val_text = validate_domain_constraints(df_text)
     print(f"      -> Generated {len(df_text):,} prompt logs. Domain Pass Rate: {val_text['pass_rate_pct']}%")
     
-    # 3. Vector 2: AI Money Mule Networks (Graph) - 500 users, 40 rings
-    print("[3/5] Generating Vector 2: Multi-Hop Money Mule Graph Network (500 users, 40 rings)...")
-    df_graph = generate_money_mule_graph(num_users=500, num_mule_rings=40, ring_depth=4)
+    # 3. Vector 2: AI Money Mule Networks (Graph) - 600 users, 60 rings
+    print("[3/5] Generating Vector 2: Multi-Hop Money Mule Graph Network (600 users, 60 rings)...")
+    df_graph = generate_money_mule_graph(num_users=600, num_mule_rings=60, ring_depth=5)
     val_graph = validate_domain_constraints(df_graph)
     print(f"      -> Generated {len(df_graph):,} graph transfers (Fraud: {(df_graph['is_fraud']==1).sum()}). Domain Pass Rate: {val_graph['pass_rate_pct']}%")
     

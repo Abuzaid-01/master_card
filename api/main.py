@@ -5,6 +5,15 @@ cross-vector compound attack simulations, and multi-round active learning pipeli
 """
 
 import os
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+try:
+    import torch
+    torch.set_num_threads(1)
+except Exception:
+    pass
+
 import sys
 import json
 import numpy as np
@@ -81,6 +90,23 @@ def _load_text_detector():
             det._init_sentence_transformer()
         _text_detector = det
     return _text_detector
+
+
+_graph_model = None
+
+def _load_graph_model():
+    global _graph_model
+    if _graph_model is not None:
+        return _graph_model
+    import joblib
+    path = os.path.join(MODELS_DIR, "graph_detector.joblib")
+    if os.path.exists(path):
+        data = joblib.load(path)
+        if isinstance(data, dict):
+            _graph_model = data.get("model", data)
+        else:
+            _graph_model = data
+    return _graph_model
 
 
 def _load_json(path: str) -> dict:
@@ -249,11 +275,31 @@ def demo_text(req: TextRequest):
 # ══════════════════════════════════════════
 
 @app.get("/api/simulate/cross_vector")
-def simulate_cross_vector_scenario(scenario_id: int = 1):
-    """Simulates a coordinated multi-stage cross-vector fraud attack scenario."""
+def simulate_cross_vector_scenario(scenario_id: int = 0):
+    """Simulates and dynamically evaluates a coordinated multi-stage cross-vector fraud attack scenario."""
     from generate.generator_cross_vector import generate_compound_fraud_scenario
-    scenario = generate_compound_fraud_scenario(scenario_id=scenario_id)
-    return scenario
+    from defend.cross_vector_fusion import evaluate_cross_vector_scenario
+    
+    raw_scenario = generate_compound_fraud_scenario(scenario_id=scenario_id, evaluate_live=False)
+    result = evaluate_cross_vector_scenario(
+        raw_scenario,
+        text_detector=_load_text_detector(),
+        tabular_detector=_load_tabular_model(),
+        graph_detector=_load_graph_model()
+    )
+    return result
+
+
+@app.post("/api/simulate/cross_vector_evaluate")
+def evaluate_custom_cross_vector_scenario(scenario: dict):
+    """Dynamically evaluates a custom cross-vector attack scenario submitted by the user."""
+    from defend.cross_vector_fusion import evaluate_cross_vector_scenario
+    return evaluate_cross_vector_scenario(
+        scenario,
+        text_detector=_load_text_detector(),
+        tabular_detector=_load_tabular_model(),
+        graph_detector=_load_graph_model()
+    )
 
 
 # ══════════════════════════════════════════

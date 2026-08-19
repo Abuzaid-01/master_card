@@ -240,4 +240,95 @@ export function useLLMGenerate() {
   });
 }
 
+// ── Cross-Vector Compound Simulation Hooks ──
+
+export interface CrossVectorScenarioResult {
+  scenario_id: string;
+  name: string;
+  target_account: string;
+  phase_1_result: {
+    prompt_text: string;
+    attack_type: string;
+    risk_score: number;
+    threshold: number;
+    verdict: string;
+    model: string;
+  };
+  phase_2_result: {
+    attack_type: string;
+    risk_score: number;
+    threshold: number;
+    verdict: string;
+    transactions: {
+      step: string;
+      amount: number;
+      velocity: number;
+      device_risk_score: number;
+      fraud_probability?: number;
+      verdict?: string;
+    }[];
+    model: string;
+  };
+  phase_3_result: {
+    attack_type: string;
+    risk_score: number;
+    threshold: number;
+    verdict: string;
+    hops: {
+      hop: number;
+      sender: string;
+      receiver: string;
+      amount: number;
+      delay_sec: number;
+    }[];
+    model: string;
+  };
+  fusion_breakdown: {
+    text_risk: number;
+    tabular_risk: number;
+    graph_risk: number;
+    joint_formula: string;
+    synergy_boost: number;
+    correlated_risk_score: number;
+    correlated_risk_pct: number;
+  };
+  autonomous_enforcement: {
+    action: string;
+    severity: string;
+    description: string;
+    interception_timeline_ms: number;
+  };
+}
+
+export function useCrossVectorSimulation(scenarioId: number) {
+  return useQuery<CrossVectorScenarioResult>({
+    queryKey: ["cross-vector-sim", scenarioId],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/simulate/cross_vector?scenario_id=${scenarioId}`);
+      if (!res.ok) throw new Error(`API error: ${res.status}`);
+      return res.json();
+    },
+    staleTime: 10_000,
+  });
+}
+
+export function useCrossVectorEvaluate() {
+  return useMutation<CrossVectorScenarioResult, Error, any>({
+    mutationFn: async (customScenario: any) => {
+      const res = await fetch(`${API_BASE}/simulate/cross_vector_evaluate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(customScenario),
+      });
+      if (!res.ok) {
+        const err = await res.text();
+        throw new Error(err);
+      }
+      return res.json();
+    },
+  });
+}
+
+
+
 

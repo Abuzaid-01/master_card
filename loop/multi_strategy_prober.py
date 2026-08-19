@@ -68,7 +68,12 @@ class MultiStrategyProber:
         try:
             graph_path = os.path.join(self.models_dir, "graph_detector.joblib")
             if os.path.exists(graph_path):
-                self.graph_model = joblib.load(graph_path)
+                data = joblib.load(graph_path)
+                if isinstance(data, dict):
+                    self.graph_model = data.get("model", data)
+                    self.graph_threshold = data.get("optimal_threshold", 0.50)
+                else:
+                    self.graph_model = data
                 print(f"[Prober] Loaded graph model from {graph_path}")
         except Exception as e:
             print(f"[Prober Warning] Could not load graph model: {e}")
@@ -143,10 +148,8 @@ class MultiStrategyProber:
         df_evaded = df_fraud.copy()
         rng = np.random.RandomState(strategy_seed)
 
-        graph_features = [c for c in ["amount", "sender_in_degree", "sender_out_degree",
-                                       "receiver_in_degree", "receiver_out_degree",
-                                       "receiver_mule_funnel_score",
-                                       "pass_through_delay_sec"] if c in df_evaded.columns]
+        from generate.generator_graph import GRAPH_FEATURE_COLS
+        graph_features = list(GRAPH_FEATURE_COLS)
 
         for col in graph_features:
             if col in df_evaded.columns:

@@ -22,9 +22,9 @@ GRAPH_FEATURE_COLS = [
 
 
 def generate_money_mule_graph(
-    num_users: int = 500,
-    num_mule_rings: int = 40,
-    ring_depth: int = 4,
+    num_users: int = 600,
+    num_mule_rings: int = 60,
+    ring_depth: int = 5,
     random_seed: int = 42
 ) -> pd.DataFrame:
     """

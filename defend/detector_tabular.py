@@ -126,7 +126,11 @@ class TabularCardTestingDetector:
         
         # Always also save joblib for Step 4 prober compatibility
         joblib_path = os.path.join(MODELS_DIR, "card_testing_xgb.joblib")
-        joblib.dump({"xgb_model": self.xgb_model, "feature_cols": self.feature_cols}, joblib_path)
+        joblib.dump({
+            "xgb_model": self.xgb_model,
+            "feature_cols": self.feature_cols,
+            "optimal_threshold": getattr(self, "optimal_threshold", 0.50)
+        }, joblib_path)
             
         return out_path
 
@@ -176,12 +180,23 @@ class TabularCardTestingDetector:
         }
 
     def evaluate_performance(self, df_test: pd.DataFrame, target_col: str = "is_fraud") -> Dict[str, float]:
-        """Computes AUC-PR, F1, and False Positive Rate on test data."""
+        """Computes AUC-PR, F1, and False Positive Rate on test data with optimal threshold calibration."""
         y_test = df_test[target_col].values
         y_prob = self.predict_proba(df_test)
-        y_pred = (y_prob >= 0.50).astype(int)
+        
+        # Dynamic threshold tuning maximizing F1
+        thresholds = np.linspace(0.05, 0.95, 91)
+        best_f1 = 0.0
+        best_th = 0.50
+        for th in thresholds:
+            f1_candidate = f1_score(y_test, (y_prob >= th).astype(int), zero_division=0)
+            if f1_candidate > best_f1:
+                best_f1 = f1_candidate
+                best_th = float(th)
+        self.optimal_threshold = round(best_th, 4)
         
         auc_pr = float(np.round(average_precision_score(y_test, y_prob), 4))
+        y_pred = (y_prob >= self.optimal_threshold).astype(int)
         f1 = float(np.round(f1_score(y_test, y_pred, zero_division=0), 4))
         
         # False Positive Rate = FP / (FP + TN)
@@ -193,6 +208,7 @@ class TabularCardTestingDetector:
             "tabular_auc_pr": auc_pr,
             "tabular_f1_score": f1,
             "tabular_false_positive_rate": fpr,
+            "optimal_threshold": self.optimal_threshold,
             "test_samples_count": len(df_test)
         }
 

@@ -73,12 +73,10 @@ def extract_blind_spots(
         df_evaded = prober.probe_graph(df_mine_fraud, threshold=threshold_graph,
                                         strategy_seed=mining_strategy_seed)
         
-        graph_features = [c for c in ["amount", "sender_in_degree", "sender_out_degree",
-                                       "receiver_in_degree", "receiver_out_degree",
-                                       "receiver_mule_funnel_score",
-                                       "pass_through_delay_sec"] if c in df_evaded.columns]
+        from generate.generator_graph import GRAPH_FEATURE_COLS
+        graph_features = list(GRAPH_FEATURE_COLS)
         
-        if prober.graph_model is not None and len(graph_features) > 0:
+        if prober.graph_model is not None:
             probs_after = prober.graph_model.predict_proba(
                 df_evaded[graph_features].values.astype(float)
             )[:, 1]
