@@ -1,6 +1,13 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 
-const API_BASE = (import.meta.env.VITE_API_URL ? String(import.meta.env.VITE_API_URL).replace(/\/$/, '') : '') + "/api";
+const DEFAULT_REMOTE_API = "https://master-card.onrender.com";
+const API_BASE = (
+  import.meta.env.VITE_API_URL
+    ? String(import.meta.env.VITE_API_URL).replace(/\/$/, "")
+    : import.meta.env.PROD
+      ? DEFAULT_REMOTE_API
+      : ""
+) + "/api";
 
 // ── Types ──
 export interface TabularDemoInput {
