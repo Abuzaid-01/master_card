@@ -1,4 +1,4 @@
-import { Github, ShieldCheck, Cpu, Network } from "lucide-react";
+import { Github, Linkedin } from "lucide-react";
 import { Reveal } from "@/components/shared/Section";
 
 export function Team() {
@@ -38,7 +38,7 @@ export function Team() {
             ATTACK → DEFEND → EVOLVE
           </p>
 
-          <div className="mt-10 flex justify-center">
+          <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
             <a
               href="https://github.com/Abuzaid-01/master_card"
               target="_blank"
@@ -48,10 +48,27 @@ export function Team() {
               <Github className="h-4 w-4 text-cyan" />
               View Source Repository
             </a>
+            <a
+              href="https://www.linkedin.com/in/abuzaid01"
+              target="_blank"
+              rel="noreferrer"
+              className="glass-panel glow-cyan inline-flex items-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-transform duration-300 hover:-translate-y-0.5 border border-cyan/30 hover:border-cyan/60"
+            >
+              <Linkedin className="h-4 w-4 text-cyan" />
+              Connect on LinkedIn
+            </a>
           </div>
 
-          <p className="mt-12 font-mono text-[11px] tracking-[0.2em] text-muted-foreground uppercase">
-            SENTRIX AI · Next-Generation Autonomous Fraud Intelligence Head
+          <p className="mt-12 font-mono text-xs tracking-wider text-muted-foreground">
+            Made with <span className="text-red-500 animate-pulse inline-block">❤️</span> by{" "}
+            <a
+              href="https://www.linkedin.com/in/abuzaid01"
+              target="_blank"
+              rel="noreferrer"
+              className="font-semibold text-cyan hover:underline decoration-cyan underline-offset-4 transition-colors"
+            >
+              Abuzaid
+            </a>
           </p>
         </Reveal>
       </div>

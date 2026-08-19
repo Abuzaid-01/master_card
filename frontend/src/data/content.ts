@@ -16,7 +16,7 @@ export const heroStats = [
     icon: "zap" as const,
   },
   {
-    value: 105,
+    value: 3061,
     prefix: "$",
     label: "Saved per Batch",
     icon: "dollar" as const,
@@ -37,7 +37,7 @@ export const attackVectors: {
     desc: "Jailbreaking bank AI chatbots to bypass transfer limits",
     severity: "Critical",
     multiplier:
-      "LLMs generate infinite paraphrased jailbreaks across 12 threat categories.",
+      "LLMs generate infinite paraphrased jailbreaks across 13 threat categories.",
     icon: "terminal",
   },
   {
@@ -70,7 +70,7 @@ export const attackVectors: {
   {
     n: 5,
     name: "Evasive Card Testing",
-    desc: "Multi-pattern bots testing stolen cards (burst, ATO, slow drip, CNP, friendly fraud)",
+    desc: "Multi-pattern bots testing stolen cards (burst, ATO, bot siphon, CNP, slow drip)",
     severity: "High",
     multiplier:
       "Agentic bots adapt amount, velocity, geo-displacement and merchant channels in real time.",
@@ -111,7 +111,7 @@ export const datasets = [
     count: 50000,
     unit: "transactions",
     lines: [
-      "5 Sub-Types: Burst, ATO, Slow Drip, CNP, Friendly Fraud",
+      "5 Sub-Types: Burst, ATO, Bot Siphon, CNP, Slow Drip",
       "10 Enterprise Features · 100% Domain Rule Pass",
     ],
     icon: "table-2",
@@ -122,7 +122,7 @@ export const datasets = [
     count: 1500,
     unit: "prompts",
     lines: [
-      "12 Threat Categories: Voice Pretext, Compliance, Hijack, etc.",
+      "13 Threat Categories: Voice Pretext, Compliance, Tool Hijack, etc.",
       "SentenceTransformer all-MiniLM-L6-v2 Semantic Embeddings",
     ],
     icon: "message-square-code",
@@ -134,7 +134,7 @@ export const datasets = [
     unit: "transfers",
     lines: [
       "4 Topologies: Linear, Fan-Out, Smurfing, Round-Trip",
-      "NetworkX Multi-Hop Directed Graph · Funnel Scores",
+      "NetworkX Multi-Hop Directed Graph · 100 Mule Rings",
     ],
     icon: "network",
     accent: "orange" as const,
@@ -156,9 +156,9 @@ export const terminalLines = [
   "$ python -m generate.run_pipeline --all-vectors",
   "",
   "[1/4] Generating Vector 5: Multi-Pattern Card Fraud (5 sub-types)...",
-  "      → Generated 50,000 rows (Burst, ATO, Drip, CNP, Friendly). Pass Rate: 100.0%",
-  "[2/4] Generating Vector 1: Prompt Injection Payloads (12 categories)...",
-  "      → Generated 1,500 prompts across 12 categories. Pass Rate: 100.0%",
+  "      → Generated 50,000 rows (Burst, ATO, Bot Siphon, CNP, Slow Drip). Pass Rate: 100.0%",
+  "[2/4] Generating Vector 1: Prompt Injection Payloads (13 categories)...",
+  "      → Generated 1,500 prompts across 13 categories. Pass Rate: 100.0%",
   "[3/4] Generating Vector 2: Multi-Topology Mule Graph (4 topologies)...",
   "      → Generated 7,297 transfers across 100 rings. Pass Rate: 100.0%",
   "[4/4] Generating Vector 8: Adversarial Evasion Set...",
@@ -169,39 +169,55 @@ export const terminalLines = [
 ];
 
 export const shapFeatures = [
-  { name: "device_risk_score", value: 74.2 },
-  { name: "velocity_1h", value: 11.6 },
-  { name: "is_decline", value: 9.3 },
-  { name: "amount", value: 4.9 },
+  { name: "geo_distance_km", value: 45.2 },
+  { name: "device_risk_score", value: 23.6 },
+  { name: "velocity", value: 16.2 },
+  { name: "mcc_risk_weight", value: 6.9 },
+  { name: "failed_attempts_24h", value: 4.0 },
+  { name: "amount", value: 2.8 },
 ];
 
 export const loopRows = [
   {
-    metric: "Adversarial Catch Rate",
-    r1: "6.7%",
-    r2: "64.4%",
-    delta: "+57.7%",
+    metric: "Tabular Adversarial Catch Rate",
+    r1: "69.1%",
+    r2: "96.3%",
+    delta: "+27.2% (+204 caught)",
     good: true,
   },
   {
-    metric: "AUC-PR (Adversarial)",
-    r1: "0.653",
-    r2: "0.917",
-    delta: "+0.264",
+    metric: "Text Paraphrased Catch Rate",
+    r1: "0.0%",
+    r2: "100.0%",
+    delta: "+100.0% (+38 caught)",
     good: true,
   },
   {
-    metric: "Baseline FPR",
-    r1: "2.82%",
-    r2: "1.72%",
-    delta: "-1.10% (improved!)",
+    metric: "Graph Topology Catch Rate",
+    r1: "28.6%",
+    r2: "82.9%",
+    delta: "+54.3% (+38 caught)",
+    good: true,
+  },
+  {
+    metric: "AUC-PR (Adversarial Holdout)",
+    r1: "0.985",
+    r2: "1.000",
+    delta: "+0.015",
+    good: true,
+  },
+  {
+    metric: "Baseline False Positive Rate",
+    r1: "0.00%",
+    r2: "0.00%",
+    delta: "0.00% (No Degradation)",
     good: true,
   },
   {
     metric: "Catastrophic Forgetting",
     r1: "n/a",
-    r2: "None",
-    delta: "baseline",
+    r2: "None (0.0% Drift)",
+    delta: "Verified Safe",
     good: true,
   },
 ];

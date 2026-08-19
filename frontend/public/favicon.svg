@@ -1,6 +1,42 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 40" width="64" height="40">
-  <rect width="64" height="40" rx="8" fill="#0B0F17"/>
-  <circle cx="24" cy="20" r="14" fill="#EB001B" opacity="0.95"/>
-  <circle cx="40" cy="20" r="14" fill="#F79E1B" opacity="0.95"/>
-  <path d="M32 8.5a14 14 0 000 23 14 14 0 000-23z" fill="#FF5F00" opacity="0.85"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <rect width="64" height="64" rx="14" fill="#030712"/>
+  
+  <defs>
+    <linearGradient id="sentrix-cyan-fav" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#00F0FF" />
+      <stop offset="100%" stopColor="#3B82F6" />
+    </linearGradient>
+    <linearGradient id="sentrix-violet-fav" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#8B5CF6" />
+      <stop offset="100%" stopColor="#00F0FF" />
+    </linearGradient>
+    <filter id="glow-fav" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Outer Isometric Hexagonal Shield -->
+  <path
+    d="M32 7L53 19V45L32 57L11 45V19L32 7Z"
+    stroke="url(#sentrix-cyan-fav)"
+    stroke-width="3"
+    stroke-linejoin="round"
+    fill="#0a0f1d"
+  />
+
+  <!-- Inner Cyber Stylized 'S' -->
+  <path
+    d="M42 21H24C21.2 21 19 23.2 19 26V27.5C19 30.2 21.2 32.5 24 32.5H40C42.8 32.5 45 34.8 45 37.5V39C45 41.8 42.8 44 40 44H22"
+    stroke="url(#sentrix-cyan-fav)"
+    stroke-width="4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#glow-fav)"
+  />
+
+  <!-- Center Tri-Vector Nodes -->
+  <circle cx="32" cy="21" r="2.5" fill="#00F0FF" />
+  <circle cx="32" cy="32.5" r="3" fill="#FFFFFF" />
+  <circle cx="32" cy="44" r="2.5" fill="#8B5CF6" />
 </svg>

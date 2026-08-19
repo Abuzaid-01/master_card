@@ -31,10 +31,10 @@ from generate.generator_tabular import TABULAR_FEATURE_COLS
 
 app = FastAPI(title="SENTRIX AI API", version="2.0.0")
 
-# CORS for React dev server
+# CORS for React frontend (Localhost & Cloud deployments)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000", "http://localhost:4173", "http://localhost:8080"],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

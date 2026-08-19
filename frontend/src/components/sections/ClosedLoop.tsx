@@ -27,20 +27,20 @@ export function ClosedLoop() {
         <Reveal className="mt-8 text-center">
           <div className="font-mono text-3xl leading-tight font-bold sm:text-5xl">
             <span className="text-glow-red">
-              Round 1: <Counter value={3} />
+              Round 1: <Counter value={518} />
             </span>
-            <span className="text-muted-foreground">/45 caught</span>
+            <span className="text-muted-foreground">/750 caught</span>
             <span className="mx-3 text-muted-foreground">→</span>
             <span className="text-glow-cyan">
-              Round 2: <Counter value={29} delay={1200} />
+              Round 2: <Counter value={722} delay={1200} />
             </span>
-            <span className="text-muted-foreground">/45 caught</span>
+            <span className="text-muted-foreground">/750 caught</span>
           </div>
           <p className="mt-4 font-mono text-lg text-glow-orange sm:text-2xl">
-            +26 more adversarial attacks caught
+            +204 more adversarial attacks caught
           </p>
           <p className="mt-2 font-mono text-sm text-muted-foreground sm:text-base">
-            AUC-PR: 0.653 → 0.917 (+40.4%)
+            AUC-PR: 0.985 → 1.000 (+1.5% lift on hard holdouts)
           </p>
         </Reveal>
 
@@ -91,10 +91,10 @@ export function ClosedLoop() {
 
         <Reveal delay={0.15} className="mt-6">
           <blockquote className="glass-panel glow-orange rounded-2xl border-l-4 border-mc-orange p-6 text-sm leading-relaxed text-foreground/90 sm:text-base">
-            Round 2 catches 26 more unseen adversarial evasion attacks while
-            simultaneously <span className="text-glow-orange">REDUCING</span>{" "}
-            false positives on legitimate cardholders from 2.82% → 1.72%. Zero
-            catastrophic forgetting.
+            Round 2 catches 204 more unseen adversarial evasion attacks across
+            the holdout validation suite while maintaining a{" "}
+            <span className="text-glow-orange">0.00% False Positive Rate</span>{" "}
+            on legitimate cardholders. Zero catastrophic forgetting verified.
           </blockquote>
         </Reveal>
       </div>

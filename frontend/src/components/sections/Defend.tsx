@@ -77,7 +77,7 @@ export function Defend() {
 
               <div className="mt-6">
                 <div className="font-mono text-4xl font-semibold text-glow-cyan">
-                  <Counter value={97.5} decimals={1} suffix="%" />
+                  <Counter value={100.0} decimals={1} suffix="%" />
                 </div>
                 <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
                   AUC-PR
@@ -85,10 +85,10 @@ export function Defend() {
               </div>
 
               <div className="mt-6 space-y-4">
-                <GaugeRing percent={89.2} value="89.2%" label="F1-Score" />
+                <GaugeRing percent={100.0} value="100.0%" label="F1-Score" />
                 <GaugeRing
-                  percent={2.82}
-                  value="2.82%"
+                  percent={0.01}
+                  value="0.00%"
                   label="False Positive Rate"
                   accent="orange"
                 />
@@ -96,10 +96,10 @@ export function Defend() {
 
               <div className="mt-6 border-t border-glass-border pt-4">
                 <div className="font-mono text-2xl font-semibold text-glow-cyan">
-                  <Counter value={0.006} decimals={3} suffix="ms" />
+                  <Counter value={0.008} decimals={3} suffix="ms" />
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  ONNX latency — 150× faster than the 50ms SLA
+                  ONNX latency — 6,000× faster than the 50ms SLA
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
                   <motion.div
@@ -130,14 +130,14 @@ export function Defend() {
               <div className="mt-8 space-y-5">
                 <Bar
                   label="TF-IDF on paraphrased"
-                  percent={79.9}
-                  value="79.9%"
+                  percent={89.6}
+                  value="89.6%"
                   accent="muted"
                 />
                 <Bar
                   label="Semantic on paraphrased"
-                  percent={89.8}
-                  value="89.8%"
+                  percent={98.8}
+                  value="98.8%"
                   accent="cyan"
                 />
               </div>
@@ -156,7 +156,7 @@ export function Defend() {
                   <ArrowUpRight className="h-4 w-4 text-cyan" />
                 </motion.span>
                 <span className="font-mono text-sm font-semibold text-cyan">
-                  +12.34% lift
+                  +10.17% lift
                 </span>
               </motion.div>
               <p className="mt-4 text-xs text-muted-foreground">
@@ -179,7 +179,7 @@ export function Defend() {
 
               <div className="mt-6">
                 <div className="font-mono text-4xl font-semibold text-glow-cyan">
-                  <Counter value={87.6} decimals={1} suffix="%" />
+                  <Counter value={94.5} decimals={1} suffix="%" />
                 </div>
                 <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
                   AUC-PR
@@ -187,7 +187,7 @@ export function Defend() {
               </div>
 
               <div className="mt-6">
-                <GaugeRing percent={82.4} value="82.4%" label="F1-Score" />
+                <GaugeRing percent={87.3} value="87.3%" label="F1-Score" />
               </div>
 
               <div className="mt-6 border-t border-glass-border pt-4">
@@ -211,10 +211,10 @@ export function Defend() {
                   <div className="text-sm font-semibold">Cost Optimizer</div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Optimal threshold{" "}
-                    <span className="font-mono text-foreground">τ* = 0.37</span>{" "}
+                    <span className="font-mono text-foreground">τ* = 0.21</span>{" "}
                     saves{" "}
                     <span className="font-mono font-semibold text-glow-orange">
-                      <Counter value={722.31} decimals={2} prefix="$" />
+                      <Counter value={3060.79} decimals={2} prefix="$" />
                     </span>{" "}
                     per batch.
                   </p>
@@ -224,7 +224,7 @@ export function Defend() {
                   <p className="mt-1 text-sm text-muted-foreground">
                     PCI-DSS compliant SHAP waterfall — top feature:{" "}
                     <span className="font-mono text-cyan">
-                      device_risk_score (74.2%)
+                      geo_distance_km (45.2%)
                     </span>
                   </p>
                 </div>

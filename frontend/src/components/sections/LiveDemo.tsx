@@ -223,7 +223,7 @@ function TabularPanel() {
         <div className="flex items-center justify-between">
           <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
             <CreditCard className="h-4 w-4" />
-            9-Feature Transaction Parameters
+            10-Feature Transaction Parameters
           </h4>
           <span className="font-mono text-[10px] text-cyan bg-cyan/10 px-2 py-0.5 rounded-full">
             ONNX Quantized
