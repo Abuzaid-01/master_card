@@ -94,10 +94,13 @@ def evaluate_cross_vector_scenario(
             tx_probs = []
             for tx in transactions:
                 tx_row = dict(tx)
-                # Fill missing 9 domain features with sensible defaults if omitted
+                # Fill missing 10 domain features with sensible defaults if omitted
                 tx_row.setdefault("hour_of_day_sin", 0.0)
                 tx_row.setdefault("hour_of_day_cos", 1.0)
+                tx_row.setdefault("mcc_risk_weight", 0.20)
+                tx_row.setdefault("geo_distance_km", 15.0)
                 tx_row.setdefault("card_age_days", 365.0)
+                tx_row.setdefault("is_decline", 0)
                 tx_row.setdefault("failed_attempts_24h", 2 if tx_row.get("is_decline", 0) else 0)
                 
                 X = np.array([[tx_row.get(f, 0.0) for f in TABULAR_FEATURE_COLS]], dtype=np.float32)

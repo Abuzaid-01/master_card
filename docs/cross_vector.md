@@ -37,7 +37,7 @@ Modern cybercrime syndicates exploit these operational silos by executing **Cros
 
 ## 2. Multi-Model Defense Architecture
 
-The **GenAI Fraud Shield** deploys three specialized machine learning models running in parallel across the transaction event stream:
+The **SENTRIX AI Platform** deploys three specialized machine learning models running in parallel across the transaction event stream:
 
 | Attack Phase | Model Architecture | Primary Features | Inference SLA |
 |---|---|---|---|

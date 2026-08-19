@@ -73,11 +73,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "GenAI Fraud Shield" },
+      { title: "SENTRIX AI — Tri-Vector Compound Fraud Defense Engine" },
       {
         name: "description",
         content:
-          "Adversarial red–blue team defense engine for next-generation payment fraud.",
+          "SENTRIX AI: Unified red–blue team autonomous defense engine against compound GenAI payment fraud across Chatbot, Payment Gateway, and Mule Networks.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

@@ -43,7 +43,7 @@ const PRESET_SCENARIOS = [
   },
   {
     id: 2,
-    title: "Scenario 3: Mastercard Auditor Exploit + Decline Suppression",
+    title: "Scenario 3: Compliance Auditor Exploit + Decline Suppression",
     badge: "Credential Stuffing",
     description:
       "Pen-test auditor roleplay suppresses card decline spikes, validating compromised BIN ranges before routing $7,800 to a mixer ring.",
@@ -112,9 +112,9 @@ export function CrossVectorPanel() {
         amount: customTxAmount,
         velocity: customTxVelocity,
         device_risk_score: customDeviceRisk,
-        is_decline: 0,
+        is_decline: customFailedAttempts > 0 ? 1 : 0,
         geo_distance_km: customDeviceRisk > 0.6 ? 3800 : 25,
-        mcc_risk_weight: customDeviceRisk > 0.5 ? 0.85 : 0.45,
+        mcc_risk_weight: customDeviceRisk > 0.6 ? 0.85 : 0.25,
         failed_attempts_24h: customFailedAttempts,
       });
     } else {
@@ -583,7 +583,7 @@ export function CrossVectorPanel() {
                         : "text-emerald-400"
                     }`}
                   >
-                    Mastercard Autonomous Defense Decision
+                    SENTRIX Autonomous Defense Decision
                   </span>
                   <span className="rounded bg-black/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground border border-border/40">
                     Interception SLA:{" "}

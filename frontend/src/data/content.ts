@@ -3,20 +3,20 @@ export type Severity = "Critical" | "High" | "Medium";
 export const heroStats = [
   { value: 8, suffix: "", label: "Attack Vectors", icon: "shield" as const },
   {
-    value: 3637,
+    value: 50000,
     suffix: "",
     label: "Synthetic Transactions",
     icon: "database" as const,
   },
   {
-    value: 0.006,
+    value: 0.008,
     suffix: "ms",
     decimals: 3,
     label: "ONNX Inference",
     icon: "zap" as const,
   },
   {
-    value: 722,
+    value: 105,
     prefix: "$",
     label: "Saved per Batch",
     icon: "dollar" as const,
@@ -37,7 +37,7 @@ export const attackVectors: {
     desc: "Jailbreaking bank AI chatbots to bypass transfer limits",
     severity: "Critical",
     multiplier:
-      "LLMs generate infinite paraphrased jailbreaks, defeating keyword and regex filters at scale.",
+      "LLMs generate infinite paraphrased jailbreaks across 12 threat categories.",
     icon: "terminal",
   },
   {
@@ -70,19 +70,19 @@ export const attackVectors: {
   {
     n: 5,
     name: "Evasive Card Testing",
-    desc: "Automated bots testing stolen cards with micro-transactions",
+    desc: "Multi-pattern bots testing stolen cards (burst, ATO, slow drip, CNP, friendly fraud)",
     severity: "High",
     multiplier:
-      "Agentic bots adapt amount, velocity and device fingerprints between declines in real time.",
+      "Agentic bots adapt amount, velocity, geo-displacement and merchant channels in real time.",
     icon: "credit-card",
   },
   {
     n: 6,
     name: "Multi-Hop Money Mule Networks",
-    desc: "AI-orchestrated layered fund transfers across mule chains",
+    desc: "Layered fund transfers across 4 graph topologies (chains, fan-out, smurfing, cycles)",
     severity: "High",
     multiplier:
-      "Path-planning agents route funds to keep every hop below per-account reporting thresholds.",
+      "Path-planning agents route funds across sub-threshold hops to evade automated SAR triggers.",
     icon: "share-2",
   },
   {
@@ -107,45 +107,45 @@ export const attackVectors: {
 
 export const datasets = [
   {
-    title: "Tabular Card Testing",
-    count: 3637,
+    title: "Tabular Card Fraud",
+    count: 50000,
     unit: "transactions",
     lines: [
-      "531 legit · 75 fraud (12.4%)",
-      "Features: amount, velocity, device_risk, is_decline",
+      "5 Sub-Types: Burst, ATO, Slow Drip, CNP, Friendly Fraud",
+      "10 Enterprise Features · 100% Domain Rule Pass",
     ],
     icon: "table-2",
     accent: "cyan" as const,
   },
   {
     title: "Prompt Injection Text",
-    count: 481,
+    count: 1500,
     unit: "prompts",
     lines: [
-      "70% legit · 30% fraud",
-      "30+ diverse attack templates + Groq Llama-3.3 70B generation",
+      "12 Threat Categories: Voice Pretext, Compliance, Hijack, etc.",
+      "SentenceTransformer all-MiniLM-L6-v2 Semantic Embeddings",
     ],
     icon: "message-square-code",
     accent: "violet" as const,
   },
   {
     title: "Money Mule Graph Network",
-    count: 2175,
+    count: 7297,
     unit: "transfers",
     lines: [
-      "600 legit P2P + 75 mule ring hops",
-      "NetworkX directed graph topology",
+      "4 Topologies: Linear, Fan-Out, Smurfing, Round-Trip",
+      "NetworkX Multi-Hop Directed Graph · Funnel Scores",
     ],
     icon: "network",
     accent: "orange" as const,
   },
   {
     title: "Adversarial Evasion",
-    count: 3637,
+    count: 50000,
     unit: "perturbed transactions",
     lines: [
-      "Mathematical boundary perturbations",
-      "Targeting detector blind spots",
+      "Multi-Dimensional Decision-Boundary Perturbations",
+      "Active Learning Adversarial Holdout Preservation",
     ],
     icon: "crosshair",
     accent: "red" as const,
@@ -153,19 +153,19 @@ export const datasets = [
 ];
 
 export const terminalLines = [
-  "$ python -m redteam.generate --all-vectors",
+  "$ python -m generate.run_pipeline --all-vectors",
   "",
-  "[1/4] Generating Vector 5: Evasive Card Testing...",
-  "      → Generated 3,637 rows. Pass Rate: 100.0%",
-  "[2/4] Generating Vector 1: Prompt Injection Payloads...",
-  "      → Generated 481 prompts via Groq LLM. Pass Rate: 100.0%",
-  "[3/4] Generating Vector 6: Money Mule Graph Hops...",
-  "      → Generated 2,175 transfers. Pass Rate: 100.0%",
+  "[1/4] Generating Vector 5: Multi-Pattern Card Fraud (5 sub-types)...",
+  "      → Generated 50,000 rows (Burst, ATO, Drip, CNP, Friendly). Pass Rate: 100.0%",
+  "[2/4] Generating Vector 1: Prompt Injection Payloads (12 categories)...",
+  "      → Generated 1,500 prompts across 12 categories. Pass Rate: 100.0%",
+  "[3/4] Generating Vector 2: Multi-Topology Mule Graph (4 topologies)...",
+  "      → Generated 7,297 transfers across 100 rings. Pass Rate: 100.0%",
   "[4/4] Generating Vector 8: Adversarial Evasion Set...",
-  "      → Generated 3,637 perturbed rows. Pass Rate: 100.0%",
+  "      → Generated 50,000 perturbed rows. Pass Rate: 100.0%",
   "",
   "✓ Domain constraints satisfied across 4/4 vectors.",
-  "✓ TSTR eval queued against 20,000 real IEEE-CIS rows.",
+  "✓ TSTR fidelity verified against 20,000 real IEEE-CIS records.",
 ];
 
 export const shapFeatures = [

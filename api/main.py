@@ -1,7 +1,6 @@
 """
-FastAPI Backend for GenAI Fraud Shield
-Serves live metrics from JSON reports, real-time model inference,
-cross-vector compound attack simulations, and multi-round active learning pipelines.
+FastAPI Backend for SENTRIX AI — Tri-Vector Compound Fraud Defense Platform
+Serves real-time data from Step 2 (Generation), Step 3 (Defense), and Step 4 (Closed-Loop Retraining).
 """
 
 import os
@@ -30,7 +29,7 @@ if PROJECT_ROOT not in sys.path:
 
 from generate.generator_tabular import TABULAR_FEATURE_COLS
 
-app = FastAPI(title="GenAI Fraud Shield API", version="2.0.0")
+app = FastAPI(title="SENTRIX AI API", version="2.0.0")
 
 # CORS for React dev server
 app.add_middleware(
@@ -47,65 +46,70 @@ LOOP_DIR = os.path.join(PROJECT_ROOT, "data", "loop")
 SYNTHETIC_DIR = os.path.join(PROJECT_ROOT, "data", "synthetic")
 MODELS_DIR = os.path.join(PROJECT_ROOT, "defend", "models")
 
-# ── Lazy-loaded models ──
+# ── Dynamic MTime-Aware Model Loaders ──
 _tabular_model = None
+_tabular_mtime = 0
 _text_detector = None
+_text_mtime = 0
+_graph_model = None
+_graph_mtime = 0
 
 
 def _load_tabular_model():
-    global _tabular_model
-    if _tabular_model is not None:
-        return _tabular_model
-    import joblib
+    global _tabular_model, _tabular_mtime
     path = os.path.join(MODELS_DIR, "card_testing_xgb.joblib")
     if os.path.exists(path):
-        import xgboost as xgb
-        data = joblib.load(path)
-        if isinstance(data, xgb.XGBClassifier):
-            _tabular_model = data
-        elif isinstance(data, dict):
-            _tabular_model = data.get("xgb_model", data.get("model"))
-        else:
-            _tabular_model = data
+        current_mtime = os.path.getmtime(path)
+        if _tabular_model is None or current_mtime > _tabular_mtime:
+            import joblib
+            import xgboost as xgb
+            data = joblib.load(path)
+            if isinstance(data, xgb.XGBClassifier):
+                _tabular_model = data
+            elif isinstance(data, dict):
+                _tabular_model = data.get("xgb_model", data.get("model"))
+            else:
+                _tabular_model = data
+            _tabular_mtime = current_mtime
     return _tabular_model
 
 
 def _load_text_detector():
-    global _text_detector
-    if _text_detector is not None:
-        return _text_detector
-    import joblib
+    global _text_detector, _text_mtime
     path = os.path.join(MODELS_DIR, "text_detector.joblib")
     if os.path.exists(path):
-        data = joblib.load(path)
-        from defend.detector_text import TextPromptInjectionDetector
-        det = TextPromptInjectionDetector()
-        if isinstance(data, dict):
-            det.tfidf_vectorizer = data.get("tfidf_vectorizer")
-            det.tfidf_model = data.get("tfidf_model")
-            det.calibrated_classifier = data.get("calibrated_classifier")
-            det.optimal_threshold = data.get("optimal_threshold", 0.50)
-            det.attack_embeddings = data.get("attack_embeddings")
-            det.legit_embeddings = data.get("legit_embeddings")
-            det._init_sentence_transformer()
-        _text_detector = det
+        current_mtime = os.path.getmtime(path)
+        if _text_detector is None or current_mtime > _text_mtime:
+            import joblib
+            data = joblib.load(path)
+            from defend.detector_text import TextPromptInjectionDetector
+            det = TextPromptInjectionDetector()
+            if isinstance(data, dict):
+                det.tfidf_vectorizer = data.get("tfidf_vectorizer")
+                det.tfidf_model = data.get("tfidf_model")
+                det.calibrated_classifier = data.get("calibrated_classifier")
+                det.optimal_threshold = data.get("optimal_threshold", 0.50)
+                det.attack_embeddings = data.get("attack_embeddings")
+                det.legit_embeddings = data.get("legit_embeddings")
+                det._init_sentence_transformer()
+            _text_detector = det
+            _text_mtime = current_mtime
     return _text_detector
 
 
-_graph_model = None
-
 def _load_graph_model():
-    global _graph_model
-    if _graph_model is not None:
-        return _graph_model
-    import joblib
+    global _graph_model, _graph_mtime
     path = os.path.join(MODELS_DIR, "graph_detector.joblib")
     if os.path.exists(path):
-        data = joblib.load(path)
-        if isinstance(data, dict):
-            _graph_model = data.get("model", data)
-        else:
-            _graph_model = data
+        current_mtime = os.path.getmtime(path)
+        if _graph_model is None or current_mtime > _graph_mtime:
+            import joblib
+            data = joblib.load(path)
+            if isinstance(data, dict):
+                _graph_model = data.get("model", data)
+            else:
+                _graph_model = data
+            _graph_mtime = current_mtime
     return _graph_model
 
 

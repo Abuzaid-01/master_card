@@ -146,7 +146,7 @@ export function Generate() {
                 <div className="text-sm font-semibold">TSTR Score</div>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Trained on Synthetic → Tested on 20,000 Real IEEE-CIS
-                  Mastercard Transactions
+                  Production Transactions
                 </p>
               </div>
               <div>

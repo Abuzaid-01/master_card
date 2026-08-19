@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { navSections } from "@/data/content";
-import { MastercardMark } from "./MastercardMark";
+import { SentrixMark } from "./SentrixMark";
 
 export function StickyNav() {
   const [active, setActive] = useState("hero");
@@ -28,11 +28,15 @@ export function StickyNav() {
         <a
           href="#hero"
           className="mr-1 flex shrink-0 items-center gap-2 pr-2 pl-1"
-          aria-label="GenAI Fraud Shield home"
+          aria-label="SENTRIX AI home"
         >
-          <MastercardMark className="h-5 w-9" />
-          <span className="hidden font-mono text-[11px] tracking-[0.2em] text-muted-foreground uppercase sm:inline">
-            Fraud Shield
+          <img
+            src="/sentrix_logo.png"
+            alt="SENTRIX AI"
+            className="h-5 w-5 rounded-md object-contain"
+          />
+          <span className="hidden font-mono text-[11px] font-bold tracking-[0.2em] text-glow-cyan uppercase sm:inline">
+            SENTRIX AI
           </span>
         </a>
         {navSections.map((s) => (

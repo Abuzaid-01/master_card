@@ -2,7 +2,7 @@ import { lazy, Suspense, useEffect, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { ChevronDown, Database, DollarSign, Shield, Zap } from "lucide-react";
 import { Counter } from "@/components/shared/Counter";
-import { MastercardMark } from "@/components/shared/MastercardMark";
+import { SentrixMark } from "@/components/shared/SentrixMark";
 import { heroStats } from "@/data/content";
 
 const ParticleField = lazy(() => import("@/components/shared/ParticleField"));
@@ -14,7 +14,7 @@ const icons = {
   dollar: DollarSign,
 };
 
-const TITLE = "GenAI Fraud Shield";
+const TITLE = "SENTRIX AI";
 
 function GlitchTitle() {
   const reduce = useReducedMotion();
@@ -82,9 +82,13 @@ export function Hero() {
           initial={{ opacity: 0, scale: 0.85 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.7 }}
-          className="mb-8"
+          className="mb-8 flex items-center justify-center gap-3"
         >
-          <MastercardMark className="h-12 w-20" pulse />
+          <img
+            src="/sentrix_logo.png"
+            alt="SENTRIX AI"
+            className="h-16 w-16 rounded-2xl shadow-2xl ring-1 ring-cyan/40 filter drop-shadow-[0_0_20px_rgba(0,240,255,0.4)]"
+          />
         </motion.div>
 
         <GlitchTitle />
@@ -93,19 +97,18 @@ export function Hero() {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.9, duration: 0.6 }}
-          className="mt-6 max-w-3xl text-base text-balance text-foreground/85 sm:text-xl"
+          className="mt-6 max-w-3xl text-base text-balance text-foreground/90 sm:text-xl font-medium"
         >
-          Adversarial Red–Blue Team Defense Engine for Next-Generation Payment
-          Fraud
+          They Attack, We Defend: An AI Security Engine That Simulates Next-Gen Scams and Trains Itself to Stop Them.
         </motion.p>
 
         <motion.p
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 1.1, duration: 0.6 }}
-          className="mt-4 font-mono text-[11px] tracking-[0.24em] text-muted-foreground uppercase sm:text-xs"
+          className="mt-4 font-mono text-[11px] tracking-[0.2em] text-glow-cyan uppercase sm:text-xs"
         >
-          Mastercard Innovation Challenge 2026 — Global Fintech Fest, Mumbai
+          AI ATTACK SIMULATION → REAL-TIME DEFENSE → SELF-HEALING LEARNING LOOP
         </motion.p>
 
         <div className="mt-14 grid w-full grid-cols-2 gap-4 lg:grid-cols-4">

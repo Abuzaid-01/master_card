@@ -1,6 +1,6 @@
-# GenAI Fraud Shield — Interactive Web Dashboard
+# SENTRIX AI — Interactive Web Dashboard
 
-Frontend interface for the **GenAI Fraud Shield** red–blue team adversarial defense engine.
+Frontend interface for the **SENTRIX AI** tri-vector autonomous fraud defense platform.
 
 ## Overview
 

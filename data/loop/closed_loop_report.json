@@ -2,119 +2,119 @@
   "step4_closed_loop": {
     "holdout_partition_sizes": {
       "tabular": {
-        "mine_total": 3637,
-        "mine_fraud": 450,
-        "eval_total": 3638,
-        "eval_fraud": 450
+        "mine_total": 5000,
+        "mine_fraud": 750,
+        "eval_total": 5000,
+        "eval_fraud": 750
       },
       "text": {
-        "mine_total": 120,
-        "mine_fraud": 30,
-        "eval_total": 120,
-        "eval_fraud": 30
+        "mine_total": 149,
+        "mine_fraud": 37,
+        "eval_total": 151,
+        "eval_fraud": 38
       },
       "graph": {
-        "mine_total": 366,
-        "mine_fraud": 36,
-        "eval_total": 366,
-        "eval_fraud": 36
+        "mine_total": 729,
+        "mine_fraud": 69,
+        "eval_total": 731,
+        "eval_fraud": 70
       }
     },
     "blind_spot_mining": {
       "tabular": {
-        "n_fraud_probed": 450,
-        "n_evaded": 207,
-        "evasion_rate": 0.46
+        "n_fraud_probed": 750,
+        "n_evaded": 296,
+        "evasion_rate": 0.3947
       },
       "graph": {
-        "n_fraud_probed": 36,
-        "n_evaded": 26,
-        "evasion_rate": 0.7222
+        "n_fraud_probed": 69,
+        "n_evaded": 49,
+        "evasion_rate": 0.7101
       },
       "text": {
-        "n_fraud_probed": 30,
-        "n_evaded": 0,
-        "evasion_rate": 0.0
+        "n_fraud_probed": 37,
+        "n_evaded": 2,
+        "evasion_rate": 0.0541
       }
     },
     "round2_retraining": {
       "tabular": {
-        "original_train_size": 21825,
-        "augmented_train_size": 25219,
-        "adversarial_samples_added": 3394
+        "original_train_size": 30000,
+        "augmented_train_size": 34546,
+        "adversarial_samples_added": 4546
       },
       "graph": {
-        "original_train_size": 2196,
-        "augmented_train_size": 2552,
-        "adversarial_samples_added": 356
+        "original_train_size": 4377,
+        "augmented_train_size": 5086,
+        "adversarial_samples_added": 709
       },
       "text": {
-        "original_train_size": 720,
-        "augmented_train_size": 720,
-        "adversarial_samples_added": 0
+        "original_train_size": 900,
+        "augmented_train_size": 902,
+        "adversarial_samples_added": 2
       }
     },
     "round1_vs_round2": {
       "tabular": {
         "adversarial_eval": {
-          "n_fraud_total": 450,
-          "n_legit_total": 3188,
-          "r1_caught": 216,
-          "r1_catch_rate": 0.48,
-          "r2_caught": 445,
-          "r2_catch_rate": 0.9889,
-          "net_caught_delta": 229,
-          "r1_auc_pr": 0.9963,
-          "r2_auc_pr": 1.0,
-          "auc_delta": 0.0037,
-          "r1_threshold": 0.58,
-          "r2_threshold": 0.53
+          "n_fraud_total": 750,
+          "n_legit_total": 4250,
+          "r1_caught": 518,
+          "r1_catch_rate": 0.6907,
+          "r2_caught": 722,
+          "r2_catch_rate": 0.9627,
+          "net_caught_delta": 204,
+          "r1_auc_pr": 0.9845,
+          "r2_auc_pr": 0.9997,
+          "auc_delta": 0.0152,
+          "r1_threshold": 0.16,
+          "r2_threshold": 0.88
         },
         "catastrophic_forgetting_check": {
           "baseline_r1_auc_pr": 1.0,
           "baseline_r2_auc_pr": 1.0,
           "baseline_auc_delta": 0.0,
-          "baseline_r1_fpr": 0.0005,
-          "baseline_r2_fpr": 0.0002,
-          "baseline_fpr_delta": -0.0003,
+          "baseline_r1_fpr": 0.0,
+          "baseline_r2_fpr": 0.0,
+          "baseline_fpr_delta": 0.0,
           "catastrophic_forgetting": false
         }
       },
       "graph": {
         "adversarial_eval": {
-          "n_fraud_total": 36,
-          "n_legit_total": 330,
-          "r1_caught": 12,
-          "r1_catch_rate": 0.3333,
-          "r2_caught": 24,
-          "r2_catch_rate": 0.6667,
-          "net_caught_delta": 12,
-          "r1_auc_pr": 0.3597,
-          "r2_auc_pr": 0.575,
-          "auc_delta": 0.2153,
-          "r1_threshold": 0.05,
-          "r2_threshold": 0.05
+          "n_fraud_total": 70,
+          "n_legit_total": 661,
+          "r1_caught": 20,
+          "r1_catch_rate": 0.2857,
+          "r2_caught": 58,
+          "r2_catch_rate": 0.8286,
+          "net_caught_delta": 38,
+          "r1_auc_pr": 0.6107,
+          "r2_auc_pr": 0.9208,
+          "auc_delta": 0.3101,
+          "r1_threshold": 0.64,
+          "r2_threshold": 0.55
         },
         "catastrophic_forgetting_check": {
-          "baseline_r1_auc_pr": 0.8544,
-          "baseline_r2_auc_pr": 0.8619,
-          "baseline_auc_delta": 0.0075,
+          "baseline_r1_auc_pr": 0.9455,
+          "baseline_r2_auc_pr": 0.9371,
+          "baseline_auc_delta": -0.0084,
           "catastrophic_forgetting": false
         }
       },
       "text": {
         "adversarial_eval": {
-          "n_fraud_total": 30,
+          "n_fraud_total": 38,
           "r1_caught": 0,
           "r1_catch_rate": 0.0,
-          "r2_caught": 29,
-          "r2_catch_rate": 0.9667,
-          "net_caught_delta": 29,
-          "r1_auc_pr": 0.25,
+          "r2_caught": 38,
+          "r2_catch_rate": 1.0,
+          "net_caught_delta": 38,
+          "r1_auc_pr": 0.2517,
           "r2_auc_pr": 1.0,
-          "auc_delta": 0.75,
+          "auc_delta": 0.7483,
           "r1_threshold": 0.54,
-          "r2_threshold": 0.5686
+          "r2_threshold": 0.7116
         }
       }
     }
