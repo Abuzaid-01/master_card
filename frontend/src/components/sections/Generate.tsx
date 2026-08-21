@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, useInView, useReducedMotion } from "motion/react";
 import {
+  CheckCircle2,
   Crosshair,
   MessageSquareCode,
   Network,
+  ShieldCheck,
   Table2,
 } from "lucide-react";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
@@ -46,7 +48,7 @@ function TerminalWindow() {
   }, [inView, reduce]);
 
   return (
-    <div ref={ref} className="glass-panel overflow-hidden rounded-2xl">
+    <div ref={ref} className="glass-panel flex h-full flex-col overflow-hidden rounded-2xl">
       <div className="flex items-center gap-2 border-b border-glass-border px-4 py-3">
         <span className="h-2.5 w-2.5 rounded-full bg-mc-red/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-mc-orange/80" />
@@ -55,7 +57,7 @@ function TerminalWindow() {
           redteam@fraud-shield — generate.py
         </span>
       </div>
-      <div className="min-h-[320px] p-4 font-mono text-[11px] leading-relaxed sm:text-xs">
+      <div className="min-h-[320px] flex-1 p-4 font-mono text-[11px] leading-relaxed sm:text-xs">
         {terminalLines.slice(0, count).map((line, i) => (
           <div
             key={i}
@@ -75,6 +77,26 @@ function TerminalWindow() {
         {count < terminalLines.length && (
           <span className="inline-block h-3 w-2 bg-cyan align-middle motion-safe:animate-pulse" />
         )}
+      </div>
+      <div className="grid gap-3 border-t border-glass-border bg-white/45 p-4 sm:grid-cols-2">
+        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-white/70 p-3">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-mc-red" />
+          <div>
+            <p className="text-sm font-semibold">4 of 4 vectors validated</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              Domain rules passed across every generated dataset.
+            </p>
+          </div>
+        </div>
+        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-white/70 p-3">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mc-orange" />
+          <div>
+            <p className="text-sm font-semibold">Production fidelity checked</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+              Compared against 20,000 real IEEE-CIS transactions.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -97,26 +119,24 @@ export function Generate() {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         <SectionTitle
-          eyebrow="Pillar 2 · Generate"
-          title="AI Red Team Attack Engine"
+          eyebrow="02 · Red team"
+          title="Train against attacks that do not exist yet."
+          description="Generate realistic payment, language, graph, and evasion data with measurable fidelity—not generic synthetic noise."
           accent="orange"
         />
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-          <Reveal>
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
+          <Reveal className="h-full">
             <TerminalWindow />
           </Reveal>
 
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:auto-rows-fr">
             {datasets.map((d, i) => {
               const Icon = icons[d.icon] ?? Table2;
               return (
-                <Reveal key={d.title} delay={i * 0.1}>
+                <Reveal key={d.title} delay={i * 0.1} className="h-full">
                   <div className="glass-panel tilt-card h-full rounded-2xl p-5">
-                    <Icon
-                      className={`mb-3 h-5 w-5 ${accentText[d.accent]}`}
-                      strokeWidth={1.75}
-                    />
+                    <Icon className={`mb-3 h-5 w-5 ${accentText[d.accent]}`} strokeWidth={1.75} />
                     <h3 className="text-sm font-semibold">{d.title}</h3>
                     <div className="mt-3 font-mono text-2xl font-semibold text-glow-cyan">
                       <Counter value={d.count} />
@@ -145,20 +165,15 @@ export function Generate() {
               <div>
                 <div className="text-sm font-semibold">TSTR Score</div>
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Trained on Synthetic → Tested on 20,000 Real IEEE-CIS
-                  Production Transactions
+                  Trained on Synthetic → Tested on 20,000 Real IEEE-CIS Production Transactions
                 </p>
               </div>
               <div>
-                <div className="text-sm font-semibold">
-                  Domain Constraint Pass Rate
-                </div>
+                <div className="text-sm font-semibold">Domain Constraint Pass Rate</div>
                 <div className="mt-1 font-mono text-2xl font-semibold text-glow-cyan">
                   <Counter value={100} suffix="%" />
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  across all 4 vectors
-                </p>
+                <p className="text-xs text-muted-foreground">across all 4 vectors</p>
               </div>
               <div>
                 <div className="text-sm font-semibold">Wasserstein Distance</div>

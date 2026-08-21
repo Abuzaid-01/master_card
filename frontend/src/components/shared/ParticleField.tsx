@@ -47,7 +47,7 @@ export default function ParticleField() {
           const b = points[j]!;
           const d = Math.hypot(a.x - b.x, a.y - b.y);
           if (d < 130) {
-            ctx.strokeStyle = `rgba(0, 229, 255, ${(1 - d / 130) * 0.22})`;
+            ctx.strokeStyle = `rgba(235, 0, 27, ${(1 - d / 130) * 0.08})`;
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.moveTo(a.x, a.y);
@@ -57,7 +57,7 @@ export default function ParticleField() {
         }
       }
       for (const p of points) {
-        ctx.fillStyle = "rgba(0, 229, 255, 0.6)";
+        ctx.fillStyle = "rgba(247, 158, 27, 0.32)";
         ctx.beginPath();
         ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
         ctx.fill();
@@ -69,7 +69,7 @@ export default function ParticleField() {
     if (reduce) {
       ctx.clearRect(0, 0, w, h);
       for (const p of points) {
-        ctx.fillStyle = "rgba(0, 229, 255, 0.4)";
+        ctx.fillStyle = "rgba(247, 158, 27, 0.25)";
         ctx.beginPath();
         ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
         ctx.fill();
@@ -85,11 +85,5 @@ export default function ParticleField() {
     };
   }, []);
 
-  return (
-    <canvas
-      ref={canvasRef}
-      aria-hidden="true"
-      className="absolute inset-0 h-full w-full"
-    />
-  );
+  return <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 h-full w-full" />;
 }

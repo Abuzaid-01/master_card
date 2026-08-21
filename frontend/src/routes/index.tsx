@@ -8,9 +8,9 @@ import { ClosedLoop } from "@/components/sections/ClosedLoop";
 import { LiveDemo } from "@/components/sections/LiveDemo";
 import { Team } from "@/components/sections/Team";
 
-const title = "SENTRIX AI — Tri-Vector Compound Fraud Defense Engine";
+const title = "Sentrix AI — Adaptive Fraud Defense";
 const description =
-  "SENTRIX AI: Red–blue team AI engine for next-gen payment fraud — 8 GenAI attack vectors, multi-pattern synthetic data, 99.9% AUC-PR ONNX defense head, and closed-loop active learning.";
+  "Fraud defense that learns from the attack. Simulate emerging payment threats, explain every decision, and adapt through closed-loop learning.";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -20,7 +20,15 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: title },
       { property: "og:description", content: description },
       { property: "og:type", content: "website" },
+      {
+        property: "og:image",
+        content: "https://master-card-coral.vercel.app/og.png",
+      },
       { name: "twitter:card", content: "summary_large_image" },
+      {
+        name: "twitter:image",
+        content: "https://master-card-coral.vercel.app/og.png",
+      },
     ],
   }),
   component: Index,
@@ -40,4 +48,3 @@ function Index() {
     </main>
   );
 }
-

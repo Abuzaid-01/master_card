@@ -26,6 +26,34 @@ import {
 
 type StepId = "setup" | "generate" | "train" | "attack" | "retrain" | "evaluate";
 
+interface PipelineResults {
+  generate?: {
+    total_rows: number;
+    fraud_count: number;
+    legit_count: number;
+    train_size?: number;
+  };
+  train?: { auc_pr: number; f1_score: number; fpr: number };
+  attack?: { evasion_rate: number; r1_missed: number; total_adversarial: number };
+  retrain?: {
+    r2_auc_pr: number;
+    evaded_samples_added: number;
+    augmented_train_size: number;
+  };
+  evaluate?: {
+    r1_caught: number;
+    r2_caught: number;
+    total_adversarial_eval: number;
+    delta_caught: number;
+    r1_catch_rate: number;
+    r2_catch_rate: number;
+    r1_baseline_auc: number;
+    r2_baseline_auc: number;
+    r1_baseline_fpr: number;
+    baseline_stable: boolean;
+  };
+}
+
 const STEPS: { id: StepId; label: string; icon: typeof Zap }[] = [
   { id: "setup", label: "Setup", icon: Database },
   { id: "generate", label: "Generate", icon: Zap },
@@ -54,11 +82,7 @@ function ProgressBar({ current }: { current: number }) {
                     : "text-muted-foreground/40"
               }`}
             >
-              {done ? (
-                <Check className="h-3 w-3" />
-              ) : (
-                <Icon className="h-3 w-3" />
-              )}
+              {done ? <Check className="h-3 w-3" /> : <Icon className="h-3 w-3" />}
               <span className="hidden sm:inline">{step.label}</span>
             </div>
             {i < STEPS.length - 1 && (
@@ -99,11 +123,7 @@ function StepButton({
       disabled={loading}
       className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-mono text-sm transition-all disabled:opacity-50 ${colors[accent]}`}
     >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Icon className="h-4 w-4" />
-      )}
+      {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Icon className="h-4 w-4" />}
       {loading ? "Processing..." : label}
     </button>
   );
@@ -127,12 +147,8 @@ function MetricBadge({
   };
   return (
     <div className="text-center">
-      <div className={`font-mono text-2xl font-bold ${cls[accent]}`}>
-        {value}
-      </div>
-      <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">
-        {label}
-      </div>
+      <div className={`font-mono text-2xl font-bold ${cls[accent]}`}>{value}</div>
+      <div className="mt-1 text-[10px] uppercase tracking-wider text-muted-foreground">{label}</div>
     </div>
   );
 }
@@ -145,8 +161,7 @@ export function LivePipeline() {
   const [nSamples, setNSamples] = useState(30000);
   const [fraudPct, setFraudPct] = useState(0.15);
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [results, setResults] = useState<Record<string, any>>({});
+  const [results, setResults] = useState<PipelineResults>({});
 
   const generate = usePipelineGenerate();
   const train = usePipelineTrain();
@@ -160,7 +175,7 @@ export function LivePipeline() {
       vector,
       n_samples: nSamples,
       fraud_pct: fraudPct,
-      llm_model: vector === "text" ? selectedLLM : undefined,
+      ...(vector === "text" ? { llm_model: selectedLLM } : {}),
     };
     generate.mutate(input, {
       onSuccess: (data) => {
@@ -322,8 +337,16 @@ export function LivePipeline() {
                     <div className="grid grid-cols-2 gap-1.5 sm:grid-cols-4">
                       {[
                         { id: "openai/gpt-oss-120b", name: "GPT OSS 120B", provider: "groq" },
-                        { id: "gemini-3.5-flash-lite", name: "Gemini 3.5 Flash Lite", provider: "gemini" },
-                        { id: "gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite", provider: "gemini" },
+                        {
+                          id: "gemini-3.5-flash-lite",
+                          name: "Gemini 3.5 Flash Lite",
+                          provider: "gemini",
+                        },
+                        {
+                          id: "gemini-3.1-flash-lite",
+                          name: "Gemini 3.1 Flash Lite",
+                          provider: "gemini",
+                        },
                         { id: "llama-3.3-70b-versatile", name: "Llama 3.3 70B", provider: "groq" },
                       ].map((m) => (
                         <button
@@ -349,12 +372,8 @@ export function LivePipeline() {
 
                 <div>
                   <div className="flex items-baseline justify-between">
-                    <label className="text-xs text-muted-foreground">
-                      Number of Samples
-                    </label>
-                    <span className="font-mono text-sm text-cyan">
-                      {nSamples.toLocaleString()}
-                    </span>
+                    <label className="text-xs text-muted-foreground">Number of Samples</label>
+                    <span className="font-mono text-sm text-cyan">{nSamples.toLocaleString()}</span>
                   </div>
                   <input
                     type="range"
@@ -368,9 +387,7 @@ export function LivePipeline() {
                 </div>
                 <div>
                   <div className="flex items-baseline justify-between">
-                    <label className="text-xs text-muted-foreground">
-                      Fraud Ratio
-                    </label>
+                    <label className="text-xs text-muted-foreground">Fraud Ratio</label>
                     <span className="font-mono text-sm text-cyan">
                       {(fraudPct * 100).toFixed(0)}%
                     </span>
@@ -387,8 +404,8 @@ export function LivePipeline() {
                 </div>
                 <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
                   <p>
-                    <strong className="text-foreground">Pipeline Split:</strong>{" "}
-                    60% train · 20% validation · 10% mining · 10% untouched final holdout
+                    <strong className="text-foreground">Pipeline Split:</strong> 60% train · 20%
+                    validation · 10% mining · 10% untouched final holdout
                   </p>
                 </div>
               </div>
@@ -417,7 +434,10 @@ export function LivePipeline() {
                 <Zap className="h-4 w-4" /> Generating Synthetic Attacks
               </h4>
               <p className="mt-2 text-sm text-muted-foreground">
-                Creating {nSamples.toLocaleString()} {vector === "text" ? "prompt injection logs with " + selectedLLM : "card testing transactions"}{" "}
+                Creating {nSamples.toLocaleString()}{" "}
+                {vector === "text"
+                  ? "prompt injection logs with " + selectedLLM
+                  : "card testing transactions"}{" "}
                 with {(fraudPct * 100).toFixed(0)}% fraud ratio...
               </p>
               <div className="mt-4">
@@ -560,15 +580,10 @@ export function LivePipeline() {
                   <div className="mt-4">
                     <div className="text-center">
                       <div className="font-mono text-3xl font-bold text-glow-red">
-                        <Counter
-                          value={results.attack.evasion_rate}
-                          decimals={1}
-                          suffix="%"
-                        />
+                        <Counter value={results.attack.evasion_rate} decimals={1} suffix="%" />
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        Evasion Rate — R1 missed{" "}
-                        {results.attack.r1_missed}/
+                        Evasion Rate — R1 missed {results.attack.r1_missed}/
                         {results.attack.total_adversarial}
                       </div>
                     </div>
@@ -577,12 +592,10 @@ export function LivePipeline() {
               </div>
               <div className="glass-panel rounded-2xl p-6">
                 <h4 className="flex items-center gap-2 font-mono text-xs uppercase tracking-wider text-muted-foreground">
-                  <RefreshCw className="h-4 w-4" /> Retrain with Adversarial
-                  Data
+                  <RefreshCw className="h-4 w-4" /> Retrain with Adversarial Data
                 </h4>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Augmenting training data with {results.attack?.r1_missed ?? 0}{" "}
-                  evaded samples
+                  Augmenting training data with {results.attack?.r1_missed ?? 0} evaded samples
                 </p>
                 <div className="mt-4">
                   <StepButton
@@ -662,16 +675,12 @@ export function LivePipeline() {
             {/* Headline */}
             <div className="mb-6 text-center">
               <div className="font-mono text-2xl font-bold leading-tight sm:text-4xl">
-                <span className="text-glow-red">
-                  R1: {results.evaluate.r1_caught}
-                </span>
+                <span className="text-glow-red">R1: {results.evaluate.r1_caught}</span>
                 <span className="text-muted-foreground">
                   /{results.evaluate.total_adversarial_eval} caught
                 </span>
                 <span className="mx-3 text-muted-foreground">→</span>
-                <span className="text-glow-cyan">
-                  R2: {results.evaluate.r2_caught}
-                </span>
+                <span className="text-glow-cyan">R2: {results.evaluate.r2_caught}</span>
                 <span className="text-muted-foreground">
                   /{results.evaluate.total_adversarial_eval} caught
                 </span>
@@ -690,15 +699,11 @@ export function LivePipeline() {
                 <dl className="mt-4 space-y-3">
                   <div className="flex justify-between border-b border-glass-border pb-2 text-sm">
                     <dt className="text-muted-foreground">Catch Rate</dt>
-                    <dd className="font-mono">
-                      {results.evaluate.r1_catch_rate}%
-                    </dd>
+                    <dd className="font-mono">{results.evaluate.r1_catch_rate}%</dd>
                   </div>
                   <div className="flex justify-between border-b border-glass-border pb-2 text-sm">
                     <dt className="text-muted-foreground">Baseline AUC</dt>
-                    <dd className="font-mono">
-                      {results.evaluate.r1_baseline_auc}
-                    </dd>
+                    <dd className="font-mono">{results.evaluate.r1_baseline_auc}</dd>
                   </div>
                   <div className="flex justify-between text-sm">
                     <dt className="text-muted-foreground">Baseline FPR</dt>
@@ -717,31 +722,24 @@ export function LivePipeline() {
                   <div className="flex justify-between border-b border-glass-border pb-2 text-sm">
                     <dt className="text-muted-foreground">Catch Rate</dt>
                     <dd className="flex items-baseline gap-2 font-mono">
-                      <span className="text-cyan">
-                        {results.evaluate.r2_catch_rate}%
-                      </span>
+                      <span className="text-cyan">{results.evaluate.r2_catch_rate}%</span>
                       <span className="text-[11px] text-mc-orange">
                         +
-                        {(
-                          results.evaluate.r2_catch_rate -
-                          results.evaluate.r1_catch_rate
-                        ).toFixed(1)}
+                        {(results.evaluate.r2_catch_rate - results.evaluate.r1_catch_rate).toFixed(
+                          1,
+                        )}
                         %
                       </span>
                     </dd>
                   </div>
                   <div className="flex justify-between border-b border-glass-border pb-2 text-sm">
                     <dt className="text-muted-foreground">Baseline AUC</dt>
-                    <dd className="font-mono text-cyan">
-                      {results.evaluate.r2_baseline_auc}
-                    </dd>
+                    <dd className="font-mono text-cyan">{results.evaluate.r2_baseline_auc}</dd>
                   </div>
                   <div className="flex justify-between text-sm">
                     <dt className="text-muted-foreground">Forgetting</dt>
                     <dd className="font-mono text-cyan">
-                      {results.evaluate.baseline_stable
-                        ? "None ✅"
-                        : "Detected ⚠️"}
+                      {results.evaluate.baseline_stable ? "None ✅" : "Detected ⚠️"}
                     </dd>
                   </div>
                 </dl>

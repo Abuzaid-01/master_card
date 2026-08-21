@@ -1,13 +1,44 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 
 const DEFAULT_REMOTE_API = "https://master-card.onrender.com";
-const API_BASE = (
-  import.meta.env.VITE_API_URL
-    ? String(import.meta.env.VITE_API_URL).replace(/\/$/, "")
+const API_BASE =
+  (import.meta.env["VITE_API_URL"]
+    ? String(import.meta.env["VITE_API_URL"]).replace(/\/$/, "")
     : import.meta.env.PROD
       ? DEFAULT_REMOTE_API
-      : ""
-) + "/api";
+      : "") + "/api";
+
+const DEFAULT_TIMEOUT_MS = 15_000;
+
+async function fetchApi<T>(
+  path: string,
+  init?: RequestInit,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+): Promise<T> {
+  const controller = new AbortController();
+  const timeout = globalThis.setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(detail || `Backend returned ${response.status}`);
+    }
+
+    return response.json() as Promise<T>;
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("The backend is taking longer than expected. It may be waking up.");
+    }
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeout);
+  }
+}
 
 // ── Types ──
 export interface TabularDemoInput {
@@ -29,12 +60,14 @@ export interface TabularDemoResult {
   threshold: number;
   optimal_threshold: number;
   verdict_optimized: string;
-  shap_explanation: {
-    feature: string;
-    value: number;
-    shap: number;
-    impact: string;
-  }[] | null;
+  shap_explanation:
+    | {
+        feature: string;
+        value: number;
+        shap: number;
+        impact: string;
+      }[]
+    | null;
   input: TabularDemoInput;
 }
 
@@ -59,11 +92,7 @@ export interface TextDemoResult {
 export function useMetrics() {
   return useQuery({
     queryKey: ["metrics"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/metrics`);
-      if (!res.ok) return null;
-      return res.json();
-    },
+    queryFn: () => fetchApi<Record<string, unknown>>("/metrics"),
     retry: 1,
     staleTime: 60_000,
   });
@@ -72,11 +101,7 @@ export function useMetrics() {
 export function useClosedLoop() {
   return useQuery({
     queryKey: ["closed-loop"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/closed-loop`);
-      if (!res.ok) return null;
-      return res.json();
-    },
+    queryFn: () => fetchApi<Record<string, unknown>>("/closed-loop"),
     retry: 1,
     staleTime: 60_000,
   });
@@ -85,11 +110,7 @@ export function useClosedLoop() {
 export function useFidelity() {
   return useQuery({
     queryKey: ["fidelity"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/fidelity`);
-      if (!res.ok) return null;
-      return res.json();
-    },
+    queryFn: () => fetchApi<Record<string, unknown>>("/fidelity"),
     retry: 1,
     staleTime: 60_000,
   });
@@ -98,12 +119,8 @@ export function useFidelity() {
 export function useHealthCheck() {
   return useQuery({
     queryKey: ["health"],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/health`);
-      if (!res.ok) return { status: "offline" };
-      return res.json();
-    },
-    retry: 1,
+    queryFn: () => fetchApi<{ status: string }>("/health", undefined, 12_000),
+    retry: false,
     staleTime: 10_000,
     refetchInterval: 30_000,
   });
@@ -113,13 +130,11 @@ export function useHealthCheck() {
 export function useTabularDemo() {
   return useMutation({
     mutationFn: async (input: TabularDemoInput): Promise<TabularDemoResult> => {
-      const res = await fetch(`${API_BASE}/demo/tabular`, {
+      return fetchApi<TabularDemoResult>("/demo/tabular", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(input),
       });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
     },
   });
 }
@@ -127,13 +142,15 @@ export function useTabularDemo() {
 export function useTextDemo() {
   return useMutation({
     mutationFn: async (input: TextDemoInput): Promise<TextDemoResult> => {
-      const res = await fetch(`${API_BASE}/demo/text`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
+      return fetchApi<TextDemoResult>(
+        "/demo/text",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        },
+        30_000,
+      );
     },
   });
 }
@@ -147,42 +164,77 @@ export interface PipelineGenerateInput {
   llm_model?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function usePipelineMutation<TInput = void>(endpoint: string) {
+export interface PipelineGenerateResult {
+  total_rows: number;
+  fraud_count: number;
+  legit_count: number;
+  train_size?: number;
+}
+
+export interface PipelineTrainResult {
+  auc_pr: number;
+  f1_score: number;
+  fpr: number;
+}
+
+export interface PipelineAttackResult {
+  evasion_rate: number;
+  r1_missed: number;
+  total_adversarial: number;
+}
+
+export interface PipelineRetrainResult {
+  r2_auc_pr: number;
+  evaded_samples_added: number;
+  augmented_train_size: number;
+}
+
+export interface PipelineEvaluateResult {
+  r1_caught: number;
+  r2_caught: number;
+  total_adversarial_eval: number;
+  delta_caught: number;
+  r1_catch_rate: number;
+  r2_catch_rate: number;
+  r1_baseline_auc: number;
+  r2_baseline_auc: number;
+  r1_baseline_fpr: number;
+  baseline_stable: boolean;
+}
+
+function usePipelineMutation<TOutput, TInput = void>(endpoint: string) {
   return useMutation({
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mutationFn: async (input?: TInput): Promise<any> => {
-      const res = await fetch(`${API_BASE}/pipeline/${endpoint}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: input ? JSON.stringify(input) : "{}",
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-      return res.json();
+    mutationFn: async (input?: TInput): Promise<TOutput> => {
+      return fetchApi<TOutput>(
+        `/pipeline/${endpoint}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: input ? JSON.stringify(input) : "{}",
+        },
+        120_000,
+      );
     },
   });
 }
 
 export function usePipelineGenerate() {
-  return usePipelineMutation<PipelineGenerateInput>("generate");
+  return usePipelineMutation<PipelineGenerateResult, PipelineGenerateInput>("generate");
 }
 export function usePipelineTrain() {
-  return usePipelineMutation("train");
+  return usePipelineMutation<PipelineTrainResult>("train");
 }
 export function usePipelineAttack() {
-  return usePipelineMutation("attack");
+  return usePipelineMutation<PipelineAttackResult>("attack");
 }
 export function usePipelineRetrain() {
-  return usePipelineMutation("retrain");
+  return usePipelineMutation<PipelineRetrainResult>("retrain");
 }
 export function usePipelineEvaluate() {
-  return usePipelineMutation("evaluate");
+  return usePipelineMutation<PipelineEvaluateResult>("evaluate");
 }
 export function usePipelineReset() {
-  return usePipelineMutation("reset");
+  return usePipelineMutation<Record<string, never>>("reset");
 }
 
 // ── LLM Red Team Model Hooks ──
@@ -222,9 +274,7 @@ export function useLLMModels() {
   return useQuery<{ models: LLMModel[] }>({
     queryKey: ["llm-models"],
     queryFn: async () => {
-      const res = await fetch(`${API_BASE}/llm/models`);
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
+      return fetchApi<{ models: LLMModel[] }>("/llm/models");
     },
     staleTime: 60_000,
   });
@@ -233,16 +283,15 @@ export function useLLMModels() {
 export function useLLMGenerate() {
   return useMutation({
     mutationFn: async (input: LLMGenerateInput): Promise<LLMGenerateResult> => {
-      const res = await fetch(`${API_BASE}/llm/generate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(input),
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-      return res.json();
+      return fetchApi<LLMGenerateResult>(
+        "/llm/generate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(input),
+        },
+        45_000,
+      );
     },
   });
 }
@@ -307,35 +356,68 @@ export interface CrossVectorScenarioResult {
   };
 }
 
-export function useCrossVectorSimulation(scenarioId: number) {
+export interface CustomCrossVectorScenario {
+  scenario_id: string;
+  name: string;
+  target_account: string;
+  phase_1_text_injection: {
+    attack_type: string;
+    prompt_text: string;
+    intent: string;
+  };
+  phase_2_tabular_card_testing: {
+    attack_type: string;
+    transactions: Array<{
+      step: string;
+      amount: number;
+      velocity: number;
+      device_risk_score: number;
+      is_decline: number;
+      geo_distance_km: number;
+      mcc_risk_weight: number;
+      failed_attempts_24h: number;
+    }>;
+  };
+  phase_3_graph_mule_routing: {
+    attack_type: string;
+    hops: Array<{
+      hop: number;
+      sender: string;
+      receiver: string;
+      amount: number;
+      delay_sec: number;
+    }>;
+  };
+}
+
+export function useCrossVectorSimulation(scenarioId: number, enabled = false) {
   return useQuery<CrossVectorScenarioResult>({
     queryKey: ["cross-vector-sim", scenarioId],
-    queryFn: async () => {
-      const res = await fetch(`${API_BASE}/simulate/cross_vector?scenario_id=${scenarioId}`);
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      return res.json();
-    },
+    queryFn: () =>
+      fetchApi<CrossVectorScenarioResult>(
+        `/simulate/cross_vector?scenario_id=${scenarioId}`,
+        undefined,
+        45_000,
+      ),
+    enabled,
+    retry: false,
+    refetchOnWindowFocus: false,
     staleTime: 10_000,
   });
 }
 
 export function useCrossVectorEvaluate() {
-  return useMutation<CrossVectorScenarioResult, Error, any>({
-    mutationFn: async (customScenario: any) => {
-      const res = await fetch(`${API_BASE}/simulate/cross_vector_evaluate`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(customScenario),
-      });
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
-      return res.json();
+  return useMutation<CrossVectorScenarioResult, Error, CustomCrossVectorScenario>({
+    mutationFn: async (customScenario) => {
+      return fetchApi<CrossVectorScenarioResult>(
+        "/simulate/cross_vector_evaluate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(customScenario),
+        },
+        45_000,
+      );
     },
   });
 }
-
-
-
-

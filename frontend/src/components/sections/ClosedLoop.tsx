@@ -19,8 +19,9 @@ export function ClosedLoop() {
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <SectionTitle
-          eyebrow="Step 4 · Close the Loop"
-          title="Adversarial Active Learning"
+          eyebrow="04 · Learning loop"
+          title="Every evasion becomes the next defense."
+          description="Sentrix promotes the hardest missed attacks into training while preserving performance on legitimate transactions."
           accent="violet"
         />
 
@@ -78,9 +79,7 @@ export function ClosedLoop() {
                     <dt className="text-muted-foreground">{r.metric}</dt>
                     <dd className="flex items-baseline gap-3 font-mono">
                       <span className="text-cyan">{r.r2}</span>
-                      <span className="text-[11px] text-mc-orange">
-                        {r.delta}
-                      </span>
+                      <span className="text-[11px] text-mc-orange">{r.delta}</span>
                     </dd>
                   </div>
                 ))}
@@ -91,10 +90,10 @@ export function ClosedLoop() {
 
         <Reveal delay={0.15} className="mt-6">
           <blockquote className="glass-panel glow-orange rounded-2xl border-l-4 border-mc-orange p-6 text-sm leading-relaxed text-foreground/90 sm:text-base">
-            Round 2 catches 204 more unseen adversarial evasion attacks across
-            the holdout validation suite while maintaining a{" "}
-            <span className="text-glow-orange">0.00% False Positive Rate</span>{" "}
-            on legitimate cardholders. Zero catastrophic forgetting verified.
+            Round 2 catches 204 more unseen adversarial evasion attacks across the holdout
+            validation suite while maintaining a{" "}
+            <span className="text-glow-orange">0.00% False Positive Rate</span> on legitimate
+            cardholders. Zero catastrophic forgetting verified.
           </blockquote>
         </Reveal>
       </div>

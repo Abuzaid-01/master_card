@@ -60,8 +60,9 @@ export function Identify() {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         <SectionTitle
-          eyebrow="Pillar 1 · Identify"
-          title="8 Novel GenAI-Powered Attack Vectors"
+          eyebrow="01 · Threat landscape"
+          title="See the attacks before they reach production."
+          description="Eight emerging fraud patterns, organized by severity and the way generative AI increases their scale."
           accent="red"
         />
 
@@ -79,13 +80,10 @@ export function Identify() {
                   delay: (i % 4) * 0.1,
                   ease: [0.2, 0.8, 0.2, 1],
                 }}
-                className="glass-panel group relative overflow-hidden rounded-2xl p-5 transition-transform duration-300 hover:-translate-y-1.5"
+                className="glass-panel relative overflow-hidden rounded-2xl p-5 transition-transform duration-300 hover:-translate-y-1"
               >
                 <div className="flex items-start justify-between gap-3">
-                  <Icon
-                    className="h-5 w-5 text-mc-orange"
-                    strokeWidth={1.75}
-                  />
+                  <Icon className="h-5 w-5 text-mc-orange" strokeWidth={1.75} />
                   <span
                     className={`rounded-full border px-2 py-0.5 font-mono text-[10px] tracking-wider uppercase ${severityStyle[v.severity]}`}
                   >
@@ -95,15 +93,13 @@ export function Identify() {
                 <div className="mt-4 font-mono text-[10px] text-muted-foreground">
                   VECTOR {String(v.n).padStart(2, "0")}
                 </div>
-                <h3 className="mt-1 text-base leading-snug font-semibold">
-                  {v.name}
-                </h3>
+                <h3 className="mt-1 text-base leading-snug font-semibold">{v.name}</h3>
                 <p className="mt-2 text-sm text-muted-foreground">{v.desc}</p>
 
-                <div className="mt-4 max-h-0 overflow-hidden opacity-0 transition-all duration-400 group-hover:max-h-40 group-hover:opacity-100 group-focus-within:max-h-40 group-focus-within:opacity-100">
+                <div className="mt-4">
                   <div className="border-t border-glass-border pt-3">
-                    <div className="font-mono text-[10px] tracking-[0.2em] text-cyan uppercase">
-                      GenAI Force Multiplier
+                    <div className="text-[10px] font-semibold tracking-[0.16em] text-cyan uppercase">
+                      Why AI changes it
                     </div>
                     <p className="mt-1.5 text-xs leading-relaxed text-foreground/80">
                       {v.multiplier}

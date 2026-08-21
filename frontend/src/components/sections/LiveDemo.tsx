@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   CreditCard,
@@ -14,8 +14,6 @@ import {
   Bot,
   Cpu,
 } from "lucide-react";
-import { LivePipeline } from "@/components/sections/LivePipeline";
-import { CrossVectorPanel } from "@/components/sections/CrossVectorPanel";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
 import {
   useTabularDemo,
@@ -27,18 +25,35 @@ import {
   type TextDemoResult,
 } from "@/hooks/useBackendMetrics";
 
+const LivePipeline = lazy(() =>
+  import("@/components/sections/LivePipeline").then((module) => ({
+    default: module.LivePipeline,
+  })),
+);
+const CrossVectorPanel = lazy(() =>
+  import("@/components/sections/CrossVectorPanel").then((module) => ({
+    default: module.CrossVectorPanel,
+  })),
+);
+
+function DemoPanelFallback() {
+  return (
+    <div className="glass-panel flex min-h-72 items-center justify-center rounded-3xl">
+      <div className="flex items-center gap-3 text-sm text-muted-foreground">
+        <Loader2 className="h-4 w-4 animate-spin text-mc-red" />
+        Preparing the interactive workspace…
+      </div>
+    </div>
+  );
+}
+
 /* ── Gauge Ring for fraud probability ── */
 function ProbGauge({ value, size = 120 }: { value: number; size?: number }) {
   const radius = (size - 12) / 2;
   const circ = 2 * Math.PI * radius;
   const pct = Math.min(Math.max(value, 0), 1);
   const offset = circ * (1 - pct);
-  const color =
-    pct >= 0.5
-      ? "var(--mc-red)"
-      : pct >= 0.3
-        ? "var(--mc-orange)"
-        : "var(--neon-cyan)";
+  const color = pct >= 0.5 ? "var(--mc-red)" : pct >= 0.3 ? "var(--mc-orange)" : "var(--neon-cyan)";
 
   return (
     <div className="relative mx-auto" style={{ width: size, height: size }}>
@@ -68,10 +83,7 @@ function ProbGauge({ value, size = 120 }: { value: number; size?: number }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span
-          className="font-mono text-2xl font-bold"
-          style={{ color }}
-        >
+        <span className="font-mono text-2xl font-bold" style={{ color }}>
           {(pct * 100).toFixed(1)}%
         </span>
         <span className="mt-0.5 text-[10px] text-muted-foreground uppercase tracking-wider">
@@ -83,15 +95,7 @@ function ProbGauge({ value, size = 120 }: { value: number; size?: number }) {
 }
 
 /* ── SHAP Bar ── */
-function ShapBar({
-  feature,
-  shap,
-  impact,
-}: {
-  feature: string;
-  shap: number;
-  impact: string;
-}) {
+function ShapBar({ feature, shap, impact }: { feature: string; shap: number; impact: string }) {
   const abs = Math.min(Math.abs(shap), 4);
   const width = (abs / 4) * 100;
   const isRisk = impact === "Increases Risk";
@@ -123,23 +127,39 @@ function Tab({
   onClick,
   icon: Icon,
   label,
+  description,
 }: {
   active: boolean;
   onClick: () => void;
   icon: typeof CreditCard;
   label: string;
+  description: string;
 }) {
   return (
     <button
+      type="button"
+      role="tab"
+      aria-selected={active}
       onClick={onClick}
-      className={`flex items-center gap-2 rounded-full px-4 py-2 font-mono text-xs uppercase tracking-wider transition-all ${
+      className={`flex min-w-0 items-start gap-3 rounded-2xl border p-3.5 text-left transition-all ${
         active
-          ? "bg-cyan/15 text-cyan glow-cyan"
-          : "text-muted-foreground hover:text-foreground"
+          ? "border-foreground bg-foreground text-background shadow-sm"
+          : "border-border bg-white/55 text-foreground hover:border-foreground/25 hover:bg-white"
       }`}
     >
-      <Icon className="h-4 w-4" />
-      {label}
+      <span
+        className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${active ? "bg-white/12" : "bg-mc-red/8"}`}
+      >
+        <Icon className={`h-4 w-4 ${active ? "text-mc-yellow" : "text-mc-red"}`} />
+      </span>
+      <span>
+        <span className="block text-sm font-semibold">{label}</span>
+        <span
+          className={`mt-0.5 block text-xs leading-snug ${active ? "text-background/60" : "text-muted-foreground"}`}
+        >
+          {description}
+        </span>
+      </span>
     </button>
   );
 }
@@ -210,11 +230,6 @@ function TabularPanel() {
       mcc_risk_weight: mccRisk,
     });
   };
-
-  // Run initial inference on mount
-  useEffect(() => {
-    handleSubmit();
-  }, []);
 
   return (
     <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -300,15 +315,11 @@ function TabularPanel() {
           />
 
           <div className="flex items-center justify-between pt-1">
-            <span className="text-xs text-muted-foreground">
-              Previous Auth Decline
-            </span>
+            <span className="text-xs text-muted-foreground">Previous Auth Decline</span>
             <button
               onClick={() => setIsDecline(isDecline === 0 ? 1 : 0)}
               className={`rounded-full px-3 py-1 font-mono text-xs transition-all ${
-                isDecline
-                  ? "bg-mc-red/20 text-mc-red"
-                  : "bg-secondary text-muted-foreground"
+                isDecline ? "bg-mc-red/20 text-mc-red" : "bg-secondary text-muted-foreground"
               }`}
             >
               {isDecline ? "Yes (Flagged)" : "No"}
@@ -354,9 +365,7 @@ function TabularPanel() {
                 )}
                 <span
                   className={`font-mono text-lg font-bold ${
-                    result.verdict === "FRAUD"
-                      ? "text-glow-red"
-                      : "text-glow-cyan"
+                    result.verdict === "FRAUD" ? "text-glow-red" : "text-glow-cyan"
                   }`}
                 >
                   {result.verdict}
@@ -369,12 +378,7 @@ function TabularPanel() {
                     SHAP Feature Attribution
                   </div>
                   {result.shap_explanation.map((s) => (
-                    <ShapBar
-                      key={s.feature}
-                      feature={s.feature}
-                      shap={s.shap}
-                      impact={s.impact}
-                    />
+                    <ShapBar key={s.feature} feature={s.feature} shap={s.shap} impact={s.impact} />
                   ))}
                 </div>
               )}
@@ -387,12 +391,8 @@ function TabularPanel() {
               className="flex min-h-[280px] flex-col items-center justify-center text-muted-foreground"
             >
               <Zap className="mb-3 h-8 w-8 opacity-30" />
-              <p className="text-sm">
-                Adjust parameters & run inference
-              </p>
-              <p className="mt-1 text-xs opacity-60">
-                XGBoost ONNX model · 0.006ms latency
-              </p>
+              <p className="text-sm">Adjust parameters & run inference</p>
+              <p className="mt-1 text-xs opacity-60">XGBoost ONNX model · 0.006ms latency</p>
             </motion.div>
           )}
         </AnimatePresence>
@@ -488,6 +488,7 @@ function TextPanel() {
         onSuccess: (data) => {
           if (data.prompts && data.prompts.length > 0) {
             const chosen = data.prompts[0];
+            if (!chosen) return;
             setPrompt(chosen.prompt_text);
             setLastGeneratedMeta({
               model: currentModelObj?.name || selectedModel,
@@ -498,7 +499,7 @@ function TextPanel() {
             mutation.mutate({ prompt_text: chosen.prompt_text });
           }
         },
-      }
+      },
     );
   };
 
@@ -603,23 +604,16 @@ function TextPanel() {
         {lastGeneratedMeta && (
           <div className="mt-2 flex flex-wrap items-center gap-2 rounded-md bg-secondary/40 px-3 py-1.5 font-mono text-[10px] text-muted-foreground">
             <span>
-              Generated by:{" "}
-              <strong className="text-cyan">{lastGeneratedMeta.model}</strong>
+              Generated by: <strong className="text-cyan">{lastGeneratedMeta.model}</strong>
             </span>
             {lastGeneratedMeta.attack_type && (
               <span>
-                · Type:{" "}
-                <strong className="text-mc-orange">
-                  {lastGeneratedMeta.attack_type}
-                </strong>
+                · Type: <strong className="text-mc-orange">{lastGeneratedMeta.attack_type}</strong>
               </span>
             )}
             {lastGeneratedMeta.severity && (
               <span>
-                · Severity:{" "}
-                <strong className="text-mc-red">
-                  {lastGeneratedMeta.severity}
-                </strong>
+                · Severity: <strong className="text-mc-red">{lastGeneratedMeta.severity}</strong>
               </span>
             )}
           </div>
@@ -662,9 +656,7 @@ function TextPanel() {
                 )}
                 <span
                   className={`font-mono text-2xl font-bold ${
-                    result.verdict === "BLOCKED"
-                      ? "text-glow-red"
-                      : "text-glow-cyan"
+                    result.verdict === "BLOCKED" ? "text-glow-red" : "text-glow-cyan"
                   }`}
                 >
                   {result.verdict}
@@ -675,18 +667,13 @@ function TextPanel() {
                 {/* TF-IDF vs Semantic comparison */}
                 <div>
                   <div className="flex items-baseline justify-between font-mono text-[10px]">
-                    <span className="text-muted-foreground">
-                      TF-IDF (Keyword Baseline)
-                    </span>
+                    <span className="text-muted-foreground">TF-IDF (Keyword Baseline)</span>
                     <span
                       className={
-                        result.analysis.tfidf_verdict === "BLOCKED"
-                          ? "text-mc-red"
-                          : "text-cyan"
+                        result.analysis.tfidf_verdict === "BLOCKED" ? "text-mc-red" : "text-cyan"
                       }
                     >
-                      {(result.tfidf_score * 100).toFixed(1)}% —{" "}
-                      {result.analysis.tfidf_verdict}
+                      {(result.tfidf_score * 100).toFixed(1)}% — {result.analysis.tfidf_verdict}
                     </span>
                   </div>
                   <div className="mt-1 h-2 overflow-hidden rounded-full bg-secondary">
@@ -708,9 +695,7 @@ function TextPanel() {
                     </span>
                     <span
                       className={
-                        result.analysis.semantic_verdict === "BLOCKED"
-                          ? "text-mc-red"
-                          : "text-cyan"
+                        result.analysis.semantic_verdict === "BLOCKED" ? "text-mc-red" : "text-cyan"
                       }
                     >
                       {(result.semantic_score * 100).toFixed(1)}% —{" "}
@@ -737,8 +722,7 @@ function TextPanel() {
                     className="mt-3 rounded-lg bg-cyan/10 p-3 text-center font-mono text-xs text-cyan border border-cyan/20"
                   >
                     🚀 Semantic AI caught what keyword filters missed (+
-                    {(result.analysis.semantic_advantage * 100).toFixed(1)}%
-                    lift)
+                    {(result.analysis.semantic_advantage * 100).toFixed(1)}% lift)
                   </motion.div>
                 )}
               </div>
@@ -765,9 +749,19 @@ function TextPanel() {
 
 /* ── Main LiveDemo Section ── */
 export function LiveDemo() {
-  const [activeTab, setActiveTab] = useState<"cross_vector" | "tabular" | "text" | "pipeline">("cross_vector");
+  const [activeTab, setActiveTab] = useState<"cross_vector" | "tabular" | "text" | "pipeline">(
+    "tabular",
+  );
   const health = useHealthCheck();
-  const isOnline = health.data?.status === "ok";
+  const isChecking = health.isPending || (health.isFetching && !health.data);
+  const isOnline = !health.isError && health.data?.status === "ok";
+  const statusLabel = isChecking
+    ? "CHECKING CONNECTION"
+    : isOnline
+      ? "ONLINE"
+      : "TEMPORARILY UNAVAILABLE";
+  const statusDot = isChecking ? "bg-mc-yellow" : isOnline ? "bg-emerald-500" : "bg-mc-red";
+  const statusText = isChecking ? "text-[#6b3a00]" : isOnline ? "text-emerald-700" : "text-mc-red";
 
   return (
     <section
@@ -785,54 +779,61 @@ export function LiveDemo() {
 
       <div className="relative z-10 mx-auto w-full max-w-6xl">
         <SectionTitle
-          eyebrow="Interactive · Live Demo"
-          title="Test the Defender"
-          accent="cyan"
+          eyebrow="05 · Interactive lab"
+          title="Put the defense under pressure."
+          description="Choose a focused test, adjust the inputs, and run it when you are ready. Every result includes the signal behind the decision."
+          accent="red"
         />
 
         {/* Backend status badge */}
         <Reveal>
-          <div className="mb-6 flex items-center gap-3">
-            <div
-              className={`h-2 w-2 rounded-full ${
-                isOnline ? "animate-pulse bg-cyan" : "bg-mc-red"
-              }`}
-            />
-            <span className="font-mono text-xs text-muted-foreground">
-              API Status:{" "}
-              <span className={isOnline ? "text-cyan" : "text-mc-red"}>
-                {isOnline ? "ONLINE" : "OFFLINE — start the backend"}
-              </span>
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white/55 px-4 py-3">
+            <div className={`h-2 w-2 rounded-full ${statusDot}`} />
+            <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
+              Defense API · <span className={statusText}>{statusLabel}</span>
             </span>
+            {!isOnline && !isChecking ? (
+              <span className="text-xs text-muted-foreground">
+                The hosted service may be waking up. You can still explore every scenario.
+              </span>
+            ) : null}
           </div>
         </Reveal>
 
         {/* Tab Switcher */}
         <Reveal>
-          <div className="mb-6 flex flex-wrap gap-2">
+          <div
+            className="mb-7 grid gap-2 sm:grid-cols-2 lg:grid-cols-4"
+            role="tablist"
+            aria-label="Live lab test type"
+          >
             <Tab
               active={activeTab === "cross_vector"}
               onClick={() => setActiveTab("cross_vector")}
               icon={Zap}
-              label="⚡ Cross-Vector Attack"
+              label="Compound attack"
+              description="Link language, card, and mule risk"
             />
             <Tab
               active={activeTab === "tabular"}
               onClick={() => setActiveTab("tabular")}
               icon={CreditCard}
               label="Card Transaction"
+              description="Score one payment in real time"
             />
             <Tab
               active={activeTab === "text"}
               onClick={() => setActiveTab("text")}
               icon={MessageSquare}
               label="Prompt Injection"
+              description="Test malicious banking prompts"
             />
             <Tab
               active={activeTab === "pipeline"}
               onClick={() => setActiveTab("pipeline")}
               icon={FlaskConical}
               label="Live Pipeline"
+              description="Run the full learning workflow"
             />
           </div>
         </Reveal>
@@ -847,7 +848,9 @@ export function LiveDemo() {
                 exit={{ opacity: 0, y: -15 }}
                 transition={{ duration: 0.3 }}
               >
-                <CrossVectorPanel />
+                <Suspense fallback={<DemoPanelFallback />}>
+                  <CrossVectorPanel />
+                </Suspense>
               </motion.div>
             )}
             {activeTab === "tabular" && (
@@ -880,7 +883,9 @@ export function LiveDemo() {
                 exit={{ opacity: 0, y: -20 }}
                 transition={{ duration: 0.3 }}
               >
-                <LivePipeline />
+                <Suspense fallback={<DemoPanelFallback />}>
+                  <LivePipeline />
+                </Suspense>
               </motion.div>
             )}
           </AnimatePresence>

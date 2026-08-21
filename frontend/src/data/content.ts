@@ -1,24 +1,25 @@
 export type Severity = "Critical" | "High" | "Medium";
 
 export const heroStats = [
-  { value: 8, suffix: "", label: "Attack Vectors", icon: "shield" as const },
+  { value: 3, suffix: "", label: "Correlated Risk Signals", icon: "shield" as const },
   {
-    value: 50000,
-    suffix: "",
-    label: "Synthetic Transactions",
-    icon: "database" as const,
+    value: 96.3,
+    suffix: "%",
+    decimals: 1,
+    label: "Adversarial Catch Rate",
+    icon: "target" as const,
   },
   {
     value: 0.008,
     suffix: "ms",
     decimals: 3,
-    label: "ONNX Inference",
+    label: "Decision Latency",
     icon: "zap" as const,
   },
   {
     value: 3061,
     prefix: "$",
-    label: "Saved per Batch",
+    label: "Loss Avoided per Batch",
     icon: "dollar" as const,
   },
 ];
@@ -36,8 +37,7 @@ export const attackVectors: {
     name: "Indirect Prompt Injection",
     desc: "Jailbreaking bank AI chatbots to bypass transfer limits",
     severity: "Critical",
-    multiplier:
-      "LLMs generate infinite paraphrased jailbreaks across 13 threat categories.",
+    multiplier: "LLMs generate infinite paraphrased jailbreaks across 13 threat categories.",
     icon: "terminal",
   },
   {
@@ -225,14 +225,7 @@ export const loopRows = [
 export const techGroups = [
   {
     group: "ML / AI",
-    items: [
-      "Python",
-      "XGBoost",
-      "ONNX Runtime",
-      "Sentence Transformers",
-      "SHAP",
-      "scikit-learn",
-    ],
+    items: ["Python", "XGBoost", "ONNX Runtime", "Sentence Transformers", "SHAP", "scikit-learn"],
     accent: "cyan" as const,
   },
   {
@@ -263,10 +256,10 @@ export const techGroups = [
 
 export const navSections = [
   { id: "hero", label: "Overview" },
-  { id: "identify", label: "Identify" },
-  { id: "generate", label: "Generate" },
-  { id: "defend", label: "Defend" },
-  { id: "loop", label: "Closed Loop" },
-  { id: "demo", label: "Live Demo" },
-  { id: "team", label: "Team" },
+  { id: "identify", label: "Threats" },
+  { id: "generate", label: "Red team" },
+  { id: "defend", label: "Defense" },
+  { id: "loop", label: "Learning loop" },
+  { id: "demo", label: "Live lab" },
+  { id: "team", label: "About" },
 ];

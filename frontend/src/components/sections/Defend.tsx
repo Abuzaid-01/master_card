@@ -59,8 +59,9 @@ export function Defend() {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         <SectionTitle
-          eyebrow="Pillar 3 · Defend"
-          title="AI Blue Team Defense Engine"
+          eyebrow="03 · Defense"
+          title="One decision layer across every risk signal."
+          description="Specialized detectors explain what they see, while a shared risk layer keeps customer friction and financial loss in view."
           accent="cyan"
         />
 
@@ -68,9 +69,7 @@ export function Defend() {
           <Reveal>
             <div className="glass-panel tilt-card h-full rounded-2xl p-6">
               <ShieldCheck className="h-6 w-6 text-cyan" strokeWidth={1.6} />
-              <h3 className="mt-4 text-base font-semibold">
-                Tabular Card Testing Detector
-              </h3>
+              <h3 className="mt-4 text-base font-semibold">Tabular Card Testing Detector</h3>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                 XGBoost + Isolation Forest → ONNX Runtime
               </p>
@@ -116,30 +115,15 @@ export function Defend() {
 
           <Reveal delay={0.12}>
             <div className="glass-panel tilt-card h-full rounded-2xl p-6">
-              <MessagesSquare
-                className="h-6 w-6 text-ai-violet"
-                strokeWidth={1.6}
-              />
-              <h3 className="mt-4 text-base font-semibold">
-                Text Prompt Injection Detector
-              </h3>
+              <MessagesSquare className="h-6 w-6 text-ai-violet" strokeWidth={1.6} />
+              <h3 className="mt-4 text-base font-semibold">Text Prompt Injection Detector</h3>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                 Sentence Transformers (all-MiniLM-L6-v2) vs TF-IDF baseline
               </p>
 
               <div className="mt-8 space-y-5">
-                <Bar
-                  label="TF-IDF on paraphrased"
-                  percent={89.6}
-                  value="89.6%"
-                  accent="muted"
-                />
-                <Bar
-                  label="Semantic on paraphrased"
-                  percent={98.8}
-                  value="98.8%"
-                  accent="cyan"
-                />
+                <Bar label="TF-IDF on paraphrased" percent={89.6} value="89.6%" accent="muted" />
+                <Bar label="Semantic on paraphrased" percent={98.8} value="98.8%" accent="cyan" />
               </div>
 
               <motion.div
@@ -155,13 +139,11 @@ export function Defend() {
                 >
                   <ArrowUpRight className="h-4 w-4 text-cyan" />
                 </motion.span>
-                <span className="font-mono text-sm font-semibold text-cyan">
-                  +10.17% lift
-                </span>
+                <span className="font-mono text-sm font-semibold text-cyan">+10.17% lift</span>
               </motion.div>
               <p className="mt-4 text-xs text-muted-foreground">
-                Semantic embeddings hold up when attackers paraphrase, where
-                lexical baselines collapse.
+                Semantic embeddings hold up when attackers paraphrase, where lexical baselines
+                collapse.
               </p>
             </div>
           </Reveal>
@@ -169,12 +151,9 @@ export function Defend() {
           <Reveal delay={0.24}>
             <div className="glass-panel tilt-card h-full rounded-2xl p-6">
               <Network className="h-6 w-6 text-mc-orange" strokeWidth={1.6} />
-              <h3 className="mt-4 text-base font-semibold">
-                Graph Money Mule Detector
-              </h3>
+              <h3 className="mt-4 text-base font-semibold">Graph Money Mule Detector</h3>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                GBDT on topological features — in-degree, out-degree, funnel
-                score
+                GBDT on topological features — in-degree, out-degree, funnel score
               </p>
 
               <div className="mt-6">
@@ -210,8 +189,7 @@ export function Defend() {
                 <div>
                   <div className="text-sm font-semibold">Cost Optimizer</div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Optimal threshold{" "}
-                    <span className="font-mono text-foreground">τ* = 0.21</span>{" "}
+                    Optimal threshold <span className="font-mono text-foreground">τ* = 0.21</span>{" "}
                     saves{" "}
                     <span className="font-mono font-semibold text-glow-orange">
                       <Counter value={3060.79} decimals={2} prefix="$" />
@@ -223,9 +201,7 @@ export function Defend() {
                   <div className="text-sm font-semibold">Explainability</div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     PCI-DSS compliant SHAP waterfall — top feature:{" "}
-                    <span className="font-mono text-cyan">
-                      geo_distance_km (45.2%)
-                    </span>
+                    <span className="font-mono text-cyan">geo_distance_km (45.2%)</span>
                   </p>
                 </div>
               </div>
@@ -241,8 +217,7 @@ export function Defend() {
                       <motion.div
                         className="h-full rounded-full"
                         style={{
-                          background:
-                            "linear-gradient(90deg, var(--ai-violet), var(--neon-cyan))",
+                          background: "linear-gradient(90deg, var(--ai-violet), var(--neon-cyan))",
                         }}
                         initial={{ width: 0 }}
                         whileInView={{ width: `${f.value}%` }}
