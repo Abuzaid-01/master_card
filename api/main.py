@@ -151,6 +151,8 @@ def get_fidelity():
     return data
 
 
+@app.get("/")
+@app.get("/health")
 @app.get("/api/health")
 def health():
     """Health check endpoint."""
@@ -164,7 +166,7 @@ def health():
         "closed_loop_report": os.path.exists(os.path.join(LOOP_DIR, "closed_loop_report.json")),
         "fidelity_report": os.path.exists(os.path.join(SYNTHETIC_DIR, "fidelity_report.json")),
     }
-    return {"status": "ok", "models": models_loaded, "reports": reports}
+    return {"status": "ok", "service": "sentrix-ai", "models": models_loaded, "reports": reports}
 
 
 # ══════════════════════════════════════════
