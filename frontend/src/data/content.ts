@@ -9,14 +9,14 @@ export const heroStats = [
     icon: "database" as const,
   },
   {
-    value: 0.008,
+    value: 0.006,
     suffix: "ms",
     decimals: 3,
     label: "ONNX Inference",
     icon: "zap" as const,
   },
   {
-    value: 3061,
+    value: 6290,
     prefix: "$",
     label: "Saved per Batch",
     icon: "dollar" as const,
@@ -169,20 +169,20 @@ export const terminalLines = [
 ];
 
 export const shapFeatures = [
-  { name: "geo_distance_km", value: 45.2 },
-  { name: "device_risk_score", value: 23.6 },
-  { name: "velocity", value: 16.2 },
-  { name: "mcc_risk_weight", value: 6.9 },
-  { name: "failed_attempts_24h", value: 4.0 },
-  { name: "amount", value: 2.8 },
+  { name: "geo_distance_km", value: 15.9 },
+  { name: "failed_attempts_24h", value: 15.8 },
+  { name: "device_risk_score", value: 14.0 },
+  { name: "velocity", value: 11.5 },
+  { name: "amount", value: 10.7 },
+  { name: "mcc_risk_weight", value: 8.8 },
 ];
 
 export const loopRows = [
   {
     metric: "Tabular Adversarial Catch Rate",
-    r1: "69.1%",
-    r2: "96.3%",
-    delta: "+27.2% (+204 caught)",
+    r1: "46.4%",
+    r2: "58.1%",
+    delta: "+11.7% (+57 caught)",
     good: true,
   },
   {
@@ -195,28 +195,28 @@ export const loopRows = [
   {
     metric: "Graph Topology Catch Rate",
     r1: "28.6%",
-    r2: "82.9%",
-    delta: "+54.3% (+38 caught)",
+    r2: "84.3%",
+    delta: "+55.7% (+39 caught)",
     good: true,
   },
   {
     metric: "AUC-PR (Adversarial Holdout)",
-    r1: "0.985",
-    r2: "1.000",
-    delta: "+0.015",
+    r1: "0.643",
+    r2: "0.672",
+    delta: "+0.029",
     good: true,
   },
   {
     metric: "Baseline False Positive Rate",
-    r1: "0.00%",
-    r2: "0.00%",
-    delta: "0.00% (No Degradation)",
+    r1: "1.34%",
+    r2: "1.96%",
+    delta: "+0.62% (Within SLA)",
     good: true,
   },
   {
     metric: "Catastrophic Forgetting",
     r1: "n/a",
-    r2: "None (0.0% Drift)",
+    r2: "-0.67% AUC Drift",
     delta: "Verified Safe",
     good: true,
   },

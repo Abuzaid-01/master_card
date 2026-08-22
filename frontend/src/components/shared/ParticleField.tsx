@@ -41,25 +41,10 @@ export default function ParticleField() {
         if (p.x < 0 || p.x > w) p.vx *= -1;
         if (p.y < 0 || p.y > h) p.vy *= -1;
       }
-      for (let i = 0; i < points.length; i++) {
-        const a = points[i]!;
-        for (let j = i + 1; j < points.length; j++) {
-          const b = points[j]!;
-          const d = Math.hypot(a.x - b.x, a.y - b.y);
-          if (d < 130) {
-            ctx.strokeStyle = `rgba(0, 229, 255, ${(1 - d / 130) * 0.22})`;
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.stroke();
-          }
-        }
-      }
       for (const p of points) {
-        ctx.fillStyle = "rgba(0, 229, 255, 0.6)";
+        ctx.fillStyle = "rgba(0, 229, 255, 0.45)";
         ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, 1.2, 0, Math.PI * 2);
         ctx.fill();
       }
       raf = requestAnimationFrame(draw);

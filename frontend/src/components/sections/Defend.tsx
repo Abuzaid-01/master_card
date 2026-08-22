@@ -77,7 +77,7 @@ export function Defend() {
 
               <div className="mt-6">
                 <div className="font-mono text-4xl font-semibold text-glow-cyan">
-                  <Counter value={100.0} decimals={1} suffix="%" />
+                  <Counter value={72.9} decimals={1} suffix="%" />
                 </div>
                 <div className="font-mono text-[10px] tracking-[0.2em] text-muted-foreground uppercase">
                   AUC-PR
@@ -85,10 +85,10 @@ export function Defend() {
               </div>
 
               <div className="mt-6 space-y-4">
-                <GaugeRing percent={100.0} value="100.0%" label="F1-Score" />
+                <GaugeRing percent={72.2} value="72.2%" label="F1-Score" />
                 <GaugeRing
-                  percent={0.01}
-                  value="0.00%"
+                  percent={0.86}
+                  value="0.86%"
                   label="False Positive Rate"
                   accent="orange"
                 />
@@ -96,10 +96,10 @@ export function Defend() {
 
               <div className="mt-6 border-t border-glass-border pt-4">
                 <div className="font-mono text-2xl font-semibold text-glow-cyan">
-                  <Counter value={0.008} decimals={3} suffix="ms" />
+                  <Counter value={0.006} decimals={3} suffix="ms" />
                 </div>
                 <div className="mt-1 text-xs text-muted-foreground">
-                  ONNX latency — 6,000× faster than the 50ms SLA
+                  ONNX latency — 8,600× faster than the 50ms SLA
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
                   <motion.div
@@ -211,10 +211,10 @@ export function Defend() {
                   <div className="text-sm font-semibold">Cost Optimizer</div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Optimal threshold{" "}
-                    <span className="font-mono text-foreground">τ* = 0.21</span>{" "}
+                    <span className="font-mono text-foreground">τ* = 0.40</span>{" "}
                     saves{" "}
                     <span className="font-mono font-semibold text-glow-orange">
-                      <Counter value={3060.79} decimals={2} prefix="$" />
+                      <Counter value={6289.89} decimals={2} prefix="$" />
                     </span>{" "}
                     per batch.
                   </p>
@@ -224,7 +224,7 @@ export function Defend() {
                   <p className="mt-1 text-sm text-muted-foreground">
                     PCI-DSS compliant SHAP waterfall — top feature:{" "}
                     <span className="font-mono text-cyan">
-                      geo_distance_km (45.2%)
+                      geo_distance_km (15.9%)
                     </span>
                   </p>
                 </div>

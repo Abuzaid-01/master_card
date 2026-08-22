@@ -195,22 +195,22 @@ Generated using NetworkX across **1,000 accounts and 100 mule rings** spanning *
 ├─────────────────────────┬───────────────────────────┬──────────────┬─────────────────────┤
 │ Model Head              │ Architecture              │ Metric       │ Performance         │
 ├─────────────────────────┼───────────────────────────┼──────────────┼─────────────────────┤
-│ 💳 Phase 2: Card Fraud  │ Quantized ONNX XGBoost    │ AUC-PR / F1  │ 100.0% / 100.0%     │
-│                         │ + Isolation Forest        │ Latency      │ 0.008 ms (8 µs)     │
+│ 💳 Phase 2: Card Fraud  │ Quantized ONNX XGBoost    │ AUC-PR / F1  │ 72.85% / 72.24%     │
+│                         │ + Isolation Forest        │ Latency      │ 0.006 ms (5.8 µs)   │
 ├─────────────────────────┼───────────────────────────┼──────────────┼─────────────────────┤
 │ 💬 Phase 1: Text Prompt │ SentenceTransformers      │ AUC-PR       │ 99.96%              │
 │                         │ (all-MiniLM-L6-v2)        │ Paraphr. Lift│ +10.17% over TF-IDF │
 ├─────────────────────────┼───────────────────────────┼──────────────┼─────────────────────┤
 │ 🕸️ Phase 3: Mule Graph  │ HistGradientBoosting GBDT │ AUC-PR / F1  │ 94.55% / 87.27%     │
 ├─────────────────────────┼───────────────────────────┼──────────────┼─────────────────────┤
-│ 💰 Financial Optimizer  │ Cost-Sensitive Threshold  │ Cost Savings │ $3,060.79 per batch │
+│ 💰 Financial Optimizer  │ Cost-Sensitive Threshold  │ Cost Savings │ $6,289.89 per batch │
 └─────────────────────────┴───────────────────────────┴──────────────┴─────────────────────┘
 ```
 
 ### 1. Sub-10 Microsecond ONNX Inference
 The tabular XGBoost model is compiled down to **ONNX Runtime (C++ compiled inference)**:
-* **Inference Speed**: **`0.008 ms`** (8 microseconds).
-* **Compliance**: Over **6,000× faster** than the strict 50ms payment authorization SLA.
+* **Inference Speed**: **`0.006 ms`** (5.7 microseconds).
+* **Compliance**: Over **8,700× faster** than the strict 50ms payment authorization SLA.
 
 ### 2. Semantic Embedding Lift vs. TF-IDF
 Traditional keyword matchers fail when attackers rephrase prompts. SENTRIX AI benchmarks `all-MiniLM-L6-v2` dense 384-dimensional embeddings against TF-IDF n-gram baselines:
@@ -219,11 +219,11 @@ Traditional keyword matchers fail when attackers rephrase prompts. SENTRIX AI be
 ### 3. Financial Cost-Sensitive Optimization
 Instead of assuming all errors have equal cost (treating a $5 error the same as a $5,000 error), SENTRIX AI minimizes the **Amount-Proportional Financial Loss Function**:
 $$\mathcal{L}(\tau) = \sum_{i \in \text{FN}} \text{Amount}_i + \alpha \sum_{j \in \text{FP}} \text{Amount}_j$$
-* **Optimal Threshold**: $\tau^* = 0.21$, reducing financial loss by **`$3,060.79`** per transaction batch compared to a naive $0.50$ threshold.
+* **Optimal Threshold**: $\tau^* = 0.10$, reducing financial loss by **`$36,492.95`** per transaction batch compared to a naive $0.50$ threshold.
 
 ### 4. PCI-DSS Compliant SHAP Explainability
 Every authorization prediction provides an exact local SHAP feature attribution breakdown:
-* **Global Top Features**: `geo_distance_km` ($45.2\%$), `device_risk_score` ($23.6\%$), `velocity` ($16.2\%$), `mcc_risk_weight` ($6.9\%$).
+* **Global Top Features**: `geo_distance_km` ($39.4\%$), `device_risk_score` ($20.3\%$), `velocity` ($13.8\%$), `mcc_risk_weight` ($7.2\%$), `failed_attempts_24h` ($6.4\%$), `amount` ($5.6\%$).
 
 ---
 
@@ -261,16 +261,16 @@ In Step 4, SENTRIX AI acts as its own Red Team by unleashing an **Adversarial Mu
 ┌──────────────────────────────────────┬─────────────┬─────────────┬─────────────────────────────────┐
 │ Evaluation Dimension                 │ Round 1     │ Round 2     │ Improvement / Lift              │
 ├──────────────────────────────────────┼─────────────┼─────────────┼─────────────────────────────────┤
-│ 💳 Tabular Evasion Catch Rate        │ 518 / 750   │ 722 / 750   │ +204 caught (+27.2% lift)       │
-│ 💳 Tabular Adversarial AUC-PR        │ 0.9845      │ 0.9997      │ +0.0152                         │
+│ 💳 Tabular Evasion Catch Rate        │ 225 / 485   │ 282 / 485   │ +57 caught (+11.7% lift)        │
+│ 💳 Tabular Adversarial AUC-PR        │ 0.6433      │ 0.6723      │ +0.0290                         │
 ├──────────────────────────────────────┼─────────────┼─────────────┼─────────────────────────────────┤
 │ 💬 Text Paraphrased Catch Rate       │ 0 / 38      │ 38 / 38     │ +38 caught (+100.0% lift)       │
 │ 💬 Text Adversarial AUC-PR           │ 0.2517      │ 1.0000      │ +0.7483                         │
 ├──────────────────────────────────────┼─────────────┼─────────────┼─────────────────────────────────┤
-│ 🕸️ Graph Mule Topology Catch Rate   │ 20 / 70     │ 58 / 70     │ +38 caught (+54.3% lift)        │
-│ 🕸️ Graph Adversarial AUC-PR          │ 0.6107      │ 0.9208      │ +0.3101                         │
+│ 🕸️ Graph Mule Topology Catch Rate   │ 20 / 70     │ 59 / 70     │ +39 caught (+55.7% lift)        │
+│ 🕸️ Graph Adversarial AUC-PR          │ 0.6080      │ 0.9145      │ +0.3065                         │
 ├──────────────────────────────────────┼─────────────┼─────────────┼─────────────────────────────────┤
-│ 🛡️ Catastrophic Forgetting Drift     │ 0.00% FPR   │ 0.00% FPR   │ ZERO FORGETTING (0.00% Drift)   │
+│ 🛡️ Catastrophic Forgetting Drift     │ 1.34% FPR   │ 1.96% FPR   │ -0.67% AUC Drift (Safe)         │
 └──────────────────────────────────────┴─────────────┴─────────────┴─────────────────────────────────┘
 ```
 
@@ -283,7 +283,7 @@ The web platform is built with **React 19, TanStack Start & Router, TailwindCSS,
 * **Overview & Hero**: Dynamic glitch animations, live counters, and high-impact security telemetry.
 * **Identify**: Interactive cards cataloging all 8 attack vectors.
 * **Generate**: Live Red Team pipeline terminal window and Wasserstein distance fidelity metrics.
-* **Defend**: Interactive gauges for ONNX latency (0.008 ms), semantic lift (+10.17%), and cost optimization ($3,060.79).
+* **Defend**: Interactive gauges for ONNX latency (0.006 ms), semantic lift (+10.17%), and cost optimization ($6,289.89).
 * **Closed Loop**: Interactive Round 1 vs Round 2 active learning comparison matrix.
 * **Live Demo & Sandbox**:
   - *Custom Cross-Vector Evaluator*: Real-time sliders for amount ($0.50–$5,000), velocity (0–30 tx/min), device risk, and custom prompt inputs.

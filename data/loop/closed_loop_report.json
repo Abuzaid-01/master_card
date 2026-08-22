@@ -2,10 +2,10 @@
   "step4_closed_loop": {
     "holdout_partition_sizes": {
       "tabular": {
-        "mine_total": 5000,
-        "mine_fraud": 750,
-        "eval_total": 5000,
-        "eval_fraud": 750
+        "mine_total": 4999,
+        "mine_fraud": 484,
+        "eval_total": 5001,
+        "eval_fraud": 485
       },
       "text": {
         "mine_total": 149,
@@ -22,9 +22,9 @@
     },
     "blind_spot_mining": {
       "tabular": {
-        "n_fraud_probed": 750,
-        "n_evaded": 296,
-        "evasion_rate": 0.3947
+        "n_fraud_probed": 484,
+        "n_evaded": 205,
+        "evasion_rate": 0.4236
       },
       "graph": {
         "n_fraud_probed": 69,
@@ -40,8 +40,8 @@
     "round2_retraining": {
       "tabular": {
         "original_train_size": 30000,
-        "augmented_train_size": 34546,
-        "adversarial_samples_added": 4546
+        "augmented_train_size": 34720,
+        "adversarial_samples_added": 4720
       },
       "graph": {
         "original_train_size": 4377,
@@ -57,26 +57,26 @@
     "round1_vs_round2": {
       "tabular": {
         "adversarial_eval": {
-          "n_fraud_total": 750,
-          "n_legit_total": 4250,
-          "r1_caught": 518,
-          "r1_catch_rate": 0.6907,
-          "r2_caught": 722,
-          "r2_catch_rate": 0.9627,
-          "net_caught_delta": 204,
-          "r1_auc_pr": 0.9845,
-          "r2_auc_pr": 0.9997,
-          "auc_delta": 0.0152,
-          "r1_threshold": 0.16,
-          "r2_threshold": 0.88
+          "n_fraud_total": 485,
+          "n_legit_total": 4516,
+          "r1_caught": 225,
+          "r1_catch_rate": 0.4639,
+          "r2_caught": 282,
+          "r2_catch_rate": 0.5814,
+          "net_caught_delta": 57,
+          "r1_auc_pr": 0.6433,
+          "r2_auc_pr": 0.6723,
+          "auc_delta": 0.029,
+          "r1_threshold": 0.66,
+          "r2_threshold": 0.6
         },
         "catastrophic_forgetting_check": {
-          "baseline_r1_auc_pr": 1.0,
-          "baseline_r2_auc_pr": 1.0,
-          "baseline_auc_delta": 0.0,
-          "baseline_r1_fpr": 0.0,
-          "baseline_r2_fpr": 0.0,
-          "baseline_fpr_delta": 0.0,
+          "baseline_r1_auc_pr": 0.7352,
+          "baseline_r2_auc_pr": 0.7285,
+          "baseline_auc_delta": -0.0067,
+          "baseline_r1_fpr": 0.0134,
+          "baseline_r2_fpr": 0.0196,
+          "baseline_fpr_delta": 0.0062,
           "catastrophic_forgetting": false
         }
       },
@@ -86,19 +86,19 @@
           "n_legit_total": 661,
           "r1_caught": 20,
           "r1_catch_rate": 0.2857,
-          "r2_caught": 58,
-          "r2_catch_rate": 0.8286,
-          "net_caught_delta": 38,
-          "r1_auc_pr": 0.6107,
-          "r2_auc_pr": 0.9208,
-          "auc_delta": 0.3101,
+          "r2_caught": 59,
+          "r2_catch_rate": 0.8429,
+          "net_caught_delta": 39,
+          "r1_auc_pr": 0.608,
+          "r2_auc_pr": 0.9145,
+          "auc_delta": 0.3065,
           "r1_threshold": 0.64,
-          "r2_threshold": 0.55
+          "r2_threshold": 0.4
         },
         "catastrophic_forgetting_check": {
           "baseline_r1_auc_pr": 0.9455,
-          "baseline_r2_auc_pr": 0.9371,
-          "baseline_auc_delta": -0.0084,
+          "baseline_r2_auc_pr": 0.9449,
+          "baseline_auc_delta": -0.0006,
           "catastrophic_forgetting": false
         }
       },

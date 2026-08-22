@@ -28,7 +28,7 @@ class MultiStrategyProber:
     Uses multiple evasion strategies for diversity.
     """
 
-    def __init__(self, max_iters: int = 50, models_dir: str = None):
+    def __init__(self, max_iters: int = 8, models_dir: str = None):
         self.max_iters = max_iters
         self.models_dir = models_dir or MODELS_DIR
         self.tabular_model = None
@@ -121,7 +121,7 @@ class MultiStrategyProber:
                 if prob < threshold:
                     break  # Successfully evaded
 
-                step_size = rng.uniform(0.04, 0.18)
+                step_size = rng.uniform(0.03, 0.10)
 
                 if strategy == 0:  # Velocity Dilution
                     row["velocity"] = max(0.5, row["velocity"] * (1.0 - step_size))
@@ -175,7 +175,7 @@ class MultiStrategyProber:
                 if prob < threshold:
                     break
 
-                step = rng.uniform(0.05, 0.2)
+                step = rng.uniform(0.03, 0.12)
 
                 if strategy == 0:  # Slow down pass-through delay into legit P2P range
                     row["pass_through_delay_sec"] = row.get("pass_through_delay_sec", 5) + rng.uniform(15, 75)

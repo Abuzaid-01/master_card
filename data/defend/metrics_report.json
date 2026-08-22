@@ -1,12 +1,12 @@
 {
   "tabular_detector": {
     "onnx_model_path": "defend/models/card_testing_xgb.onnx",
-    "auc_pr": 1.0,
-    "f1_score": 1.0,
-    "false_positive_rate": 0.0,
-    "onnx_runtime_latency_ms": 0.008,
-    "xgboost_raw_latency_ms": 0.0918,
-    "inference_latency_ms": 0.008,
+    "auc_pr": 0.7285,
+    "f1_score": 0.7224,
+    "false_positive_rate": 0.0086,
+    "onnx_runtime_latency_ms": 0.0058,
+    "xgboost_raw_latency_ms": 0.1377,
+    "inference_latency_ms": 0.0058,
     "sub_50ms_sla_met": true
   },
   "text_detector": {
@@ -26,83 +26,83 @@
     "f1_score": 0.8727
   },
   "financial_cost_optimization": {
-    "optimal_threshold_tau": 0.21,
-    "min_financial_loss_usd": 0.0,
-    "default_050_loss_usd": 3060.79,
-    "savings_usd": 3060.79
+    "optimal_threshold_tau": 0.4,
+    "min_financial_loss_usd": 54556.42,
+    "default_050_loss_usd": 60846.31,
+    "savings_usd": 6289.89
   },
   "explainability": {
     "global_feature_importance": {
-      "geo_distance_km": 0.45170000195503235,
-      "device_risk_score": 0.23649999499320984,
-      "velocity": 0.1615999937057495,
-      "mcc_risk_weight": 0.06870000064373016,
-      "failed_attempts_24h": 0.03999999910593033,
-      "amount": 0.027699999511241913,
-      "card_age_days": 0.007000000216066837,
-      "is_decline": 0.004399999976158142,
-      "hour_of_day_cos": 0.00139999995008111,
-      "hour_of_day_sin": 0.0008999999845400453
+      "geo_distance_km": 0.15889999270439148,
+      "failed_attempts_24h": 0.15790000557899475,
+      "device_risk_score": 0.1396999955177307,
+      "velocity": 0.11509999632835388,
+      "amount": 0.10679999738931656,
+      "mcc_risk_weight": 0.08820000290870667,
+      "is_decline": 0.07530000060796738,
+      "card_age_days": 0.06610000133514404,
+      "hour_of_day_sin": 0.04600000008940697,
+      "hour_of_day_cos": 0.045899998396635056
     },
     "sample_waterfall_explanation": [
       {
         "feature": "amount",
-        "feature_value": 1.57,
-        "shap_attribution": 0.22040000557899475,
-        "impact": "Increases Risk"
+        "feature_value": 30.55,
+        "shap_attribution": -0.3240000009536743,
+        "impact": "Decreases Risk"
       },
       {
         "feature": "velocity",
-        "feature_value": 1.34,
-        "shap_attribution": -2.5171000957489014,
+        "feature_value": 1.19,
+        "shap_attribution": -0.18440000712871552,
         "impact": "Decreases Risk"
       },
       {
         "feature": "device_risk_score",
-        "feature_value": 0.35,
-        "shap_attribution": -1.8696000576019287,
+        "feature_value": 0.08,
+        "shap_attribution": -0.5275999903678894,
         "impact": "Decreases Risk"
       },
       {
         "feature": "is_decline",
         "feature_value": 0.0,
-        "shap_attribution": -0.0017999999690800905,
+        "shap_attribution": -0.021800000220537186,
         "impact": "Decreases Risk"
       },
       {
         "feature": "hour_of_day_sin",
-        "feature_value": -0.57,
-        "shap_attribution": -0.009399999864399433,
+        "feature_value": -0.11,
+        "shap_attribution": -0.007000000216066837,
         "impact": "Decreases Risk"
       },
       {
         "feature": "hour_of_day_cos",
-        "feature_value": 0.82,
-        "shap_attribution": -0.02280000038444996,
+        "feature_value": -0.99,
+        "shap_attribution": -0.21330000460147858,
         "impact": "Decreases Risk"
       },
       {
         "feature": "mcc_risk_weight",
-        "feature_value": 0.15,
-        "shap_attribution": -2.1679999828338623,
+        "feature_value": 0.35,
+        "shap_attribution": -0.5853999853134155,
         "impact": "Decreases Risk"
       },
       {
         "feature": "geo_distance_km",
-        "feature_value": 9.09,
-        "shap_attribution": -3.79229998588562,
+        "feature_value": 58.0,
+        "shap_attribution": -0.2190999984741211,
         "impact": "Decreases Risk"
       },
       {
         "feature": "card_age_days",
-        "feature_value": 1406.0,
-        "shap_attribution": -0.22699999809265137,
+        "feature_value": 260.0,
+        "shap_attribution": -0.01360000018030405,
         "impact": "Decreases Risk"
       },
       {
         "feature": "failed_attempts_24h",
         "feature_value": 0.0,
-        "shap_attribution": -0.18809999525547028,
+        "shap_attribution": -0.06430000066757202,
         "impact": "Decreases Risk"
       }
     ],
