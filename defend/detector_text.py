@@ -8,11 +8,6 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
-try:
-    import torch
-    torch.set_num_threads(1)
-except Exception:
-    pass
 
 import joblib
 import numpy as np
@@ -51,6 +46,8 @@ class TextPromptInjectionDetector:
     def _init_sentence_transformer(self):
         if self.encoder is None:
             try:
+                import torch
+                torch.set_num_threads(1)
                 from sentence_transformers import SentenceTransformer
                 print("[Text Detector] Loading SentenceTransformer ('all-MiniLM-L6-v2')...")
                 self.encoder = SentenceTransformer("all-MiniLM-L6-v2")

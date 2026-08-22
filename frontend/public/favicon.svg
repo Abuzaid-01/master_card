@@ -1,42 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
-  <rect width="64" height="64" rx="14" fill="#030712"/>
-  
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="sentrix-cyan-fav" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#00F0FF" />
-      <stop offset="100%" stopColor="#3B82F6" />
+    <linearGradient id="paper" x1="8" y1="5" x2="57" y2="60" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#fffdf8"/>
+      <stop offset="1" stop-color="#fff3df"/>
     </linearGradient>
-    <linearGradient id="sentrix-violet-fav" x1="0%" y1="100%" x2="100%" y2="0%">
-      <stop offset="0%" stopColor="#8B5CF6" />
-      <stop offset="100%" stopColor="#00F0FF" />
+    <linearGradient id="wing" x1="38" y1="10" x2="59" y2="54" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#eb001b"/>
+      <stop offset="0.58" stop-color="#ff5f00"/>
+      <stop offset="1" stop-color="#f79e1b"/>
     </linearGradient>
-    <filter id="glow-fav" x="-30%" y="-30%" width="160%" height="160%">
-      <feGaussianBlur stdDeviation="2.5" result="blur" />
-      <feComposite in="SourceGraphic" in2="blur" operator="over" />
-    </filter>
   </defs>
-
-  <!-- Outer Isometric Hexagonal Shield -->
-  <path
-    d="M32 7L53 19V45L32 57L11 45V19L32 7Z"
-    stroke="url(#sentrix-cyan-fav)"
-    stroke-width="3"
-    stroke-linejoin="round"
-    fill="#0a0f1d"
-  />
-
-  <!-- Inner Cyber Stylized 'S' -->
-  <path
-    d="M42 21H24C21.2 21 19 23.2 19 26V27.5C19 30.2 21.2 32.5 24 32.5H40C42.8 32.5 45 34.8 45 37.5V39C45 41.8 42.8 44 40 44H22"
-    stroke="url(#sentrix-cyan-fav)"
-    stroke-width="4"
-    stroke-linecap="round"
-    stroke-linejoin="round"
-    filter="url(#glow-fav)"
-  />
-
-  <!-- Center Tri-Vector Nodes -->
-  <circle cx="32" cy="21" r="2.5" fill="#00F0FF" />
-  <circle cx="32" cy="32.5" r="3" fill="#FFFFFF" />
-  <circle cx="32" cy="44" r="2.5" fill="#8B5CF6" />
+  <rect x="3" y="3" width="58" height="58" rx="16" fill="url(#paper)" stroke="#ded8ce"/>
+  <path d="M38 7h23v54L34 48Z" fill="url(#wing)"/>
+  <path d="M9 8h18v13Z" fill="#f79e1b"/>
+  <path d="M35 47 58 58 39 38Z" fill="#fff" fill-opacity=".32"/>
+  <g transform="translate(8 8) scale(2)" stroke="#141413" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 12V4a1 1 0 0 1 1-1h6.297a1 1 0 0 1 .651 1.759l-4.696 4.025"/>
+    <path d="m12 21-7.414-7.414A2 2 0 0 1 4 12.172V6.415a1.002 1.002 0 0 1 1.707-.707L20 20.009"/>
+    <path d="m12.214 3.381 8.414 14.966a1 1 0 0 1-.167 1.199l-1.168 1.163a1 1 0 0 1-.706.291H6.351a1 1 0 0 1-.625-.219L3.25 18.8a1 1 0 0 1 .631-1.781l4.165.027"/>
+  </g>
 </svg>

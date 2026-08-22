@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { ArrowUpRight, MessagesSquare, Network, ShieldCheck } from "lucide-react";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
 import { Counter } from "@/components/shared/Counter";
@@ -30,12 +29,9 @@ function Bar({
         <span className="font-mono text-foreground">{value}</span>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary">
-        <motion.div
+        <div
           className={`h-full rounded-full ${fill}`}
-          initial={{ width: 0 }}
-          whileInView={{ width: `${percent}%` }}
-          viewport={{ once: true, margin: "-10% 0px" }}
-          transition={{ duration: 1.1, ease: "easeOut" }}
+          style={{ width: `${percent}%` }}
         />
       </div>
     </div>
@@ -59,8 +55,9 @@ export function Defend() {
 
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         <SectionTitle
-          eyebrow="Pillar 3 · Defend"
-          title="AI Blue Team Defense Engine"
+          eyebrow="03 · Defense"
+          title="One decision layer across every risk signal."
+          description="Specialized detectors explain what they see, while a shared risk layer keeps customer friction and financial loss in view."
           accent="cyan"
         />
 
@@ -68,9 +65,7 @@ export function Defend() {
           <Reveal>
             <div className="glass-panel tilt-card h-full rounded-2xl p-6">
               <ShieldCheck className="h-6 w-6 text-cyan" strokeWidth={1.6} />
-              <h3 className="mt-4 text-base font-semibold">
-                Tabular Card Testing Detector
-              </h3>
+              <h3 className="mt-4 text-base font-semibold">Tabular Card Testing Detector</h3>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                 XGBoost + Isolation Forest → ONNX Runtime
               </p>
@@ -102,12 +97,9 @@ export function Defend() {
                   ONNX latency — 6,000× faster than the 50ms SLA
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
-                  <motion.div
+                  <div
                     className="h-full rounded-full bg-cyan"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: "3%" }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1 }}
+                    style={{ width: "3%" }}
                   />
                 </div>
               </div>
@@ -116,52 +108,28 @@ export function Defend() {
 
           <Reveal delay={0.12}>
             <div className="glass-panel tilt-card h-full rounded-2xl p-6">
-              <MessagesSquare
-                className="h-6 w-6 text-ai-violet"
-                strokeWidth={1.6}
-              />
-              <h3 className="mt-4 text-base font-semibold">
-                Text Prompt Injection Detector
-              </h3>
+              <MessagesSquare className="h-6 w-6 text-ai-violet" strokeWidth={1.6} />
+              <h3 className="mt-4 text-base font-semibold">Text Prompt Injection Detector</h3>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
                 Sentence Transformers (all-MiniLM-L6-v2) vs TF-IDF baseline
               </p>
 
               <div className="mt-8 space-y-5">
-                <Bar
-                  label="TF-IDF on paraphrased"
-                  percent={89.6}
-                  value="89.6%"
-                  accent="muted"
-                />
-                <Bar
-                  label="Semantic on paraphrased"
-                  percent={98.8}
-                  value="98.8%"
-                  accent="cyan"
-                />
+                <Bar label="TF-IDF on paraphrased" percent={89.6} value="89.6%" accent="muted" />
+                <Bar label="Semantic on paraphrased" percent={98.8} value="98.8%" accent="cyan" />
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.9, duration: 0.5 }}
+              <div
                 className="glow-cyan mt-8 inline-flex items-center gap-2 rounded-full bg-cyan/10 px-3 py-1.5"
               >
-                <motion.span
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 1.6, repeat: Infinity }}
-                >
+                <span>
                   <ArrowUpRight className="h-4 w-4 text-cyan" />
-                </motion.span>
-                <span className="font-mono text-sm font-semibold text-cyan">
-                  +10.17% lift
                 </span>
-              </motion.div>
+                <span className="font-mono text-sm font-semibold text-cyan">+10.17% lift</span>
+              </div>
               <p className="mt-4 text-xs text-muted-foreground">
-                Semantic embeddings hold up when attackers paraphrase, where
-                lexical baselines collapse.
+                Semantic embeddings hold up when attackers paraphrase, where lexical baselines
+                collapse.
               </p>
             </div>
           </Reveal>
@@ -169,12 +137,9 @@ export function Defend() {
           <Reveal delay={0.24}>
             <div className="glass-panel tilt-card h-full rounded-2xl p-6">
               <Network className="h-6 w-6 text-mc-orange" strokeWidth={1.6} />
-              <h3 className="mt-4 text-base font-semibold">
-                Graph Money Mule Detector
-              </h3>
+              <h3 className="mt-4 text-base font-semibold">Graph Money Mule Detector</h3>
               <p className="mt-1 font-mono text-[11px] text-muted-foreground">
-                GBDT on topological features — in-degree, out-degree, funnel
-                score
+                GBDT on topological features — in-degree, out-degree, funnel score
               </p>
 
               <div className="mt-6">
@@ -210,8 +175,7 @@ export function Defend() {
                 <div>
                   <div className="text-sm font-semibold">Cost Optimizer</div>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Optimal threshold{" "}
-                    <span className="font-mono text-foreground">τ* = 0.21</span>{" "}
+                    Optimal threshold <span className="font-mono text-foreground">τ* = 0.21</span>{" "}
                     saves{" "}
                     <span className="font-mono font-semibold text-glow-orange">
                       <Counter value={3060.79} decimals={2} prefix="$" />
@@ -223,34 +187,24 @@ export function Defend() {
                   <div className="text-sm font-semibold">Explainability</div>
                   <p className="mt-1 text-sm text-muted-foreground">
                     PCI-DSS compliant SHAP waterfall — top feature:{" "}
-                    <span className="font-mono text-cyan">
-                      geo_distance_km (45.2%)
-                    </span>
+                    <span className="font-mono text-cyan">geo_distance_km (45.2%)</span>
                   </p>
                 </div>
               </div>
 
               <div className="space-y-4">
-                {shapFeatures.map((f, i) => (
+                {shapFeatures.map((f) => (
                   <div key={f.name}>
                     <div className="flex items-baseline justify-between font-mono text-[11px]">
                       <span className="text-muted-foreground">{f.name}</span>
                       <span>{f.value}%</span>
                     </div>
                     <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary">
-                      <motion.div
+                      <div
                         className="h-full rounded-full"
                         style={{
-                          background:
-                            "linear-gradient(90deg, var(--ai-violet), var(--neon-cyan))",
-                        }}
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${f.value}%` }}
-                        viewport={{ once: true, margin: "-10% 0px" }}
-                        transition={{
-                          duration: 1,
-                          delay: i * 0.12,
-                          ease: "easeOut",
+                          background: "linear-gradient(90deg, var(--ai-violet), var(--neon-cyan))",
+                          width: `${f.value}%`,
                         }}
                       />
                     </div>

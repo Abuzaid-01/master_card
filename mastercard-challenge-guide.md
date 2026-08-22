@@ -1,6 +1,8 @@
 
 # Mastercard Innovation Challenge 2026 — Full Project Guide
 
+> **Planning reference:** This file captures the original challenge interpretation and proposed build plan. It is not a description of the final implementation. Use [`README.md`](README.md) and the files under [`docs/`](docs/) for current architecture, commands, measured results, and limitations. Use the official competition page for authoritative dates and submission rules.
+
 **Event:** Global Fintech Fest, Mumbai
 **Registration deadline:** Aug 20
 **Submission deadline:** Aug 31, 11:59 PM IST

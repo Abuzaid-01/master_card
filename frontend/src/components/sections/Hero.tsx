@@ -1,160 +1,190 @@
-import { lazy, Suspense, useEffect, useState } from "react";
-import { motion, useReducedMotion } from "motion/react";
-import { ChevronDown, Database, DollarSign, Shield, Zap } from "lucide-react";
-import { Counter } from "@/components/shared/Counter";
-import { SentrixMark } from "@/components/shared/SentrixMark";
-import { heroStats } from "@/data/content";
-
-const ParticleField = lazy(() => import("@/components/shared/ParticleField"));
-
-const icons = {
-  shield: Shield,
-  database: Database,
-  zap: Zap,
-  dollar: DollarSign,
-};
-
-const TITLE = "SENTRIX AI";
-
-function GlitchTitle() {
-  const reduce = useReducedMotion();
-  const [len, setLen] = useState(reduce ? TITLE.length : 0);
-
-  useEffect(() => {
-    if (reduce) return;
-    let i = 0;
-    const id = window.setInterval(() => {
-      i += 1;
-      setLen(i);
-      if (i >= TITLE.length) window.clearInterval(id);
-    }, 55);
-    return () => window.clearInterval(id);
-  }, [reduce]);
-
-  const done = len >= TITLE.length;
-
-  return (
-    <h1 className="relative text-4xl leading-[0.95] font-bold tracking-tight sm:text-6xl lg:text-7xl">
-      <span className="text-glow-cyan">{TITLE.slice(0, len)}</span>
-      {!done && (
-        <span className="ml-1 inline-block h-[0.85em] w-[3px] translate-y-[0.08em] bg-cyan align-middle motion-safe:animate-pulse" />
-      )}
-      {done && (
-        <span
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-0 text-mc-red opacity-30 mix-blend-screen motion-safe:animate-[pulse_2.6s_ease-in-out_infinite]"
-          style={{ transform: "translate(2px, -2px)" }}
-        >
-          {TITLE}
-        </span>
-      )}
-    </h1>
-  );
-}
+import { useLayoutEffect, useRef } from "react";
+import { ArrowRight, CheckCircle2, ChevronDown, Radio } from "lucide-react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 export function Hero() {
+  const rootRef = useRef<HTMLElement>(null);
+  const stageRef = useRef<HTMLDivElement>(null);
+
+  useLayoutEffect(() => {
+    if (!rootRef.current || !stageRef.current) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+    const context = gsap.context(() => {
+      gsap.set(".js-terminal-approved", { autoAlpha: 0, y: 8 });
+      gsap.set(".js-hero-reveal", { autoAlpha: 0, y: 28 });
+      gsap.set(".js-risk-progress", { scaleX: 0, transformOrigin: "left center" });
+      gsap.set(".js-sequence-path", { scaleX: 0, transformOrigin: "left center" });
+      gsap.set(".js-transaction-step", { autoAlpha: 0, y: 18 });
+
+      gsap
+        .timeline({
+          defaults: { ease: "none" },
+          scrollTrigger: {
+            trigger: rootRef.current,
+            start: "top top",
+            end: () => `+=${Math.round(window.innerHeight * 1.65)}`,
+            scrub: 0.65,
+            pin: rootRef.current,
+            pinSpacing: true,
+            anticipatePin: 1,
+            invalidateOnRefresh: true,
+          },
+        })
+        .to(".js-scroll-cue", { autoAlpha: 0, duration: 0.08 }, 0)
+        .to(".js-hero-copy", { autoAlpha: 0, x: -54, duration: 0.18 }, 0.03)
+        .to(".js-swipe-card", { left: "78%", top: "54%", rotate: 3, duration: 0.18 }, 0.09)
+        .to(".js-swipe-card", { left: "72%", top: "61%", rotate: -1, scale: 0.7, duration: 0.2 }, 0.27)
+        .to(".js-card-shine", { xPercent: 115, duration: 0.18 }, 0.29)
+        .set(".js-swipe-card", { zIndex: 2 }, 0.46)
+        .to(".js-swipe-card", { top: "70%", scale: 0.56, rotate: -2, duration: 0.17 }, 0.46)
+        .to(".js-terminal-waiting", { autoAlpha: 0, y: -8, duration: 0.08 }, 0.5)
+        .to(".js-terminal-approved", { autoAlpha: 1, y: 0, duration: 0.12 }, 0.56)
+        .to(".js-terminal-glow", { opacity: 0.34, scale: 1, duration: 0.16 }, 0.51)
+        .to(".js-swipe-card", { top: "75%", autoAlpha: 0, duration: 0.12 }, 0.61)
+        .to(".js-card-scene", { autoAlpha: 0, scale: 0.97, duration: 0.14 }, 0.72)
+        .to(".js-hero-reveal", { autoAlpha: 1, y: 0, duration: 0.16 }, 0.76)
+        .to(".js-risk-progress", { scaleX: 1, duration: 0.16 }, 0.82)
+        .to(".js-sequence-path", { scaleX: 1, duration: 0.2 }, 0.84)
+        .to(
+          ".js-transaction-step",
+          { autoAlpha: 1, y: 0, duration: 0.08, stagger: 0.045 },
+          0.84,
+        );
+    }, rootRef);
+
+    return () => context.revert();
+  }, []);
+
   return (
-    <section
-      id="hero"
-      className="snap-section relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-5 py-28 sm:px-8"
-    >
-      <div className="dot-backdrop absolute inset-0 opacity-70" />
-      <Suspense fallback={null}>
-        <ParticleField />
-      </Suspense>
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 55% at 50% 40%, color-mix(in oklab, var(--ai-violet) 22%, transparent), transparent 70%)",
-        }}
-      />
-      <div
-        className="absolute inset-x-0 bottom-0 h-40"
-        style={{
-          background:
-            "linear-gradient(to bottom, transparent, var(--background))",
-        }}
-      />
+    <section ref={rootRef} id="hero" className="surreal-hero">
+      <div ref={stageRef} className="surreal-hero__stage">
+        <div className="surreal-noise" aria-hidden="true" />
+        <div className="surreal-orbit surreal-orbit--one" aria-hidden="true" />
+        <div className="surreal-orbit surreal-orbit--two" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto flex w-full max-w-6xl flex-col items-center text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.7 }}
-          className="mb-8 flex items-center justify-center gap-3"
-        >
-          <img
-            src="/sentrix_logo.png"
-            alt="SENTRIX AI"
-            className="h-16 w-16 rounded-2xl shadow-2xl ring-1 ring-cyan/40 filter drop-shadow-[0_0_20px_rgba(0,240,255,0.4)]"
-          />
-        </motion.div>
-
-        <GlitchTitle />
-
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.9, duration: 0.6 }}
-          className="mt-6 max-w-3xl text-base text-balance text-foreground/90 sm:text-xl font-medium"
-        >
-          They Attack, We Defend: An AI Security Engine That Simulates Next-Gen Scams and Trains Itself to Stop Them.
-        </motion.p>
-
-        <motion.p
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.1, duration: 0.6 }}
-          className="mt-4 font-mono text-[11px] tracking-[0.2em] text-glow-cyan uppercase sm:text-xs"
-        >
-          AI ATTACK SIMULATION → REAL-TIME DEFENSE → SELF-HEALING LEARNING LOOP
-        </motion.p>
-
-        <div className="mt-14 grid w-full grid-cols-2 gap-4 lg:grid-cols-4">
-          {heroStats.map((s, i) => {
-            const Icon = icons[s.icon];
-            return (
-              <motion.div
-                key={s.label}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.25 + i * 0.12, duration: 0.6 }}
-                className="glass-panel tilt-card rounded-2xl p-5 text-left"
-              >
-                <Icon className="mb-4 h-5 w-5 text-cyan" strokeWidth={1.75} />
-                <div className="font-mono text-2xl font-semibold text-glow-cyan sm:text-3xl">
-                  <Counter
-                    value={s.value}
-                    decimals={s.decimals ?? 0}
-                    prefix={s.prefix ?? ""}
-                    suffix={s.suffix ?? ""}
-                    delay={1400 + i * 120}
-                  />
-                </div>
-                <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
-                  {s.label}
-                </div>
-              </motion.div>
-            );
-          })}
+        <div className="surreal-hero__copy js-hero-copy">
+          <p className="surreal-kicker"><span /> Adaptive payment intelligence</p>
+          <h1>
+            Fraud evolves.<br />
+            <em>Your defense should too.</em>
+          </h1>
+          <p className="surreal-hero__lede">
+            Sentrix connects every authorization, message, and beneficiary hop—then learns from the
+            attack before the next payment arrives.
+          </p>
+          <div className="surreal-hero__actions">
+            <a href="#demo" className="surreal-button surreal-button--primary">
+              Open live defender <ArrowRight aria-hidden="true" />
+            </a>
+            <a href="#identify" className="surreal-button surreal-button--ghost">
+              Explore the threat journey
+            </a>
+          </div>
         </div>
 
-        <motion.a
-          href="#identify"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 2 }}
-          className="mt-16 flex flex-col items-center gap-2 font-mono text-[11px] tracking-[0.24em] text-muted-foreground uppercase transition-colors hover:text-cyan"
-        >
-          Scroll to explore
-          <motion.span
-            animate={{ y: [0, 7, 0] }}
-            transition={{ duration: 1.6, repeat: Infinity }}
-          >
-            <ChevronDown className="h-4 w-4" />
-          </motion.span>
-        </motion.a>
+        <div className="surreal-card-scene js-card-scene" aria-label="Card authorization animation">
+          <div className="surreal-terminal-glow js-terminal-glow" aria-hidden="true" />
+          <div className="surreal-terminal js-terminal">
+            <div className="surreal-terminal__screen">
+              <div className="js-terminal-waiting">
+                <Radio aria-hidden="true" />
+                <strong>INSERT CARD</strong>
+                <small>WAITING FOR PAYMENT</small>
+              </div>
+              <div className="surreal-terminal__approved js-terminal-approved">
+                <CheckCircle2 aria-hidden="true" />
+                <strong>APPROVED</strong>
+                <small>RISK SIGNAL CAPTURED</small>
+              </div>
+            </div>
+            <div className="surreal-terminal__keys" aria-hidden="true">
+              {Array.from({ length: 9 }).map((_, index) => <span key={index} />)}
+            </div>
+            <div className="surreal-terminal__slot" aria-hidden="true" />
+          </div>
+
+          <div className="surreal-payment-card js-swipe-card">
+            <div className="surreal-payment-card__shine js-card-shine" aria-hidden="true" />
+            <div className="surreal-payment-card__topline">
+              <span>SENTRIX</span>
+              <Radio aria-hidden="true" />
+            </div>
+            <div className="surreal-payment-card__chip" aria-hidden="true" />
+            <div className="surreal-payment-card__digits">5412&nbsp; •••• &nbsp;••••&nbsp; 4921</div>
+            <div className="surreal-payment-card__footer">
+              <span>A. SHARMA&nbsp;&nbsp; 09/29</span>
+              <span className="surreal-payment-card__circles" aria-hidden="true"><i /><i /></span>
+            </div>
+          </div>
+        </div>
+
+        <div className="surreal-hero__reveal js-hero-reveal">
+          <p>The payment looked ordinary</p>
+          <h2>
+            The sequence did not.
+            <span>Five attempts. Seventeen seconds. One connected fraud campaign.</span>
+          </h2>
+          <div className="surreal-risk-line"><span className="js-risk-progress" /></div>
+          <div className="surreal-risk-labels">
+            <span>AUTHORIZATION</span>
+            <span>BEHAVIOR</span>
+            <span>NETWORK</span>
+            <span>DECISION</span>
+          </div>
+
+          <div className="surreal-transaction-story" aria-label="Five connected transaction attempts escalating from 199 rupees to 94,000 rupees in 17 seconds">
+            <div className="surreal-transaction-story__header">
+              <span>Same card · same device · same beneficiary path</span>
+              <strong>472× value escalation</strong>
+            </div>
+            <div className="surreal-transaction-story__track">
+              <span className="surreal-transaction-story__path js-sequence-path" aria-hidden="true" />
+              <ol>
+                <li className="js-transaction-step">
+                  <i>01</i>
+                  <time>00:00</time>
+                  <strong>₹199</strong>
+                  <small>Probe</small>
+                </li>
+                <li className="js-transaction-step">
+                  <i>02</i>
+                  <time>00:03</time>
+                  <strong>₹499</strong>
+                  <small>Confirm</small>
+                </li>
+                <li className="js-transaction-step">
+                  <i>03</i>
+                  <time>00:07</time>
+                  <strong>₹2,499</strong>
+                  <small>Build trust</small>
+                </li>
+                <li className="js-transaction-step">
+                  <i>04</i>
+                  <time>00:12</time>
+                  <strong>₹18,500</strong>
+                  <small>Escalate</small>
+                </li>
+                <li className="js-transaction-step surreal-transaction-story__critical">
+                  <i>05</i>
+                  <time>00:17</time>
+                  <strong>₹94,000</strong>
+                  <small>Cash-out request</small>
+                </li>
+              </ol>
+            </div>
+            <div className="surreal-transaction-story__footer">
+              <span>Each payment looked plausible alone.</span>
+              <strong>Sequence risk · Critical</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="surreal-scroll-cue js-scroll-cue">
+          Scroll to swipe
+          <ChevronDown aria-hidden="true" />
+        </div>
       </div>
     </section>
   );

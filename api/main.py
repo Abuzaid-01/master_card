@@ -7,20 +7,16 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
-try:
-    import torch
-    torch.set_num_threads(1)
-except Exception:
-    pass
 
 import sys
 import json
+import threading
 import numpy as np
 import pandas as pd
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import Optional, List, Dict, Any
+from typing import Optional
 
 # Ensure project root is importable
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,10 +28,15 @@ from generate.generator_tabular import TABULAR_FEATURE_COLS
 app = FastAPI(title="SENTRIX AI API", version="2.0.0")
 
 # CORS for React frontend (Localhost & Cloud deployments)
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv("SENTRIX_CORS_ORIGINS", "*").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
+    allow_origins=_cors_origins,
+    allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -49,6 +50,7 @@ MODELS_DIR = os.path.join(PROJECT_ROOT, "defend", "models")
 # ── Dynamic MTime-Aware Model Loaders ──
 _tabular_model = None
 _tabular_mtime = 0
+_tabular_threshold = 0.5
 _text_detector = None
 _text_mtime = 0
 _graph_model = None
@@ -56,7 +58,7 @@ _graph_mtime = 0
 
 
 def _load_tabular_model():
-    global _tabular_model, _tabular_mtime
+    global _tabular_model, _tabular_mtime, _tabular_threshold
     path = os.path.join(MODELS_DIR, "card_testing_xgb.joblib")
     if os.path.exists(path):
         current_mtime = os.path.getmtime(path)
@@ -68,6 +70,7 @@ def _load_tabular_model():
                 _tabular_model = data
             elif isinstance(data, dict):
                 _tabular_model = data.get("xgb_model", data.get("model"))
+                _tabular_threshold = float(data.get("optimal_threshold", 0.5))
             else:
                 _tabular_model = data
             _tabular_mtime = current_mtime
@@ -91,7 +94,13 @@ def _load_text_detector():
                 det.optimal_threshold = data.get("optimal_threshold", 0.50)
                 det.attack_embeddings = data.get("attack_embeddings")
                 det.legit_embeddings = data.get("legit_embeddings")
-                det._init_sentence_transformer()
+                # Loading MiniLM and PyTorch on the first request exceeded the
+                # memory limit of the demo deployment and killed the worker.
+                # Semantic inference remains opt-in for larger environments;
+                # the bundled TF-IDF model is the reliable deployment path.
+                if os.getenv("SENTRIX_ENABLE_SEMANTIC_MODEL", "false").lower() in {"1", "true", "yes"}:
+                    det._init_sentence_transformer()
+                det.inference_mode = "semantic" if det.encoder is not None else "tfidf"
             _text_detector = det
             _text_mtime = current_mtime
     return _text_detector
@@ -164,7 +173,17 @@ def health():
         "closed_loop_report": os.path.exists(os.path.join(LOOP_DIR, "closed_loop_report.json")),
         "fidelity_report": os.path.exists(os.path.join(SYNTHETIC_DIR, "fidelity_report.json")),
     }
-    return {"status": "ok", "models": models_loaded, "reports": reports}
+    return {
+        "status": "ok" if all(models_loaded.values()) else "degraded",
+        "models": models_loaded,
+        "reports": reports,
+        "runtime": {
+            "semantic_text_enabled": os.getenv(
+                "SENTRIX_ENABLE_SEMANTIC_MODEL", "false"
+            ).lower() in {"1", "true", "yes"},
+            "text_fallback": "tfidf",
+        },
+    }
 
 
 # ══════════════════════════════════════════
@@ -185,7 +204,12 @@ class TabularRequest(BaseModel):
 
 
 class TextRequest(BaseModel):
-    prompt_text: str = Field(default="What is my account balance?", description="Chat prompt to analyze")
+    prompt_text: str = Field(
+        default="What is my account balance?",
+        min_length=1,
+        max_length=4000,
+        description="Chat prompt to analyze",
+    )
 
 
 @app.post("/api/demo/tabular")
@@ -201,12 +225,12 @@ def demo_tabular(req: TabularRequest):
     prob = float(model.predict_proba(features)[0][1])
     verdict = "FRAUD" if prob >= 0.5 else "SAFE"
 
-    # SHAP explanation
+    # XGBoost exposes native TreeSHAP contributions. This avoids importing the
+    # much heavier shap/numba stack in the latency-sensitive API worker.
     shap_values = []
     try:
-        import shap
-        explainer = shap.TreeExplainer(model)
-        sv = explainer.shap_values(features)
+        import xgboost as xgb
+        sv = model.get_booster().predict(xgb.DMatrix(features), pred_contribs=True)
         for i, fn in enumerate(feature_names):
             s_val = float(sv[0][i])
             shap_values.append({
@@ -216,15 +240,15 @@ def demo_tabular(req: TabularRequest):
                 "impact": "Increases Risk" if s_val > 0 else "Decreases Risk"
             })
         shap_values.sort(key=lambda x: abs(x["shap"]), reverse=True)
-    except Exception:
-        pass
+    except Exception as exc:
+        print(f"[Warning] Native TreeSHAP explanation unavailable: {exc}")
 
     return {
         "fraud_probability": round(prob, 4),
         "verdict": verdict,
         "threshold": 0.5,
-        "optimal_threshold": 0.35,
-        "verdict_optimized": "FRAUD" if prob >= 0.35 else "SAFE",
+        "optimal_threshold": round(_tabular_threshold, 4),
+        "verdict_optimized": "FRAUD" if prob >= _tabular_threshold else "SAFE",
         "shap_explanation": shap_values,
         "input": req.model_dump(),
     }
@@ -247,29 +271,33 @@ def demo_text(req: TextRequest):
     except Exception:
         pass
 
-    # Semantic score
-    semantic_prob = 0.0
-    try:
-        if hasattr(detector, "predict_proba_semantic"):
+    semantic_available = getattr(detector, "encoder", None) is not None
+    semantic_prob = tfidf_prob
+    if semantic_available:
+        try:
             semantic_prob = float(detector.predict_proba_semantic(df_input)[0])
-    except Exception:
-        pass
+        except Exception as exc:
+            print(f"[Warning] Semantic inference failed; using TF-IDF: {exc}")
+            semantic_available = False
 
-    # Decision threshold from calibrated detector
-    eff_threshold = getattr(detector, "optimal_threshold", 0.50)
-    verdict = "BLOCKED" if semantic_prob >= eff_threshold else "SAFE"
+    # The semantic threshold is not calibrated for the lexical fallback.
+    eff_threshold = getattr(detector, "optimal_threshold", 0.50) if semantic_available else 0.50
+    operational_prob = semantic_prob if semantic_available else tfidf_prob
+    verdict = "BLOCKED" if operational_prob >= eff_threshold else "SAFE"
 
     return {
         "tfidf_score": round(tfidf_prob, 4),
         "semantic_score": round(semantic_prob, 4),
-        "combined_score": round(semantic_prob, 4),
+        "combined_score": round(operational_prob, 4),
         "optimal_threshold": round(eff_threshold, 4),
         "verdict": verdict,
+        "inference_mode": "semantic" if semantic_available else "tfidf",
+        "semantic_available": semantic_available,
         "prompt_text": req.prompt_text,
         "analysis": {
             "tfidf_verdict": "BLOCKED" if tfidf_prob >= 0.5 else "SAFE",
             "semantic_verdict": "BLOCKED" if semantic_prob >= eff_threshold else "SAFE",
-            "semantic_advantage": round(semantic_prob - tfidf_prob, 4),
+            "semantic_advantage": round(semantic_prob - tfidf_prob, 4) if semantic_available else 0.0,
         }
     }
 
@@ -392,6 +420,8 @@ def generate_llm_prompts(req: LLMGenerateRequest):
         else:
             provider = "groq"
 
+    status = "success"
+    warning = None
     try:
         if provider == "gemini" and gemini_key:
             prompts = generate_via_gemini(gemini_key, model=req.model, num_samples=req.num_samples)
@@ -403,16 +433,22 @@ def generate_llm_prompts(req: LLMGenerateRequest):
             prompts = generate_via_groq(groq_key, model="openai/gpt-oss-120b", num_samples=req.num_samples)
         else:
             prompts = FALLBACK_INJECTION_TEMPLATES[:req.num_samples]
+            status = "fallback"
+            warning = "No LLM API key configured; serving curated defensive samples."
 
-        return {
-            "status": "success",
-            "provider": provider,
-            "model": req.model,
-            "prompts": prompts,
-            "count": len(prompts),
-        }
     except Exception as e:
-        raise HTTPException(500, f"LLM Generation failed: {str(e)}")
+        prompts = FALLBACK_INJECTION_TEMPLATES[:req.num_samples]
+        status = "fallback"
+        warning = f"Provider unavailable; serving curated defensive samples ({type(e).__name__})."
+
+    return {
+        "status": status,
+        "provider": provider,
+        "model": req.model,
+        "prompts": prompts,
+        "count": len(prompts),
+        "warning": warning,
+    }
 
 
 # ══════════════════════════════════════════
@@ -422,6 +458,22 @@ def generate_llm_prompts(req: LLMGenerateRequest):
 from api.pipeline_runner import PipelineRunner
 
 _pipeline = PipelineRunner()
+_pipeline_lock = threading.Lock()
+
+
+def _run_pipeline_operation(operation, failure_label: str):
+    """Serialize the stateful demo pipeline so overlapping clicks cannot corrupt it."""
+    if not _pipeline_lock.acquire(blocking=False):
+        raise HTTPException(409, "Another pipeline step is already running. Please wait for it to finish.")
+    try:
+        return operation()
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+    except Exception as exc:
+        print(f"[Pipeline] {failure_label} failed: {exc}")
+        raise HTTPException(500, f"{failure_label} failed. Check backend logs for details.") from exc
+    finally:
+        _pipeline_lock.release()
 
 
 class PipelineGenerateRequest(BaseModel):
@@ -434,66 +486,46 @@ class PipelineGenerateRequest(BaseModel):
 @app.post("/api/pipeline/generate")
 def pipeline_generate(req: PipelineGenerateRequest):
     """Step B: Generate synthetic attack data."""
-    try:
+    def operation():
         _pipeline.reset()
-        result = _pipeline.generate(req.vector, req.n_samples, req.fraud_pct, req.llm_model)
-        return {"step": "generate", "status": "success", **result}
-    except Exception as e:
-        raise HTTPException(500, f"Generation failed: {str(e)}")
+        return _pipeline.generate(req.vector, req.n_samples, req.fraud_pct, req.llm_model)
+
+    result = _run_pipeline_operation(operation, "Generation")
+    return {"step": "generate", "status": "success", **result}
 
 
 @app.post("/api/pipeline/train")
 def pipeline_train():
     """Step C: Train Round 1 defender."""
-    try:
-        result = _pipeline.train_round1()
-        return {"step": "train_r1", "status": "success", **result}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f"Training failed: {str(e)}")
+    result = _run_pipeline_operation(_pipeline.train_round1, "Training")
+    return {"step": "train_r1", "status": "success", **result}
 
 
 @app.post("/api/pipeline/attack")
 def pipeline_attack():
     """Step D: Run adversarial probing against Round 1."""
-    try:
-        result = _pipeline.attack_round1()
-        return {"step": "attack", "status": "success", **result}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f"Attack failed: {str(e)}")
+    result = _run_pipeline_operation(_pipeline.attack_round1, "Attack")
+    return {"step": "attack", "status": "success", **result}
 
 
 @app.post("/api/pipeline/retrain")
 def pipeline_retrain():
     """Step E: Retrain Round 2 with augmented data."""
-    try:
-        result = _pipeline.retrain_round2()
-        return {"step": "retrain_r2", "status": "success", **result}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f"Retrain failed: {str(e)}")
+    result = _run_pipeline_operation(_pipeline.retrain_round2, "Retraining")
+    return {"step": "retrain_r2", "status": "success", **result}
 
 
 @app.post("/api/pipeline/evaluate")
 def pipeline_evaluate():
     """Step F: Final R1 vs R2 comparison on unseen holdout."""
-    try:
-        result = _pipeline.evaluate()
-        return {"step": "evaluate", "status": "success", **result}
-    except ValueError as e:
-        raise HTTPException(400, str(e))
-    except Exception as e:
-        raise HTTPException(500, f"Evaluation failed: {str(e)}")
+    result = _run_pipeline_operation(_pipeline.evaluate, "Evaluation")
+    return {"step": "evaluate", "status": "success", **result}
 
 
 @app.post("/api/pipeline/reset")
 def pipeline_reset():
     """Reset the pipeline state for a fresh run."""
-    _pipeline.reset()
+    _run_pipeline_operation(_pipeline.reset, "Reset")
     return {"status": "reset"}
 
 

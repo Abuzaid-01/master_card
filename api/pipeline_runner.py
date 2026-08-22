@@ -9,9 +9,99 @@ import time
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, Optional
-from sklearn.model_selection import train_test_split
 from sklearn.metrics import average_precision_score, f1_score
 from generate.generator_tabular import TABULAR_FEATURE_COLS
+
+
+PARTITION_RATIOS = {
+    "train": 0.60,
+    "validation": 0.20,
+    "mining": 0.10,
+    "evaluation": 0.10,
+}
+
+
+def _slice_by_ratios(frame: pd.DataFrame) -> Dict[str, pd.DataFrame]:
+    """Split an already ordered frame without moving rows between partitions."""
+    total = len(frame)
+    train_end = int(total * PARTITION_RATIOS["train"])
+    validation_end = train_end + int(total * PARTITION_RATIOS["validation"])
+    mining_end = validation_end + int(total * PARTITION_RATIOS["mining"])
+    return {
+        "train": frame.iloc[:train_end].copy(),
+        "validation": frame.iloc[train_end:validation_end].copy(),
+        "mining": frame.iloc[validation_end:mining_end].copy(),
+        "evaluation": frame.iloc[mining_end:].copy(),
+    }
+
+
+def leakage_resistant_split(dataset: pd.DataFrame, vector: str) -> tuple[Dict[str, pd.DataFrame], Dict[str, Any]]:
+    """Create family-isolated fraud holdouts and time-ordered legitimate holdouts.
+
+    Fraud generator families never cross partitions. Legitimate traffic is ordered by
+    event time when available, which better resembles a deployment train/future-test
+    boundary than a random row split.
+    """
+    family_column = "attack_type" if vector in ["text", "prompt_injection"] else "fraud_subtype"
+    fraud = dataset[dataset["is_fraud"] == 1].copy()
+    legitimate = dataset[dataset["is_fraud"] == 0].copy()
+
+    if family_column not in fraud.columns:
+        raise ValueError(f"Dataset is missing required fraud family column: {family_column}")
+
+    families = sorted(str(value) for value in fraud[family_column].dropna().unique())
+    if len(families) < 4:
+        raise ValueError(
+            f"Leakage-resistant evaluation needs at least 4 fraud families; found {len(families)}."
+        )
+
+    rng = np.random.RandomState(42)
+    rng.shuffle(families)
+    family_frame = pd.DataFrame({"family": families})
+    family_partitions = _slice_by_ratios(family_frame)
+
+    # A small family catalogue can round a 10% partition to zero. Move one family
+    # from the largest donor so mining and final evaluation remain meaningful.
+    for target in ["mining", "evaluation", "validation"]:
+        if family_partitions[target].empty:
+            donor = max(family_partitions, key=lambda name: len(family_partitions[name]))
+            moved = family_partitions[donor].tail(1)
+            family_partitions[donor] = family_partitions[donor].iloc[:-1]
+            family_partitions[target] = moved
+
+    if "timestamp_sec" in legitimate.columns:
+        legitimate = legitimate.sort_values("timestamp_sec", kind="stable")
+        legitimate_strategy = "temporal"
+    else:
+        legitimate = legitimate.sample(frac=1.0, random_state=42)
+        legitimate_strategy = "deterministic"
+    legitimate_partitions = _slice_by_ratios(legitimate)
+
+    partitions: Dict[str, pd.DataFrame] = {}
+    manifest_families: Dict[str, list[str]] = {}
+    for name in PARTITION_RATIOS:
+        assigned_families = family_partitions[name]["family"].tolist()
+        manifest_families[name] = assigned_families
+        fraud_rows = fraud[fraud[family_column].astype(str).isin(assigned_families)]
+        partitions[name] = pd.concat(
+            [legitimate_partitions[name], fraud_rows], ignore_index=True
+        ).sample(frac=1.0, random_state=42).reset_index(drop=True)
+
+    family_sets = [set(values) for values in manifest_families.values()]
+    no_family_overlap = all(
+        family_sets[i].isdisjoint(family_sets[j])
+        for i in range(len(family_sets))
+        for j in range(i + 1, len(family_sets))
+    )
+    manifest = {
+        "strategy": "fraud_family_holdout",
+        "family_column": family_column,
+        "legitimate_split": legitimate_strategy,
+        "fraud_families": manifest_families,
+        "no_fraud_family_overlap": no_family_overlap,
+        "immutable_evaluation_partition": True,
+    }
+    return partitions, manifest
 
 
 class PipelineRunner:
@@ -75,20 +165,11 @@ class PipelineRunner:
         fraud_count = int((self.dataset["is_fraud"] == 1).sum())
         legit_count = int((self.dataset["is_fraud"] == 0).sum())
 
-        # Auto-split: 60% train, 20% val, 20% holdout
-        df_train_val, df_holdout = train_test_split(
-            self.dataset, test_size=0.20, stratify=self.dataset["is_fraud"],
-            random_state=42
-        )
-        self.df_train, self.df_val = train_test_split(
-            df_train_val, test_size=0.25, stratify=df_train_val["is_fraud"],
-            random_state=42
-        )
-        # Split holdout 50/50 for mining vs eval
-        self.df_holdout_mine, self.df_holdout_eval = train_test_split(
-            df_holdout, test_size=0.50, stratify=df_holdout["is_fraud"],
-            random_state=42
-        )
+        partitions, evaluation_protocol = leakage_resistant_split(self.dataset, vector)
+        self.df_train = partitions["train"]
+        self.df_val = partitions["validation"]
+        self.df_holdout_mine = partitions["mining"]
+        self.df_holdout_eval = partitions["evaluation"]
 
         # Sample rows for display
         if vector in ["text", "prompt_injection"]:
@@ -119,6 +200,7 @@ class PipelineRunner:
             "pass_rate": 100.0,
             "vector": vector,
             "llm_model": llm_model,
+            "evaluation_protocol": evaluation_protocol,
         }
 
     # ═══════════════════════════════════════════════

@@ -1,5 +1,3 @@
-import { motion } from "motion/react";
-
 export function GaugeRing({
   percent,
   label,
@@ -30,7 +28,7 @@ export function GaugeRing({
           stroke="var(--border)"
           strokeWidth="5"
         />
-        <motion.circle
+        <circle
           cx="32"
           cy="32"
           r={r}
@@ -39,10 +37,7 @@ export function GaugeRing({
           strokeWidth="5"
           strokeLinecap="round"
           strokeDasharray={c}
-          initial={{ strokeDashoffset: c }}
-          whileInView={{ strokeDashoffset: c * (1 - percent / 100) }}
-          viewport={{ once: true, margin: "-10% 0px" }}
-          transition={{ duration: 1.4, ease: "easeOut" }}
+          strokeDashoffset={c * (1 - percent / 100)}
         />
       </svg>
       <div>
