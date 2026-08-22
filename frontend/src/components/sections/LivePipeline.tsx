@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "@/components/shared/StaticMotion";
 import {
   Zap,
   ShieldCheck,
@@ -32,6 +32,14 @@ interface PipelineResults {
     fraud_count: number;
     legit_count: number;
     train_size?: number;
+    evaluation_protocol: {
+      strategy: "fraud_family_holdout";
+      family_column: string;
+      legitimate_split: "temporal" | "deterministic";
+      fraud_families: Record<string, string[]>;
+      no_fraud_family_overlap: boolean;
+      immutable_evaluation_partition: boolean;
+    };
   };
   train?: { auc_pr: number; f1_score: number; fpr: number };
   attack?: { evasion_rate: number; r1_missed: number; total_adversarial: number };
@@ -404,8 +412,10 @@ export function LivePipeline() {
                 </div>
                 <div className="rounded-lg bg-secondary/50 p-3 text-xs text-muted-foreground">
                   <p>
-                    <strong className="text-foreground">Pipeline Split:</strong> 60% train · 20%
-                    validation · 10% mining · 10% untouched final holdout
+                    <strong className="text-foreground">Leakage-resistant split:</strong> fraud
+                    families stay isolated across 60% train · 20% validation · 10% mining · 10%
+                    immutable final evaluation. Legitimate traffic follows time order when
+                    available.
                   </p>
                 </div>
               </div>
@@ -466,21 +476,39 @@ export function LivePipeline() {
                   <Check className="h-4 w-4" /> Data Generated
                 </h4>
                 {results.generate && (
-                  <div className="mt-4 grid grid-cols-3 gap-4">
-                    <MetricBadge
-                      label="Total Rows"
-                      value={results.generate.total_rows.toLocaleString()}
-                    />
-                    <MetricBadge
-                      label="Fraud"
-                      value={results.generate.fraud_count.toString()}
-                      accent="red"
-                    />
-                    <MetricBadge
-                      label="Legit"
-                      value={results.generate.legit_count.toString()}
-                      accent="cyan"
-                    />
+                  <div className="mt-4 space-y-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <MetricBadge
+                        label="Total Rows"
+                        value={results.generate.total_rows.toLocaleString()}
+                      />
+                      <MetricBadge
+                        label="Fraud"
+                        value={results.generate.fraud_count.toString()}
+                        accent="red"
+                      />
+                      <MetricBadge
+                        label="Legit"
+                        value={results.generate.legit_count.toString()}
+                        accent="cyan"
+                      />
+                    </div>
+                    <div className="rounded-lg border border-cyan/20 bg-cyan/[0.06] p-3 font-mono text-[10px] leading-relaxed text-muted-foreground">
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="font-semibold uppercase tracking-wider text-cyan">
+                          Evaluation isolation verified
+                        </span>
+                        <span>
+                          {results.generate.evaluation_protocol.legitimate_split === "temporal"
+                            ? "Temporal legitimate holdout"
+                            : "Deterministic legitimate holdout"}
+                        </span>
+                      </div>
+                      <p className="mt-1.5">
+                        No {results.generate.evaluation_protocol.family_column.replaceAll("_", " ")}{" "}
+                        crosses train, validation, red-team mining, or final evaluation.
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>

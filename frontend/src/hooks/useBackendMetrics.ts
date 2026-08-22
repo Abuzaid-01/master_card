@@ -169,6 +169,14 @@ export interface PipelineGenerateResult {
   fraud_count: number;
   legit_count: number;
   train_size?: number;
+  evaluation_protocol: {
+    strategy: "fraud_family_holdout";
+    family_column: string;
+    legitimate_split: "temporal" | "deterministic";
+    fraud_families: Record<string, string[]>;
+    no_fraud_family_overlap: boolean;
+    immutable_evaluation_partition: boolean;
+  };
 }
 
 export interface PipelineTrainResult {

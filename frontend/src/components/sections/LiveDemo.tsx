@@ -1,5 +1,5 @@
 import { lazy, Suspense, useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "@/components/shared/StaticMotion";
 import {
   CreditCard,
   MessageSquare,
@@ -144,7 +144,7 @@ function Tab({
       className={`flex min-w-0 items-start gap-3 rounded-2xl border p-3.5 text-left transition-all ${
         active
           ? "border-foreground bg-foreground text-background shadow-sm"
-          : "border-border bg-white/55 text-foreground hover:border-foreground/25 hover:bg-white"
+          : "border-border bg-[var(--surface-subtle)] text-foreground hover:border-foreground/25 hover:bg-[var(--surface-raised)]"
       }`}
     >
       <span
@@ -787,7 +787,7 @@ export function LiveDemo() {
 
         {/* Backend status badge */}
         <Reveal>
-          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-white/55 px-4 py-3">
+          <div className="mb-6 flex flex-wrap items-center gap-3 rounded-2xl border border-border bg-[var(--surface-subtle)] px-4 py-3">
             <div className={`h-2 w-2 rounded-full ${statusDot}`} />
             <span className="text-xs font-semibold tracking-[0.12em] text-muted-foreground uppercase">
               Defense API · <span className={statusText}>{statusLabel}</span>

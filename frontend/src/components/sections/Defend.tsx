@@ -1,4 +1,3 @@
-import { motion } from "motion/react";
 import { ArrowUpRight, MessagesSquare, Network, ShieldCheck } from "lucide-react";
 import { Reveal, SectionTitle } from "@/components/shared/Section";
 import { Counter } from "@/components/shared/Counter";
@@ -30,12 +29,9 @@ function Bar({
         <span className="font-mono text-foreground">{value}</span>
       </div>
       <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary">
-        <motion.div
+        <div
           className={`h-full rounded-full ${fill}`}
-          initial={{ width: 0 }}
-          whileInView={{ width: `${percent}%` }}
-          viewport={{ once: true, margin: "-10% 0px" }}
-          transition={{ duration: 1.1, ease: "easeOut" }}
+          style={{ width: `${percent}%` }}
         />
       </div>
     </div>
@@ -101,12 +97,9 @@ export function Defend() {
                   ONNX latency — 6,000× faster than the 50ms SLA
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-secondary">
-                  <motion.div
+                  <div
                     className="h-full rounded-full bg-cyan"
-                    initial={{ width: 0 }}
-                    whileInView={{ width: "3%" }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1 }}
+                    style={{ width: "3%" }}
                   />
                 </div>
               </div>
@@ -126,21 +119,14 @@ export function Defend() {
                 <Bar label="Semantic on paraphrased" percent={98.8} value="98.8%" accent="cyan" />
               </div>
 
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: 0.9, duration: 0.5 }}
+              <div
                 className="glow-cyan mt-8 inline-flex items-center gap-2 rounded-full bg-cyan/10 px-3 py-1.5"
               >
-                <motion.span
-                  animate={{ y: [0, -3, 0] }}
-                  transition={{ duration: 1.6, repeat: Infinity }}
-                >
+                <span>
                   <ArrowUpRight className="h-4 w-4 text-cyan" />
-                </motion.span>
+                </span>
                 <span className="font-mono text-sm font-semibold text-cyan">+10.17% lift</span>
-              </motion.div>
+              </div>
               <p className="mt-4 text-xs text-muted-foreground">
                 Semantic embeddings hold up when attackers paraphrase, where lexical baselines
                 collapse.
@@ -207,25 +193,18 @@ export function Defend() {
               </div>
 
               <div className="space-y-4">
-                {shapFeatures.map((f, i) => (
+                {shapFeatures.map((f) => (
                   <div key={f.name}>
                     <div className="flex items-baseline justify-between font-mono text-[11px]">
                       <span className="text-muted-foreground">{f.name}</span>
                       <span>{f.value}%</span>
                     </div>
                     <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-secondary">
-                      <motion.div
+                      <div
                         className="h-full rounded-full"
                         style={{
                           background: "linear-gradient(90deg, var(--ai-violet), var(--neon-cyan))",
-                        }}
-                        initial={{ width: 0 }}
-                        whileInView={{ width: `${f.value}%` }}
-                        viewport={{ once: true, margin: "-10% 0px" }}
-                        transition={{
-                          duration: 1,
-                          delay: i * 0.12,
-                          ease: "easeOut",
+                          width: `${f.value}%`,
                         }}
                       />
                     </div>

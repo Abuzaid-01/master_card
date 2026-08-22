@@ -1,76 +1,70 @@
-# Cross-Vector Compound Fraud Defense: Architecture & Mathematical Formulation
+# Cross-vector campaign simulation and fusion
 
-## 1. Executive Summary & Threat Model
-Traditional financial fraud systems treat security vectors in silos:
-* The conversational AI / chatbot team monitors customer service transcripts.
-* The payment gateway team monitors transaction authorization velocity.
-* The anti-money laundering (AML) team monitors interbank wire transfers.
+SENTRIX demonstrates why weak signals from separate payment systems can become important when they occur in one coordinated campaign.
 
-Modern cybercrime syndicates exploit these operational silos by executing **Cross-Vector Compound Attacks** across three sequential phases:
+## Demonstrated campaign
 
-```
-┌───────────────────────────────────────────────┐
-│  Phase 1: Chatbot Infiltration                │
-│  Target: Bank Virtual Assistant               │
-│  Threat Vector: Indirect Prompt Injection     │
-│  Goal: Suppress alerts / Exfiltrate 2FA token │
-└───────────────────────┬───────────────────────┘
-                        │
-                        ▼
-┌───────────────────────────────────────────────┐
-│  Phase 2: Payment Gateway Testing & Drain     │
-│  Target: Card Authorization Gateway           │
-│  Threat Vector: Micro-Burst Card Testing      │
-│  Goal: Validate CVV / Drain Card Limit ($)    │
-└───────────────────────┬───────────────────────┘
-                        │
-                        ▼
-┌───────────────────────────────────────────────┐
-│  Phase 3: Interbank Exfiltration Layering     │
-│  Target: Wire Transfer & Settlement Network   │
-│  Threat Vector: Multi-Hop Money Mule Ring     │
-│  Goal: Disperse funds to Crypto Off-Ramp      │
-└───────────────────────────────────────────────┘
+```text
+Phase 1: suspicious instruction sent to a banking assistant
+   ↓ same synthetic target account and short scenario timeline
+Phase 2: card-testing micro-burst followed by a larger drain
+   ↓ synthetic recipient links
+Phase 3: rapid multi-hop or fan-out mule routing
 ```
 
----
+[`generator_cross_vector.py`](../generate/generator_cross_vector.py) contains four curated templates. A generated scenario includes prompt text, transaction records, mule hops, a target account, and timing fields. Repeated generation adds seeded numeric variation but does not invent new campaign structures.
 
-## 2. Multi-Model Defense Architecture
+## Scoring
 
-The **SENTRIX AI Platform** deploys three specialized machine learning models running in parallel across the transaction event stream:
+[`cross_vector_fusion.py`](../defend/cross_vector_fusion.py) scores each phase with the corresponding saved model:
 
-| Attack Phase | Model Architecture | Primary Features | Inference SLA |
-|---|---|---|---|
-| **Phase 1 (Text)** | `SentenceTransformers (all-MiniLM-L6-v2)` + Calibrated Logistic Head (Platt Scaling) | 384-dimensional dense semantic vectors + TF-IDF n-grams | $<15\,\text{ms}$ |
-| **Phase 2 (Tabular)** | Quantized 9-Feature XGBoost (`card_testing_xgb.onnx`) | `amount`, `velocity`, `device_risk_score`, `is_decline`, `hour_sin`, `hour_cos`, `mcc_risk_weight`, `geo_distance_km`, `card_age_days`, `failed_attempts_24h` | **$0.0056\,\text{ms}$** |
-| **Phase 3 (Graph)** | `HistGradientBoostingClassifier` (Network Topology) | `pass_through_delay_sec`, `sender_in_degree`, `sender_out_degree`, `receiver_in_degree`, `receiver_out_degree`, `mule_funnel_score` | $<2\,\text{ms}$ |
+- Text: semantic detector when explicitly enabled, otherwise the TF-IDF deployment fallback.
+- Transaction: maximum fraud probability among the scenario's transaction records.
+- Graph: a representative graph-feature vector derived from hop count and pass-through timing.
 
----
+The current fused score is:
 
-## 3. Mathematical Risk Fusion Formulation
+```text
+joint = 1 - (1 - text_risk) × (1 - transaction_risk) × (1 - graph_risk)
+fused = min(0.9999, joint + synergy)
+```
 
-To compute the **Correlated Compound Risk Score** ($R_{\text{fused}}$), the system uses an independent failure probability fusion model augmented with temporal co-occurrence synergy:
+`synergy` is a fixed `0.05` when both text and transaction risks are at least `0.5`.
 
-### 3.1 Joint Probability Equation:
-$$R_{\text{joint}} = 1 - \prod_{i \in \{\text{text}, \text{tabular}, \text{graph}\}} \big(1 - R_i\big)$$
+This is a transparent heuristic. The component probabilities are not proven independent, and the fusion equation has not been calibrated against real linked payment campaigns.
 
-Where:
-* $R_{\text{text}} \in [0, 1]$ is the calibrated semantic probability of prompt injection.
-* $R_{\text{tabular}} \in [0, 1]$ is the maximum transaction fraud probability across the burst window.
-* $R_{\text{graph}} \in [0, 1]$ is the topological mule network probability.
+## Policy output
 
-### 3.2 Temporal Correlation & Synergy Boost:
-If $R_{\text{text}} \ge \tau_{\text{text}}^*$ and $R_{\text{tabular}} \ge \tau_{\text{tabular}}^*$ within a co-occurrence window $\Delta t \le 300\,\text{seconds}$:
-$$R_{\text{fused}} = \min\Big(0.9999, \; R_{\text{joint}} + \Delta_{\text{synergy}}\Big) \quad \text{where } \Delta_{\text{synergy}} = 0.05$$
+| Fused score | Returned recommendation |
+| ---: | --- |
+| `>= 0.80` | `INSTANT_KILL_SWITCH_AND_FREEZE` |
+| `>= 0.50` and `< 0.80` | `STEP_UP_2FA_AND_HOLD` |
+| `< 0.50` | `ALLOW_AND_MONITOR` |
 
----
+These strings are simulated policy recommendations. No token, card, account, transfer, or wire is modified by this repository. The returned `interception_timeline_ms` is a demonstration value, not an end-to-end measured settlement intervention.
 
-## 4. Autonomous Mastercard Enforcement Decision Matrix
+## API usage
 
-Based on the computed $R_{\text{fused}}$, the autonomous decision head executes policy rules in sub-second time:
+Generate and score one curated scenario:
 
-| Fused Risk $R_{\text{fused}}$ | Severity | Automated Action | Business Impact |
-|---|---|---|---|
-| **$R_{\text{fused}} \ge 0.80$** | **CRITICAL** | **`INSTANT_KILL_SWITCH_AND_FREEZE`** | Immediate card token revocation, pending wire hold, and customer security alert. |
-| **$0.50 \le R_{\text{fused}} < 0.80$** | **HIGH** | **`STEP_UP_2FA_AND_HOLD`** | Out-of-band biometric challenge required before transaction approval. |
-| **$R_{\text{fused}} < 0.50$** | **LOW** | **`ALLOW_AND_MONITOR`** | Transaction approved with background telemetry auditing. |
+```http
+GET /api/simulate/cross_vector?scenario_id=0
+```
+
+Score a caller-provided scenario with the same schema:
+
+```http
+POST /api/simulate/cross_vector_evaluate
+Content-Type: application/json
+```
+
+The browser's cross-vector sandbox uses these endpoints. The separate interactive learning wizard does not yet retrain all three detector heads as one campaign model: its `cross_vector` selection currently follows the transaction lane, while the offline closed-loop script retrains text, transaction, and graph detectors independently.
+
+## Next architectural steps
+
+1. Introduce a canonical event envelope with campaign, customer, account, device, merchant, beneficiary, and event-time identifiers.
+2. Generate linked stage events from a broader campaign policy instead of four fixed templates.
+3. Compute graph features from the full scenario graph rather than a representative aggregate row.
+4. Calibrate fusion and thresholds using linked campaign and legitimate multi-channel sessions.
+5. Retrain and evaluate all three heads plus fusion inside one leakage-resistant campaign split.
+6. Replace action strings with a sandboxed policy adapter and auditable human-approval workflow.

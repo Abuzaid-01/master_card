@@ -57,7 +57,9 @@ def evaluate_cross_vector_scenario(
                     det.optimal_threshold = data.get("optimal_threshold", 0.54)
                     det.attack_embeddings = data.get("attack_embeddings")
                     det.legit_embeddings = data.get("legit_embeddings")
-                    det._init_sentence_transformer()
+                    if os.getenv("SENTRIX_ENABLE_SEMANTIC_MODEL", "false").lower() in {"1", "true", "yes"}:
+                        det._init_sentence_transformer()
+                    det.inference_mode = "semantic" if det.encoder is not None else "tfidf"
                 text_detector = det
                 
         if text_detector and hasattr(text_detector, "predict_proba_semantic"):
@@ -206,7 +208,11 @@ def evaluate_cross_vector_scenario(
             "risk_score": r_text,
             "threshold": text_threshold,
             "verdict": text_verdict,
-            "model": "SentenceTransformers (all-MiniLM-L6-v2) + Platt Scaling"
+            "model": (
+                "SentenceTransformers (all-MiniLM-L6-v2) + Platt Scaling"
+                if getattr(text_detector, "encoder", None) is not None
+                else "TF-IDF Logistic Regression (deployment-safe fallback)"
+            )
         },
         "phase_2_result": {
             "attack_type": phase2_data.get("attack_type", "Micro-Burst Card Testing"),

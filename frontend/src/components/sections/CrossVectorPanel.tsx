@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence } from "@/components/shared/StaticMotion";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -300,7 +300,7 @@ export function CrossVectorPanel() {
       )}
 
       {mode === "preset" ? (
-        <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-border bg-white/55 p-4 sm:flex-row sm:items-center">
+        <div className="flex flex-col items-start justify-between gap-3 rounded-2xl border border-border bg-[var(--surface-subtle)] p-4 sm:flex-row sm:items-center">
           <div>
             <p className="text-sm font-semibold text-foreground">
               Ready to evaluate Scenario {selectedScenarioId + 1}
@@ -346,7 +346,7 @@ export function CrossVectorPanel() {
 
           <div className="grid grid-cols-1 gap-5 lg:grid-cols-3">
             {/* ── Phase 1 Custom Input ── */}
-            <div className="space-y-3 rounded-xl border border-mc-yellow/40 bg-white/60 p-4">
+            <div className="space-y-3 rounded-xl border border-mc-yellow/40 bg-[var(--surface-raised)] p-4">
               <div className="flex items-center gap-2">
                 <MessageSquare className="h-4 w-4 text-cyan" />
                 <span className="font-mono text-xs font-bold text-cyan uppercase">
@@ -386,7 +386,7 @@ export function CrossVectorPanel() {
             </div>
 
             {/* ── Phase 2 Custom Input ── */}
-            <div className="space-y-3 rounded-xl border border-mc-orange/30 bg-white/60 p-4">
+            <div className="space-y-3 rounded-xl border border-mc-orange/30 bg-[var(--surface-raised)] p-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-mc-orange" />
@@ -499,7 +499,7 @@ export function CrossVectorPanel() {
             </div>
 
             {/* ── Phase 3 Custom Input ── */}
-            <div className="space-y-3 rounded-xl border border-mc-red/20 bg-white/60 p-4">
+            <div className="space-y-3 rounded-xl border border-mc-red/20 bg-[var(--surface-raised)] p-4">
               <div className="flex items-center gap-2">
                 <Network className="h-4 w-4 text-mc-red" />
                 <span className="font-mono text-xs font-bold text-mc-red uppercase">
@@ -620,10 +620,10 @@ export function CrossVectorPanel() {
             animate={{ opacity: 1, y: 0 }}
             className={`relative overflow-hidden rounded-2xl border p-6 backdrop-blur-md transition-all ${
               isCritical
-                ? "border-mc-red/35 bg-gradient-to-r from-mc-red/10 via-white/70 to-mc-orange/10 shadow-sm"
+                ? "border-mc-red/35 bg-gradient-to-r from-mc-red/10 via-[var(--surface-raised)] to-mc-orange/10 shadow-sm"
                 : isHigh
-                  ? "border-mc-orange/40 bg-gradient-to-r from-mc-orange/10 via-white/70 to-mc-yellow/15 shadow-sm"
-                  : "border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 via-white/70 to-emerald-100/40"
+                  ? "border-mc-orange/40 bg-gradient-to-r from-mc-orange/10 via-[var(--surface-raised)] to-mc-yellow/15 shadow-sm"
+                  : "border-emerald-500/35 bg-gradient-to-r from-emerald-500/10 via-[var(--surface-raised)] to-emerald-100/10"
             }`}
           >
             <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
@@ -645,7 +645,7 @@ export function CrossVectorPanel() {
                   >
                     SENTRIX Autonomous Defense Decision
                   </span>
-                  <span className="rounded bg-white/70 px-2 py-0.5 font-mono text-[10px] text-muted-foreground border border-border/40">
+                  <span className="rounded bg-[var(--surface-raised)] px-2 py-0.5 font-mono text-[10px] text-muted-foreground border border-border/40">
                     Interception SLA:{" "}
                     {currentResult.autonomous_enforcement?.interception_timeline_ms ?? 12.4} ms
                   </span>
@@ -659,7 +659,7 @@ export function CrossVectorPanel() {
               </div>
 
               {/* Fused Risk Metric Card */}
-              <div className="flex items-center gap-5 rounded-xl border border-border bg-white/55 p-4">
+              <div className="flex items-center gap-5 rounded-xl border border-border bg-[var(--surface-subtle)] p-4">
                 <div className="text-center">
                   <div className="text-[10px] font-mono uppercase text-muted-foreground tracking-wider">
                     Correlated Risk
@@ -764,7 +764,7 @@ export function CrossVectorPanel() {
                     <span className="text-[10px] font-mono uppercase text-muted-foreground">
                       Injected Prompt Payload
                     </span>
-                    <div className="mt-1 rounded-lg border border-border/60 bg-white/70 p-3 font-mono text-[11px] text-foreground/75 leading-relaxed max-h-28 overflow-y-auto">
+                    <div className="mt-1 rounded-lg border border-border/60 bg-[var(--surface-raised)] p-3 font-mono text-[11px] text-foreground/75 leading-relaxed max-h-28 overflow-y-auto">
                       "{currentResult.phase_1_result?.prompt_text}"
                     </div>
                   </div>
@@ -831,7 +831,7 @@ export function CrossVectorPanel() {
                     {currentResult.phase_2_result?.transactions?.map((tx, idx) => (
                       <div
                         key={idx}
-                        className="flex items-center justify-between rounded border border-border/40 bg-white/60 px-2.5 py-1.5 font-mono text-[10px]"
+                        className="flex items-center justify-between rounded border border-border/40 bg-[var(--surface-raised)] px-2.5 py-1.5 font-mono text-[10px]"
                       >
                         <span className="text-foreground/80 font-semibold">{tx.step}</span>
                         <div className="flex items-center gap-3">
@@ -912,7 +912,7 @@ export function CrossVectorPanel() {
                     {currentResult.phase_3_result?.hops?.map((hop, idx) => (
                       <div
                         key={idx}
-                        className="rounded border border-border/40 bg-white/60 p-2 font-mono text-[10px] space-y-1"
+                        className="rounded border border-border/40 bg-[var(--surface-raised)] p-2 font-mono text-[10px] space-y-1"
                       >
                         <div className="flex items-center justify-between text-foreground/75">
                           <span className="text-mc-red font-bold">Hop {hop.hop}</span>

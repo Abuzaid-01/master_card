@@ -1,5 +1,3 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, useInView, useReducedMotion } from "motion/react";
 import {
   CheckCircle2,
   Crosshair,
@@ -27,28 +25,8 @@ const accentText = {
 };
 
 function TerminalWindow() {
-  const ref = useRef<HTMLDivElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-10% 0px" });
-  const reduce = useReducedMotion();
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!inView) return;
-    if (reduce) {
-      setCount(terminalLines.length);
-      return;
-    }
-    let i = 0;
-    const id = window.setInterval(() => {
-      i += 1;
-      setCount(i);
-      if (i >= terminalLines.length) window.clearInterval(id);
-    }, 420);
-    return () => window.clearInterval(id);
-  }, [inView, reduce]);
-
   return (
-    <div ref={ref} className="glass-panel flex h-full flex-col overflow-hidden rounded-2xl">
+    <div className="glass-panel flex h-full flex-col overflow-hidden rounded-2xl">
       <div className="flex items-center gap-2 border-b border-glass-border px-4 py-3">
         <span className="h-2.5 w-2.5 rounded-full bg-mc-red/80" />
         <span className="h-2.5 w-2.5 rounded-full bg-mc-orange/80" />
@@ -58,7 +36,7 @@ function TerminalWindow() {
         </span>
       </div>
       <div className="min-h-[320px] flex-1 p-4 font-mono text-[11px] leading-relaxed sm:text-xs">
-        {terminalLines.slice(0, count).map((line, i) => (
+        {terminalLines.map((line, i) => (
           <div
             key={i}
             className={
@@ -74,12 +52,9 @@ function TerminalWindow() {
             {line || "\u00A0"}
           </div>
         ))}
-        {count < terminalLines.length && (
-          <span className="inline-block h-3 w-2 bg-cyan align-middle motion-safe:animate-pulse" />
-        )}
       </div>
-      <div className="grid gap-3 border-t border-glass-border bg-white/45 p-4 sm:grid-cols-2">
-        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-white/70 p-3">
+      <div className="grid gap-3 border-t border-glass-border bg-[var(--surface-subtle)] p-4 sm:grid-cols-2">
+        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-[var(--surface-raised)] p-3">
           <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-mc-red" />
           <div>
             <p className="text-sm font-semibold">4 of 4 vectors validated</p>
@@ -88,7 +63,7 @@ function TerminalWindow() {
             </p>
           </div>
         </div>
-        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-white/70 p-3">
+        <div className="flex items-start gap-3 rounded-xl border border-border/70 bg-[var(--surface-raised)] p-3">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-mc-orange" />
           <div>
             <p className="text-sm font-semibold">Production fidelity checked</p>
@@ -120,8 +95,8 @@ export function Generate() {
       <div className="relative z-10 mx-auto w-full max-w-7xl">
         <SectionTitle
           eyebrow="02 · Red team"
-          title="Train against attacks that do not exist yet."
-          description="Generate realistic payment, language, graph, and evasion data with measurable fidelity—not generic synthetic noise."
+          title="Generate campaigns, not disconnected rows."
+          description="Every synthetic case preserves the actors, timing, shared infrastructure, attempted outcomes, and detector evidence needed to reproduce a complete fraud journey."
           accent="orange"
         />
 

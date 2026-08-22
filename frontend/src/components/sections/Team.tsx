@@ -56,18 +56,6 @@ export function Team() {
               Connect on LinkedIn
             </a>
           </div>
-
-          <p className="mt-12 font-mono text-xs tracking-wider text-muted-foreground">
-            Made with <span className="text-red-500 animate-pulse inline-block">❤️</span> by{" "}
-            <a
-              href="https://www.linkedin.com/in/abuzaid01"
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-mc-red hover:underline decoration-mc-red underline-offset-4 transition-colors"
-            >
-              Abuzaid
-            </a>
-          </p>
         </Reveal>
       </div>
     </section>

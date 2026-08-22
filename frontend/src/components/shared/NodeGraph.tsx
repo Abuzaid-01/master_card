@@ -1,5 +1,3 @@
-import { motion } from "motion/react";
-
 const nodes = [
   { x: 20, y: 50 },
   { x: 55, y: 22 },
@@ -23,7 +21,7 @@ export function NodeGraph() {
   return (
     <svg viewBox="0 0 160 100" className="h-24 w-full" aria-hidden="true">
       {edges.map(([a, b], i) => (
-        <motion.line
+        <line
           key={i}
           x1={nodes[a]!.x}
           y1={nodes[a]!.y}
@@ -32,23 +30,15 @@ export function NodeGraph() {
           stroke="var(--neon-cyan)"
           strokeWidth="0.8"
           opacity={0.5}
-          initial={{ pathLength: 0 }}
-          whileInView={{ pathLength: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: i * 0.12 }}
         />
       ))}
       {nodes.map((n, i) => (
-        <motion.circle
+        <circle
           key={i}
           cx={n.x}
           cy={n.y}
           r={i === 5 ? 5 : 3.2}
           fill={i === 5 ? "var(--mc-red)" : "var(--neon-cyan)"}
-          initial={{ opacity: 0, scale: 0 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4, delay: 0.3 + i * 0.1 }}
         />
       ))}
     </svg>
