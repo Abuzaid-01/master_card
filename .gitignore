@@ -20,4 +20,6 @@ frontend/dist/
 .DS_Store
 */.DS_Store
 
-mixkit*.mp4
+# Raw root video assets (web-optimized versions live in frontend/public/)
+/*.mp4
+!use_this_image_to_makea_video.mp4

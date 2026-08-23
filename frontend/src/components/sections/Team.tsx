@@ -1,21 +1,65 @@
+import { useEffect, useRef } from "react";
 import { Github, Linkedin } from "lucide-react";
 import { Reveal } from "@/components/shared/Section";
 
 export function Team() {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(() => {
+        // Autoplay may need user gesture in strict browser modes
+      });
+    }
+  }, []);
+
   return (
     <section
       id="team"
       className="snap-section relative flex min-h-screen w-full flex-col items-center justify-center overflow-hidden px-5 py-24 text-center sm:px-8"
     >
-      <div className="dot-backdrop absolute inset-0 opacity-50" />
+      {/* ── Background Video Layer ── */}
+      <div className="pointer-events-none absolute inset-0 overflow-hidden select-none z-0">
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="auto"
+          className="absolute inset-0 h-full w-full object-cover object-center opacity-80 transition-opacity duration-700"
+          style={{
+            filter: "contrast(1.1) brightness(0.9) saturate(1.1)",
+          }}
+        >
+          <source src="/footer_bg.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      {/* ── Seamless Background Overlays ── */}
       <div
-        className="absolute inset-0"
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 z-[1]"
         style={{
           background:
-            "radial-gradient(55% 45% at 50% 100%, color-mix(in oklab, var(--ai-violet) 20%, transparent), transparent 70%)",
+            "linear-gradient(to bottom, var(--background) 0%, rgba(3, 7, 18, 0.7) 50%, transparent 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-0 z-[2]"
+        style={{
+          background:
+            "radial-gradient(ellipse 90% 75% at 50% 50%, rgba(0, 240, 255, 0.05) 0%, rgba(3, 7, 18, 0.4) 40%, rgba(3, 7, 18, 0.8) 80%, rgba(3, 7, 18, 0.95) 100%)",
+        }}
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-36 z-[3]"
+        style={{
+          background:
+            "linear-gradient(to top, var(--background) 0%, rgba(3, 7, 18, 0.8) 50%, transparent 100%)",
         }}
       />
 
+      {/* ── Original Foreground Content ── */}
       <div className="relative z-10 mx-auto w-full max-w-3xl">
         <Reveal>
           <div className="flex justify-center">
