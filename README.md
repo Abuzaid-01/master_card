@@ -264,8 +264,8 @@ In Step 4, SENTRIX AI acts as its own Red Team by unleashing an **Adversarial Mu
 │ 💳 Tabular Evasion Catch Rate        │ 225 / 485   │ 282 / 485   │ +57 caught (+11.7% lift)        │
 │ 💳 Tabular Adversarial AUC-PR        │ 0.6433      │ 0.6723      │ +0.0290                         │
 ├──────────────────────────────────────┼─────────────┼─────────────┼─────────────────────────────────┤
-│ 💬 Text Paraphrased Catch Rate       │ 0 / 38      │ 38 / 38     │ +38 caught (+100.0% lift)       │
-│ 💬 Text Adversarial AUC-PR           │ 0.2517      │ 1.0000      │ +0.7483                         │
+│ 💬 Text Paraphrased Catch Rate       │ 25 / 38     │ 38 / 38     │ +13 caught (+34.2% lift)        │
+│ 💬 Text Adversarial AUC-PR           │ 1.0000      │ 1.0000      │ Verified Robust                 │
 ├──────────────────────────────────────┼─────────────┼─────────────┼─────────────────────────────────┤
 │ 🕸️ Graph Mule Topology Catch Rate   │ 20 / 70     │ 59 / 70     │ +39 caught (+55.7% lift)        │
 │ 🕸️ Graph Adversarial AUC-PR          │ 0.6080      │ 0.9145      │ +0.3065                         │
@@ -273,6 +273,8 @@ In Step 4, SENTRIX AI acts as its own Red Team by unleashing an **Adversarial Mu
 │ 🛡️ Catastrophic Forgetting Drift     │ 1.34% FPR   │ 1.96% FPR   │ -0.67% AUC Drift (Safe)         │
 └──────────────────────────────────────┴─────────────┴─────────────┴─────────────────────────────────┘
 ```
+
+> **Scope Note**: *Defense resilience is validated against the multi-strategy probing perturbations implemented across all three vectors. Genuinely novel adversarial evasion techniques outside these strategy sets are continuously captured by ingesting new red-team probing modules into the closed loop.*
 
 ---
 

@@ -2,17 +2,16 @@
 Vector 1 Detector: Calibrated Semantic Embedding Classifier vs. TF-IDF Baseline
 Detects indirect prompt injections, chatbot overrides, and jailbreaks using Sentence Transformers embeddings (primary)
 combined with a calibrated classifier head + TF-IDF n-grams + automated threshold optimization.
+
+Uses ONNX Runtime backend for SentenceTransformer inference to avoid the ~250MB PyTorch
+runtime overhead — critical for Render Free Tier (512MB RAM). Produces identical 384-dim
+FP32 embeddings as the PyTorch backend (lossless FP32 ONNX export).
 """
 
 import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 os.environ["OMP_NUM_THREADS"] = "1"
 os.environ["MKL_NUM_THREADS"] = "1"
-try:
-    import torch
-    torch.set_num_threads(1)
-except Exception:
-    pass
 
 import joblib
 import numpy as np
@@ -52,10 +51,10 @@ class TextPromptInjectionDetector:
         if self.encoder is None:
             try:
                 from sentence_transformers import SentenceTransformer
-                print("[Text Detector] Loading SentenceTransformer ('all-MiniLM-L6-v2')...")
-                self.encoder = SentenceTransformer("all-MiniLM-L6-v2")
+                print("[Text Detector] Loading SentenceTransformer ('all-MiniLM-L6-v2', backend='onnx')...")
+                self.encoder = SentenceTransformer("all-MiniLM-L6-v2", backend="onnx")
             except Exception as e:
-                print(f"[Warning] SentenceTransformer load failed ({e}). Utilizing fallback semantic vectorizer.")
+                print(f"[Warning] SentenceTransformer ONNX load failed ({e}). Utilizing fallback semantic vectorizer.")
                 self.encoder = None
 
     def fit(self, df_train: pd.DataFrame, text_col: str = "prompt_text", target_col: str = "is_fraud"):

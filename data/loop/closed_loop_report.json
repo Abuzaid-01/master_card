@@ -33,8 +33,8 @@
       },
       "text": {
         "n_fraud_probed": 37,
-        "n_evaded": 2,
-        "evasion_rate": 0.0541
+        "n_evaded": 17,
+        "evasion_rate": 0.4595
       }
     },
     "round2_retraining": {
@@ -50,8 +50,8 @@
       },
       "text": {
         "original_train_size": 900,
-        "augmented_train_size": 902,
-        "adversarial_samples_added": 2
+        "augmented_train_size": 917,
+        "adversarial_samples_added": 17
       }
     },
     "round1_vs_round2": {
@@ -105,16 +105,26 @@
       "text": {
         "adversarial_eval": {
           "n_fraud_total": 38,
-          "r1_caught": 0,
-          "r1_catch_rate": 0.0,
+          "n_legit_total": 113,
+          "r1_caught": 25,
+          "r1_catch_rate": 0.6579,
           "r2_caught": 38,
           "r2_catch_rate": 1.0,
-          "net_caught_delta": 38,
-          "r1_auc_pr": 0.2517,
+          "net_caught_delta": 13,
+          "r1_auc_pr": 1.0,
           "r2_auc_pr": 1.0,
-          "auc_delta": 0.7483,
-          "r1_threshold": 0.54,
-          "r2_threshold": 0.7116
+          "auc_delta": 0.0,
+          "r1_threshold": 0.6995,
+          "r2_threshold": 0.7283
+        },
+        "catastrophic_forgetting_check": {
+          "baseline_r1_auc_pr": 1.0,
+          "baseline_r2_auc_pr": 1.0,
+          "baseline_auc_delta": 0.0,
+          "baseline_r1_fpr": 0.0,
+          "baseline_r2_fpr": 0.0,
+          "baseline_fpr_delta": 0.0,
+          "catastrophic_forgetting": false
         }
       }
     }

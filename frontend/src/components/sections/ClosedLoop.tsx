@@ -91,10 +91,7 @@ export function ClosedLoop() {
 
         <Reveal delay={0.15} className="mt-6">
           <blockquote className="glass-panel glow-orange rounded-2xl border-l-4 border-mc-orange p-6 text-sm leading-relaxed text-foreground/90 sm:text-base">
-            Round 2 catches 337 more unseen adversarial evasion attacks across
-            the holdout validation suite while reducing False Positive Rate from{" "}
-            <span className="text-glow-orange">0.89% → 0.60%</span> on
-            legitimate cardholders. Zero catastrophic forgetting verified.
+            Round 2 catches 57 more unseen adversarial tabular attacks (+109 total across all three vectors) while maintaining strict SLA false positive rates on legitimate transactions. Zero catastrophic forgetting verified across all three detector heads.
           </blockquote>
         </Reveal>
       </div>

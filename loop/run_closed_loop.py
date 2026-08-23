@@ -71,6 +71,12 @@ def load_baseline_validation_data() -> dict:
         _, df_val, _ = split_and_preserve_holdout(df, dataset_name="tabular", verbose=False)
         val_data["tabular"] = df_val
     
+    txt_path = os.path.join(SYNTHETIC_DATA_DIR, "synthetic_prompt_injections.csv")
+    if os.path.exists(txt_path):
+        df = pd.read_csv(txt_path)
+        _, df_val, _ = split_and_preserve_holdout(df, dataset_name="text", verbose=False)
+        val_data["text"] = df_val
+
     grp_path = os.path.join(SYNTHETIC_DATA_DIR, "synthetic_mule_graph.csv")
     if os.path.exists(grp_path):
         df = pd.read_csv(grp_path)

@@ -187,9 +187,9 @@ export const loopRows = [
   },
   {
     metric: "Text Paraphrased Catch Rate",
-    r1: "0.0%",
+    r1: "65.8%",
     r2: "100.0%",
-    delta: "+100.0% (+38 caught)",
+    delta: "+34.2% (+13 caught)",
     good: true,
   },
   {

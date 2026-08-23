@@ -104,17 +104,31 @@ def extract_blind_spots(
         df_mine = partitions["text"]["df_mine"]
         df_mine_fraud = df_mine[df_mine["is_fraud"] == 1].copy()
         
-        print(f"[Blind Spot Extractor] TEXT: Evaluating {len(df_mine_fraud)} fraud prompts against Round 1...")
-        text_result = prober.probe_text_evasion_rate(df_mine_fraud, threshold=threshold_text)
+        print(f"[Blind Spot Extractor] TEXT: Probing {len(df_mine_fraud)} fraud prompts from mining set...")
+        df_evaded = prober.probe_text(df_mine_fraud, threshold=threshold_text,
+                                      strategy_seed=mining_strategy_seed)
+        
+        detector = prober._get_text_detector()
+        if detector is not None:
+            eff_th = getattr(detector, "optimal_threshold", threshold_text)
+            probs_after = detector.predict_proba_semantic(df_evaded)
+            evaded_mask = probs_after < eff_th
+            n_evaded = int(evaded_mask.sum())
+        else:
+            n_evaded = len(df_evaded)
+            evaded_mask = np.ones(len(df_evaded), dtype=bool)
+        
+        df_mine_legit = df_mine[df_mine["is_fraud"] == 0].copy()
+        df_failures = pd.concat([df_evaded[evaded_mask], df_mine_legit], ignore_index=True)
         
         results["text"] = {
-            "df_mine_fraud": df_mine_fraud,
-            "missed_indices": text_result["missed_indices"],
-            "n_fraud_probed": text_result["n_fraud"],
-            "n_evaded": text_result["n_missed"],
-            "evasion_rate": text_result["evasion_rate"],
+            "df_failures": df_failures,
+            "df_evaded_fraud": df_evaded,
+            "n_fraud_probed": len(df_mine_fraud),
+            "n_evaded": n_evaded,
+            "evasion_rate": float(np.round(n_evaded / max(1, len(df_mine_fraud)), 4)),
         }
-        print(f"      -> {text_result['n_missed']}/{text_result['n_fraud']} prompts evaded Round 1 "
-              f"({text_result['evasion_rate']*100:.1f}% evasion rate)")
+        print(f"      -> {n_evaded}/{len(df_mine_fraud)} prompts evaded Round 1 "
+              f"({results['text']['evasion_rate']*100:.1f}% evasion rate)")
 
     return results

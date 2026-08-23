@@ -133,15 +133,24 @@ def retrain_round2(
 
     # ── TEXT ROUND 2 ──
     if "text" in blind_spot_results and "text" in original_training_data:
-        print("\n[Round 2 Retraining] TEXT: Expanding attack embedding index with missed prompts...")
+        print("\n[Round 2 Retraining] TEXT: Expanding attack embedding index with evaded adversarial prompts...")
         
         df_orig_train = original_training_data["text"]
         text_result = blind_spot_results["text"]
-        missed_indices = text_result["missed_indices"]
-        df_missed = text_result["df_mine_fraud"].iloc[missed_indices] if missed_indices else pd.DataFrame()
+        df_failures = text_result.get("df_failures", pd.DataFrame())
         
-        # Augment training data with the missed prompts
-        df_augmented = pd.concat([df_orig_train, df_missed], ignore_index=True)
+        if not df_failures.empty:
+            df_evaded_attacks = df_failures[df_failures["is_fraud"] == 1].copy()
+        else:
+            df_evaded_attacks = pd.DataFrame()
+        
+        # Deduplicate against original training prompts
+        if not df_evaded_attacks.empty and "prompt_text" in df_orig_train.columns:
+            orig_prompts = set(df_orig_train["prompt_text"].dropna().unique())
+            df_evaded_attacks = df_evaded_attacks[~df_evaded_attacks["prompt_text"].isin(orig_prompts)]
+        
+        # Augment training data with the newly evaded adversarial prompts
+        df_augmented = pd.concat([df_orig_train, df_evaded_attacks], ignore_index=True)
         
         # Retrain text detector with expanded embedding index
         from defend.detector_text import TextPromptInjectionDetector
@@ -155,10 +164,10 @@ def retrain_round2(
             "joblib_path": text_model_path,
             "augmented_train_size": len(df_augmented),
             "original_train_size": len(df_orig_train),
-            "adversarial_samples_added": len(df_missed),
-            "missed_prompts_added": len(df_missed),
+            "adversarial_samples_added": len(df_evaded_attacks),
+            "missed_prompts_added": len(df_evaded_attacks),
         }
         print(f"      -> Round 2 Text Detector trained on {len(df_augmented)} prompts "
-              f"(+{len(df_missed)} missed attack prompts)")
+              f"(+{len(df_evaded_attacks)} evaded adversarial prompts)")
 
     return round2_models
