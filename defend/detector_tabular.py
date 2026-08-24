@@ -1,6 +1,6 @@
 """
 Vector 5 & Vector 8 Detector: ONNX-Quantized XGBoost + Anomaly Isolation Forest
-Trains an XGBoost classifier with scale_pos_weight class balancing on 9 rich domain features,
+Trains an XGBoost classifier with scale_pos_weight class balancing on 15 rich enterprise domain features,
 exports to ONNX format, and benchmarks sub-10ms inline transaction authorization latency.
 """
 
@@ -20,8 +20,8 @@ MODELS_DIR = os.path.join(os.path.dirname(__file__), "models")
 
 class TabularCardTestingDetector:
     """
-    Tabular Card Testing & Pattern Evasion Detector.
-    Uses XGBoost with scale_pos_weight on 9 domain features, combined with Isolation Forest.
+    Tabular Card Testing & Multi-Pattern Evasion Detector.
+    Uses XGBoost with scale_pos_weight on 15 enterprise domain features, combined with Isolation Forest.
     Exports model to ONNX for sub-10ms production authorization latency.
     """
     def __init__(self, feature_cols: list = None):
@@ -29,33 +29,48 @@ class TabularCardTestingDetector:
         self.xgb_model = None
         self.iso_forest = None
         self.onnx_session = None
+
+    def _impute_missing_cols(self, df: pd.DataFrame) -> pd.DataFrame:
+        """Ensures all 15 domain features are present with proper defaults."""
+        df_copy = df.copy()
+        for col in self.feature_cols:
+            if col not in df_copy.columns:
+                if "sin" in col or "cos" in col:
+                    df_copy[col] = 0.0
+                elif "geo" in col:
+                    df_copy[col] = 10.0
+                elif "card_age" in col:
+                    df_copy[col] = 365.0
+                elif "failed" in col:
+                    df_copy[col] = 0
+                elif "mcc_risk" in col:
+                    df_copy[col] = 0.2
+                elif "provisioning" in col:
+                    df_copy[col] = 0
+                elif "nfc" in col:
+                    df_copy[col] = 0.0
+                elif "bnpl" in col:
+                    df_copy[col] = 0
+                elif "raas" in col:
+                    df_copy[col] = 0.05
+                elif "bopis" in col:
+                    df_copy[col] = 0.0
+                else:
+                    df_copy[col] = 0.0
+        return df_copy
         
     def fit(self, df_train: pd.DataFrame, target_col: str = "is_fraud"):
-        # Auto-impute any missing columns if using legacy test sets
-        for col in self.feature_cols:
-            if col not in df_train.columns:
-                if "sin" in col or "cos" in col:
-                    df_train[col] = 0.0
-                elif "geo" in col:
-                    df_train[col] = 10.0
-                elif "card_age" in col:
-                    df_train[col] = 365.0
-                elif "failed" in col:
-                    df_train[col] = 0
-                elif "mcc_risk" in col:
-                    df_train[col] = 0.2
-                else:
-                    df_train[col] = 0.0
+        df_train_clean = self._impute_missing_cols(df_train)
 
-        X_train = df_train[self.feature_cols].fillna(0).values.astype(np.float32)
-        y_train = df_train[target_col].values
+        X_train = df_train_clean[self.feature_cols].fillna(0).values.astype(np.float32)
+        y_train = df_train_clean[target_col].values
         
         # Calculate scale_pos_weight for class imbalance handling
         num_neg = (y_train == 0).sum()
         num_pos = (y_train == 1).sum()
         scale_pos_weight = float(num_neg / max(1, num_pos))
         
-        print(f"[Tabular Detector] Training XGBoost (9 features) with scale_pos_weight={scale_pos_weight:.2f}...")
+        print(f"[Tabular Detector] Training XGBoost ({len(self.feature_cols)} features) with scale_pos_weight={scale_pos_weight:.2f}...")
         self.xgb_model = XGBClassifier(
             n_estimators=250,
             max_depth=6,
@@ -74,23 +89,9 @@ class TabularCardTestingDetector:
         self.iso_forest.fit(X_train)
         
     def predict_proba(self, df_test: pd.DataFrame) -> np.ndarray:
-        df_copy = df_test.copy()
-        for col in self.feature_cols:
-            if col not in df_copy.columns:
-                if "sin" in col or "cos" in col:
-                    df_copy[col] = 0.0
-                elif "geo" in col:
-                    df_copy[col] = 10.0
-                elif "card_age" in col:
-                    df_copy[col] = 365.0
-                elif "failed" in col:
-                    df_copy[col] = 0
-                elif "mcc_risk" in col:
-                    df_copy[col] = 0.2
-                else:
-                    df_copy[col] = 0.0
+        df_clean = self._impute_missing_cols(df_test)
 
-        X_test = df_copy[self.feature_cols].fillna(0).values.astype(np.float32)
+        X_test = df_clean[self.feature_cols].fillna(0).values.astype(np.float32)
         xgb_prob = self.xgb_model.predict_proba(X_test)[:, 1]
         
         # Combine XGBoost probability with Isolation Forest anomaly score

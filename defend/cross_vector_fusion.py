@@ -94,7 +94,7 @@ def evaluate_cross_vector_scenario(
             tx_probs = []
             for tx in transactions:
                 tx_row = dict(tx)
-                # Fill missing 10 domain features with sensible defaults if omitted
+                # Fill missing 15 domain features with sensible defaults if omitted
                 tx_row.setdefault("hour_of_day_sin", 0.0)
                 tx_row.setdefault("hour_of_day_cos", 1.0)
                 tx_row.setdefault("mcc_risk_weight", 0.20)
@@ -102,6 +102,11 @@ def evaluate_cross_vector_scenario(
                 tx_row.setdefault("card_age_days", 365.0)
                 tx_row.setdefault("is_decline", 0)
                 tx_row.setdefault("failed_attempts_24h", 2 if tx_row.get("is_decline", 0) else 0)
+                tx_row.setdefault("provisioning_channel", 0)
+                tx_row.setdefault("nfc_tap_latency_ms", 0.0)
+                tx_row.setdefault("bnpl_bureau_inquiries", 0)
+                tx_row.setdefault("raas_dispute_score", 0.05)
+                tx_row.setdefault("bopis_pickup_delay_min", 0.0)
                 
                 X = np.array([[tx_row.get(f, 0.0) for f in TABULAR_FEATURE_COLS]], dtype=np.float32)
                 prob = float(tabular_detector.predict_proba(X)[0][1])
@@ -168,7 +173,7 @@ def evaluate_cross_vector_scenario(
                 "receiver_out_degree": r_out,
                 "receiver_mule_funnel_score": funnel
             }
-            X_grp = np.array([[graph_features[f] for f in GRAPH_FEATURE_COLS]], dtype=np.float32)
+            X_grp = pd.DataFrame([graph_features])[list(GRAPH_FEATURE_COLS)].astype(float)
             prob_grp = float(graph_detector.predict_proba(X_grp)[:, 1][0])
             r_graph = round(prob_grp, 4)
             graph_verdict = "MULE_RING_DETECTED" if r_graph >= graph_threshold else "ORGANIC_FLOW"

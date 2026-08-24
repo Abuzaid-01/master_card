@@ -168,7 +168,7 @@ def evaluate_round_comparison(
         if "graph" in baseline_val_data:
             df_base = baseline_val_data["graph"]
             y_base = df_base["is_fraud"].values
-            X_base = df_base[graph_features].values.astype(float)
+            X_base = df_base[graph_features].astype(float)
             r1_base_probs = prober.graph_model.predict_proba(X_base)[:, 1] if prober.graph_model else np.zeros(len(X_base))
             r2_base_probs = r2_model.predict_proba(X_base)[:, 1]
             
@@ -188,7 +188,7 @@ def evaluate_round_comparison(
         )
         df_eval_adv = pd.concat([df_eval_fraud_adv, df_eval_legit], ignore_index=True)
         y_true = df_eval_adv["is_fraud"].values
-        X_eval = df_eval_adv[graph_features].values.astype(float)
+        X_eval = df_eval_adv[graph_features].astype(float)
 
         r1_probs = prober.graph_model.predict_proba(X_eval)[:, 1] if prober.graph_model else np.zeros(len(X_eval))
         r2_probs = r2_model.predict_proba(X_eval)[:, 1]

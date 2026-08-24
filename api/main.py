@@ -179,15 +179,77 @@ class TabularRequest(BaseModel):
     geo_distance_km: float = Field(default=12.5, ge=0, description="Distance from home address (km)")
     card_age_days: float = Field(default=365.0, ge=0, description="Account card age in days")
     failed_attempts_24h: int = Field(default=0, ge=0, description="Failed CVV/PIN attempts in last 24h")
+    provisioning_channel: int = Field(default=0, ge=0, le=3, description="0=physical, 1=in_app, 2=push_otp, 3=push_otp_bypass")
+    nfc_tap_latency_ms: float = Field(default=0.0, ge=0, description="Contactless NFC latency in ms (20-80 legit, 180-900 relay)")
+    bnpl_bureau_inquiries: int = Field(default=0, ge=0, description="Bureau credit inquiries in past 30 days")
+    raas_dispute_score: float = Field(default=0.05, ge=0, le=1, description="Refund-as-a-Service dispute anomaly score (0-1)")
+    bopis_pickup_delay_min: float = Field(default=0.0, ge=0, description="BOPIS pickup delay in minutes")
 
 
 class TextRequest(BaseModel):
     prompt_text: str = Field(default="What is my account balance?", description="Chat prompt to analyze")
 
 
+@app.get("/api/vectors/catalog")
+def get_vectors_catalog():
+    """Returns the complete catalog of 36 Real-World Attack Vectors categorized across 5 Mastercard Pillars."""
+    vectors = [
+        # ── Pillar 1: AI Red-Teaming & Social Engineering (8 Vectors) ──
+        {"id": "V01", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "Admin Impersonation Override", "modality": "Text / NLP", "severity": "Critical", "description": "Attacker prompts banking LLM with fabricated administrative authority tokens to force unauthorized wire execution."},
+        {"id": "V02", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "API Tool-Function Hijacking", "modality": "Text / Tool Calling", "severity": "Critical", "description": "Injects nested JSON/tool-call instructions to trigger external ledger APIs without secondary authentication."},
+        {"id": "V03", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "Compliance Officer Impersonation", "modality": "Text / Social Eng", "severity": "High", "description": "Pretexts as AML compliance officer conducting emergency drills to extract KYC records or bypass holds."},
+        {"id": "V04", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "AI Voice Clone Vishing Pretext", "modality": "Audio / Multi-modal", "severity": "Critical", "description": "Synthetic voice clone of corporate executive authorizing high-value urgent interbank wire transfers."},
+        {"id": "V05", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "Safe Account Impersonation Scam", "modality": "Text / Social Eng", "severity": "High", "description": "Scammers convince victims their account is under attack and coerce manual transfer into a 'safe reserve account'."},
+        {"id": "V06", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "Pig-Butchering Romance Fraud", "modality": "Text / Conversational", "severity": "High", "description": "Multi-turn long-con grooming victims into fake high-yield crypto investment platforms."},
+        {"id": "V07", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "B2B AI Invoice Forgery", "modality": "Document / Text", "severity": "Critical", "description": "Generative AI creates indistinguishable vendor invoices with altered beneficiary IBAN routing details."},
+        {"id": "V08", "pillar": "Pillar 1: AI Red-Teaming & Social Engineering", "name": "Agentic MCP Tool Hijacking", "modality": "Agentic / Protocol", "severity": "Critical", "description": "Model Context Protocol prompt injection overriding AI agent tool parameters to divert funds."},
+
+        # ── Pillar 2: Synthetic Data & Obfuscation (7 Vectors) ──
+        {"id": "V09", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Base64 & Unicode Encoding Obfuscation", "modality": "Text / Encoding", "severity": "Medium", "description": "Encodes adversarial directives into Hex/Base64/Zalgo characters to blind string matching filters."},
+        {"id": "V10", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Indirect Memo Payload Injection", "modality": "Text / Transaction Memo", "severity": "High", "description": "Malicious payload embedded in transaction description/memo field processed by downstream analytics bots."},
+        {"id": "V11", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Multi-Turn Context Poisoning", "modality": "Text / Conversational", "severity": "High", "description": "Slowly poisons dialogue context over 10+ turns until system prompt guardrails decay."},
+        {"id": "V12", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Multilingual Cross-Lingual Evasion", "modality": "Text / Multi-language", "severity": "Medium", "description": "Translates malicious exploit phrases into low-resource languages to evade English-trained keyword blocks."},
+        {"id": "V13", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Prompt Leaking & Architecture Recon", "modality": "Text / Recon", "severity": "Medium", "description": "Extracts internal system prompts and threshold rules to calibrate subsequent zero-day attacks."},
+        {"id": "V14", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Social Engineering Urgency Hijack", "modality": "Text / Phishing", "severity": "High", "description": "Simulates hospital medical emergency or repossession threat to pressure chatbot into instant limit increases."},
+        {"id": "V15", "pillar": "Pillar 2: Synthetic Data & Obfuscation", "name": "Jailbreak Roleplay 'DAN' Persona", "modality": "Text / Jailbreak", "severity": "High", "description": "Hypothetical fiction framing that commands the AI assistant to act unconstrained by banking compliance rules."},
+
+        # ── Pillar 3: Multi-Rail & Digital Payment Exploits (7 Vectors) ──
+        {"id": "V16", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "Digital Wallet Push Provisioning Hijack", "modality": "Tabular / Digital Wallet", "severity": "Critical", "description": "Stolen credentials pushed to Apple/Google Pay bypassing OTP validation via social engineered session hijacking."},
+        {"id": "V17", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "Ghost Tap & Contactless NFC Relay", "modality": "Tabular / Contactless", "severity": "Critical", "description": "APDU packet relay over cellular tunnel between modified POS terminal and accomplice smartphone."},
+        {"id": "V18", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "BOPIS Mule Laundering", "modality": "Tabular / Retail", "severity": "High", "description": "Buy Online, Pickup In Store laundering where mules collect high-value electronics within minutes."},
+        {"id": "V19", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "BNPL Synthetic Stacking", "modality": "Tabular / Credit Rail", "severity": "High", "description": "Simultaneous BNPL loan requests across multiple providers using thin-file synthetic credit profiles."},
+        {"id": "V20", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "Refund-as-a-Service (RaaS) Syndicates", "modality": "Tabular / Dispute", "severity": "High", "description": "Organized telegram refunding services filing systematic false 'item not received' claims."},
+        {"id": "V21", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "Distributed Low-and-Slow BIN Enumeration", "modality": "Tabular / Gateway", "severity": "High", "description": "Low-velocity card testing distributed across thousands of residential IPs to evade velocity rate limiters."},
+        {"id": "V22", "pillar": "Pillar 3: Multi-Rail & Digital Payment Exploits", "name": "Synthetic Merchant Bust-Out", "modality": "Tabular / Merchant Risk", "severity": "Critical", "description": "Collusive merchant account processes massive volumes of stolen cards over 48 hours then drains settlement account."},
+
+        # ── Pillar 4: Money Laundering & Network Topologies (7 Vectors) ──
+        {"id": "V23", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Multi-Hop Linear Mule Chain", "modality": "Graph / Network Flow", "severity": "High", "description": "Funds hopped sequentially through 4+ intermediate accounts to obfuscate initial injection source."},
+        {"id": "V24", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Fan-Out Dispersal Sweep", "modality": "Graph / Network Flow", "severity": "High", "description": "High-value stolen balance fragmented into dozens of small transfers to individual retail mule accounts."},
+        {"id": "V25", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Smurfing & Structuring Aggregation", "modality": "Graph / AML Structuring", "severity": "Critical", "description": "Multiple sub-reporting-threshold cash deposits consolidated into a central funnel entity."},
+        {"id": "V26", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Round-Trip Wash Cycling", "modality": "Graph / Cycle Detection", "severity": "Critical", "description": "Circular transaction cycles across commercial shell companies designed to create fake legitimate turnover."},
+        {"id": "V27", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Instant Micro-Smurfing (UPI / FedNow)", "modality": "Graph / Instant Rails", "severity": "Critical", "description": "Automated sub-$50 instant transfers executed across 20+ accounts in under 15 seconds."},
+        {"id": "V28", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Chameleon Mule Network", "modality": "Graph / Noise Cloaking", "severity": "Critical", "description": "Laundering transit hops buried inside 90% organic legitimate payroll and utility payments."},
+        {"id": "V29", "pillar": "Pillar 4: Money Laundering & Network Topologies", "name": "Crypto Off-Ramp Mixer Settlement", "modality": "Graph / Cross-Asset", "severity": "Critical", "description": "Fiat disbursements routed into decentralized OTC desks and non-custodial mixing protocols."},
+
+        # ── Pillar 5: Adversarial Evasion & Decision Boundary Probing (7 Vectors) ──
+        {"id": "V30", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Amount Micro-Structuring ($1.99 Skirting)", "modality": "Tabular Evasion", "severity": "Medium", "description": "Structures test transactions at $1.99 or $99.50 to skirt threshold-based rule triggers."},
+        {"id": "V31", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Velocity Dilution & Bot Throttling", "modality": "Tabular Evasion", "severity": "High", "description": "Throttles bot request cadence to match human inter-arrival times (1-2 tx/hour)."},
+        {"id": "V32", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Device Score & Residential Geo-Spoofing", "modality": "Tabular Evasion", "severity": "High", "description": "Manipulates client canvas telemetry and routes through clean residential proxies in the cardholder zip code."},
+        {"id": "V33", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Failed Attempt Masking & Age Inflation", "modality": "Tabular Evasion", "severity": "Medium", "description": "Masks previous decline headers and spoof-inflates account age metrics."},
+        {"id": "V34", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Training Set Model Poisoning Backdoor", "modality": "Adversarial ML", "severity": "Critical", "description": "Injects trigger-pattern backdoor samples into synthetic training streams to create blind spots."},
+        {"id": "V35", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Adaptive RL Decision Boundary Prober", "modality": "Adversarial ML", "severity": "Critical", "description": "Reinforcement learning bot iteratively queries model feedback to cluster features precisely at 0.49 score."},
+        {"id": "V36", "pillar": "Pillar 5: Adversarial Evasion & Decision Boundary Probing", "name": "Black-Box Surrogate Decision Boundary Probing", "modality": "Adversarial ML", "severity": "Critical", "description": "Trains a local surrogate neural net to find adversarial transferability gradients against production defenses."},
+    ]
+    return {
+        "total_vectors": len(vectors),
+        "pillars_count": 5,
+        "catalog": vectors
+    }
+
+
 @app.post("/api/demo/tabular")
 def demo_tabular(req: TabularRequest):
-    """Live XGBoost fraud detection inference with SHAP explanation across 9 features."""
+    """Live XGBoost fraud detection inference with SHAP explanation across 15 enterprise features."""
     model = _load_tabular_model()
     if model is None:
         raise HTTPException(503, "Tabular model not loaded. Run defend pipeline first.")
@@ -220,8 +282,8 @@ def demo_tabular(req: TabularRequest):
         "fraud_probability": round(prob, 4),
         "verdict": verdict,
         "threshold": 0.5,
-        "optimal_threshold": 0.35,
-        "verdict_optimized": "FRAUD" if prob >= 0.35 else "SAFE",
+        "optimal_threshold": 0.36,
+        "verdict_optimized": "FRAUD" if prob >= 0.36 else "SAFE",
         "shap_explanation": shap_values,
         "input": req.model_dump(),
     }

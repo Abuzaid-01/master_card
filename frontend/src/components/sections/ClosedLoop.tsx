@@ -27,20 +27,20 @@ export function ClosedLoop() {
         <Reveal className="mt-8 text-center">
           <div className="font-mono text-3xl leading-tight font-bold sm:text-5xl">
             <span className="text-glow-red">
-              Round 1: <Counter value={225} />
+              Round 1: <Counter value={268} />
             </span>
-            <span className="text-muted-foreground">/485 caught</span>
+            <span className="text-muted-foreground">/593 caught</span>
             <span className="mx-3 text-muted-foreground">→</span>
             <span className="text-glow-cyan">
-              Round 2: <Counter value={282} delay={1200} />
+              Round 2: <Counter value={379} delay={1200} />
             </span>
-            <span className="text-muted-foreground">/485 caught</span>
+            <span className="text-muted-foreground">/593 caught</span>
           </div>
           <p className="mt-4 font-mono text-lg text-glow-orange sm:text-2xl">
-            +57 more adversarial attacks caught
+            +111 more adversarial attacks caught
           </p>
           <p className="mt-2 font-mono text-sm text-muted-foreground sm:text-base">
-            AUC-PR: 0.643 → 0.672 (+2.9% lift on adversarial holdouts)
+            Tri-Vector Compound Benchmark (Text + Graph + Tabular Active Retraining)
           </p>
         </Reveal>
 
@@ -91,7 +91,7 @@ export function ClosedLoop() {
 
         <Reveal delay={0.15} className="mt-6">
           <blockquote className="glass-panel glow-orange rounded-2xl border-l-4 border-mc-orange p-6 text-sm leading-relaxed text-foreground/90 sm:text-base">
-            Round 2 catches 57 more unseen adversarial tabular attacks (+109 total across all three vectors) while maintaining strict SLA false positive rates on legitimate transactions. Zero catastrophic forgetting verified across all three detector heads.
+            Round 2 catches 111 more unseen adversarial attacks across all three vectors (+15 Text, +39 Graph, +57 Tabular) while maintaining strict SLA false positive rates on legitimate transactions. Zero catastrophic forgetting verified across all three detector heads.
           </blockquote>
         </Reveal>
       </div>

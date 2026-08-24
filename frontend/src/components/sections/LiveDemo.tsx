@@ -194,6 +194,12 @@ function TabularPanel() {
   const [cardAge, setCardAge] = useState(365);
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [mccRisk, setMccRisk] = useState(0.35);
+  const [provisioningChannel, setProvisioningChannel] = useState(0);
+  const [nfcLatency, setNfcLatency] = useState(0);
+  const [bnplInquiries, setBnplInquiries] = useState(0);
+  const [raasScore, setRaasScore] = useState(0.05);
+  const [bopisDelay, setBopisDelay] = useState(0);
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const mutation = useTabularDemo();
   const result = mutation.data as TabularDemoResult | undefined;
@@ -208,6 +214,11 @@ function TabularPanel() {
       card_age_days: cardAge,
       failed_attempts_24h: failedAttempts,
       mcc_risk_weight: mccRisk,
+      provisioning_channel: provisioningChannel,
+      nfc_tap_latency_ms: nfcLatency,
+      bnpl_bureau_inquiries: bnplInquiries,
+      raas_dispute_score: raasScore,
+      bopis_pickup_delay_min: bopisDelay,
     });
   };
 
@@ -223,10 +234,10 @@ function TabularPanel() {
         <div className="flex items-center justify-between">
           <h4 className="flex items-center gap-2 font-mono text-xs tracking-wider text-muted-foreground uppercase">
             <CreditCard className="h-4 w-4" />
-            10-Feature Transaction Parameters
+            15-Feature Enterprise Parameters
           </h4>
           <span className="font-mono text-[10px] text-cyan bg-cyan/10 px-2 py-0.5 rounded-full">
-            ONNX Quantized
+            ONNX Quantized (0.006ms)
           </span>
         </div>
         <div className="mt-5 space-y-4">
@@ -313,6 +324,87 @@ function TabularPanel() {
             >
               {isDecline ? "Yes (Flagged)" : "No"}
             </button>
+          </div>
+
+          {/* Advanced Multi-Rail Section */}
+          <div className="border-t border-glass-border/60 pt-3">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="flex w-full items-center justify-between text-xs font-mono text-mc-orange hover:underline"
+            >
+              <span>{showAdvanced ? "▾ Hide Multi-Rail Features" : "▸ Multi-Rail Digital Features (5 New)"}</span>
+              <span className="text-[10px] text-muted-foreground font-normal">Push Provisioning, NFC, BNPL, RaaS</span>
+            </button>
+
+            {showAdvanced && (
+              <div className="mt-3 space-y-3 bg-glass-bg/30 p-3 rounded-xl border border-glass-border/40">
+                <div>
+                  <label className="text-xs text-muted-foreground block mb-1">Provisioning Channel</label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                    {[
+                      { id: 0, label: "Physical" },
+                      { id: 1, label: "In-App" },
+                      { id: 2, label: "Push OTP" },
+                      { id: 3, label: "OTP Bypass" },
+                    ].map((ch) => (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        onClick={() => setProvisioningChannel(ch.id)}
+                        className={`rounded-lg px-2 py-1 text-[11px] font-mono transition-all ${
+                          provisioningChannel === ch.id
+                            ? "bg-mc-orange/30 text-mc-orange border border-mc-orange/50"
+                            : "bg-secondary/40 text-muted-foreground hover:text-foreground"
+                        }`}
+                      >
+                        {ch.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <SliderField
+                    label="NFC Tap Latency"
+                    value={nfcLatency}
+                    onChange={setNfcLatency}
+                    min={0}
+                    max={900}
+                    step={10}
+                    unit=" ms"
+                  />
+                  <SliderField
+                    label="BNPL Bureau Inquiries"
+                    value={bnplInquiries}
+                    onChange={setBnplInquiries}
+                    min={0}
+                    max={15}
+                    step={1}
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <SliderField
+                    label="RaaS Dispute Score"
+                    value={raasScore}
+                    onChange={setRaasScore}
+                    min={0}
+                    max={1}
+                    step={0.05}
+                  />
+                  <SliderField
+                    label="BOPIS Pickup Delay"
+                    value={bopisDelay}
+                    onChange={setBopisDelay}
+                    min={0}
+                    max={240}
+                    step={5}
+                    unit=" min"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
         <button

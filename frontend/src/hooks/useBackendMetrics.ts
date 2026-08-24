@@ -21,6 +21,11 @@ export interface TabularDemoInput {
   geo_distance_km?: number;
   card_age_days?: number;
   failed_attempts_24h?: number;
+  provisioning_channel?: number;
+  nfc_tap_latency_ms?: number;
+  bnpl_bureau_inquiries?: number;
+  raas_dispute_score?: number;
+  bopis_pickup_delay_min?: number;
 }
 
 export interface TabularDemoResult {
@@ -333,6 +338,18 @@ export function useCrossVectorEvaluate() {
       }
       return res.json();
     },
+  });
+}
+
+export function useVectorsCatalog() {
+  return useQuery({
+    queryKey: ["vectors-catalog"],
+    queryFn: async () => {
+      const res = await fetch(`${API_BASE}/vectors/catalog`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    staleTime: 300_000,
   });
 }
 

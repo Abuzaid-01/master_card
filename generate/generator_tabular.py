@@ -1,31 +1,42 @@
 """
 Vector 5 Generator: Multi-Pattern Evasive Card Testing & Credit Card Fraud
-Generates synthetic tabular card authorization records across 5 distinct fraud patterns:
+Generates synthetic tabular card authorization records across 12 distinct fraud patterns:
 1. Card Testing Burst (micro-amounts, high velocity, high device risk)
 2. Account Takeover (ATO) (normal amounts, new device, extreme geo distance, low velocity)
 3. High-Velocity Automated Bot Siphon (script velocity 8-35 tx/min, spoofed device telemetry)
 4. Card-Not-Present (CNP) (high-value online digital goods, elevated device risk)
 5. Slow Drip Siphon (sub-radar recurring charges across days)
+6. Digital Wallet Push Provisioning Hijack (OTP bypass, push-provisioned stolen cards)
+7. Ghost Tap & NFC Relay (APDU relay via modified POS, elevated tap latency)
+8. BOPIS Mule Laundering (Buy Online Pickup In Store, rapid mule collection)
+9. BNPL Synthetic Stacking (multi-provider BNPL loans on thin-file synthetic IDs)
+10. Refund-as-a-Service (RaaS) (systematic chargeback dispute abuse)
+11. Distributed BIN Enumeration (low-and-slow distributed card validation)
+12. Synthetic Merchant Bust-Out (fake merchant processes fraud then vanishes)
 
 Legitimate transactions model enterprise consumer spending across 3 tiers:
 - Everyday micro/daily ($2.50 - $65.00, velocity 0.5 - 2.5 tx/min)
 - Standard retail & dining ($65.00 - $450.00, velocity 0.5 - 2.5 tx/min)
 - High-value major commerce ($450.00 - $4,200.00, velocity 0.5 - 2.0 tx/min) on clean devices
 
-Includes 10 enterprise-grade domain features:
+Includes 15 enterprise-grade domain features:
 - amount, velocity, device_risk_score, is_decline
 - hour_of_day_sin, hour_of_day_cos (cyclical diurnal temporal encoding)
 - mcc_risk_weight (merchant category risk profiling)
 - geo_distance_km (geographical displacement from home location)
 - card_age_days (account/token longevity)
 - failed_attempts_24h (prior authorization failures)
+- provisioning_channel (0=physical, 1=in_app, 2=push_otp, 3=push_otp_bypass)
+- nfc_tap_latency_ms (NFC contact latency; 0=non-NFC, 20-80ms legit, 180-900ms relay)
+- bnpl_bureau_inquiries (bureau hard pulls in 30 days; 0-2 legit, 6-15 stacking)
+- raas_dispute_score (refund abuse risk; 0.0-0.15 legit, 0.7-0.95 RaaS)
+- bopis_pickup_delay_min (pickup delay; 0=non-BOPIS, 60-480 legit, 5-25 mule)
 
-v3.0 — Realistic Feature Overlap & Label Noise Edition
-- Fraud features intentionally overlap with legitimate distributions (mirroring real-world
-  sophisticated attackers who use residential proxies, clean devices, normal MCCs).
-- 3.5% fraud ratio (real-world enterprise baseline).
+v4.0 — 36-Vector Enterprise Expansion Edition
+- 12 fraud sub-types across digital wallets, contactless, BNPL, refund abuse, and merchant fraud.
+- 15 enterprise features with multi-rail domain signals.
+- Fraud features intentionally overlap with legitimate distributions.
 - ~3% label noise to simulate undetected fraud and reversed chargebacks.
-- Temporal concept drift: test-window fraud patterns shift subtly from training data.
 """
 
 import numpy as np
@@ -60,7 +71,12 @@ TABULAR_FEATURE_COLS = [
     "mcc_risk_weight",
     "geo_distance_km",
     "card_age_days",
-    "failed_attempts_24h"
+    "failed_attempts_24h",
+    "provisioning_channel",
+    "nfc_tap_latency_ms",
+    "bnpl_bureau_inquiries",
+    "raas_dispute_score",
+    "bopis_pickup_delay_min",
 ]
 
 
@@ -151,6 +167,19 @@ def generate_tabular_card_testing(
         "card_age_days": np.round(np.random.lognormal(mean=6.0, sigma=0.9, size=num_standard_legit), 0),
         "failed_attempts_24h": np.random.choice([0, 1, 2], size=num_standard_legit, p=[0.90, 0.08, 0.02]),
         "user_agent_category": "standard_browser",
+        "provisioning_channel": np.random.choice([0, 1], size=num_standard_legit, p=[0.75, 0.25]),
+        "nfc_tap_latency_ms": np.where(
+            np.random.random(num_standard_legit) < 0.35,
+            np.round(np.random.uniform(20.0, 80.0, size=num_standard_legit), 1),
+            0.0
+        ),
+        "bnpl_bureau_inquiries": np.random.choice([0, 1, 2], size=num_standard_legit, p=[0.80, 0.15, 0.05]),
+        "raas_dispute_score": np.round(np.random.beta(1.2, 18.0, size=num_standard_legit), 4),
+        "bopis_pickup_delay_min": np.where(
+            np.random.random(num_standard_legit) < 0.08,
+            np.round(np.random.uniform(60.0, 480.0, size=num_standard_legit), 0),
+            0.0
+        ),
         "is_fraud": 0,
         "attack_vector": "legitimate",
         "fraud_subtype": "legitimate_standard"
@@ -281,6 +310,19 @@ def generate_tabular_card_testing(
         "card_age_days": hn_card_age,
         "failed_attempts_24h": hn_fail,
         "user_agent_category": "standard_browser",
+        "provisioning_channel": np.random.choice([0, 1, 2], size=num_hard_neg, p=[0.60, 0.25, 0.15]),
+        "nfc_tap_latency_ms": np.where(
+            np.random.random(num_hard_neg) < 0.30,
+            np.round(np.random.uniform(20.0, 85.0, size=num_hard_neg), 1),
+            0.0
+        ),
+        "bnpl_bureau_inquiries": np.random.choice([0, 1, 2, 3], size=num_hard_neg, p=[0.65, 0.20, 0.10, 0.05]),
+        "raas_dispute_score": np.round(np.random.beta(1.5, 15.0, size=num_hard_neg), 4),
+        "bopis_pickup_delay_min": np.where(
+            np.random.random(num_hard_neg) < 0.12,
+            np.round(np.random.uniform(45.0, 480.0, size=num_hard_neg), 0),
+            0.0
+        ),
         "is_fraud": 0,
         "attack_vector": "legitimate_hard_negative",
         "fraud_subtype": "legitimate_hard_negative"
@@ -293,11 +335,18 @@ def generate_tabular_card_testing(
     # are SLIGHTLY elevated above legit, but NO feature alone is a giveaway.
     # The model must learn COMBINATIONS of weak signals.
 
-    n_p1 = int(num_fraud * 0.22)  # Card Testing Burst
-    n_p2 = int(num_fraud * 0.22)  # Account Takeover (ATO)
-    n_p3 = int(num_fraud * 0.18)  # High-Velocity Bot Swarm
-    n_p4 = int(num_fraud * 0.18)  # Card-Not-Present (CNP)
-    n_p5 = num_fraud - (n_p1 + n_p2 + n_p3 + n_p4)  # Slow Drip & Stealth
+    n_p1 = int(num_fraud * 0.12)   # Card Testing Burst
+    n_p2 = int(num_fraud * 0.12)   # Account Takeover (ATO)
+    n_p3 = int(num_fraud * 0.10)   # High-Velocity Bot Swarm
+    n_p4 = int(num_fraud * 0.10)   # Card-Not-Present (CNP)
+    n_p5 = int(num_fraud * 0.10)   # Slow Drip & Stealth
+    n_p6 = int(num_fraud * 0.08)   # Digital Wallet Push Provisioning Hijack
+    n_p7 = int(num_fraud * 0.08)   # Ghost Tap & NFC Relay
+    n_p8 = int(num_fraud * 0.07)   # BOPIS Mule Laundering
+    n_p9 = int(num_fraud * 0.07)   # BNPL Synthetic Stacking
+    n_p10 = int(num_fraud * 0.06)  # Refund-as-a-Service (RaaS)
+    n_p11 = int(num_fraud * 0.05)  # Distributed BIN Enumeration
+    n_p12 = num_fraud - (n_p1 + n_p2 + n_p3 + n_p4 + n_p5 + n_p6 + n_p7 + n_p8 + n_p9 + n_p10 + n_p11)  # Synthetic Merchant Bust-Out
 
     fraud_frames = []
 
@@ -347,6 +396,11 @@ def generate_tabular_card_testing(
         "card_age_days": p1_age,
         "failed_attempts_24h": p1_failed,
         "user_agent_category": "headless_chrome_bot",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p1, p=[0.80, 0.20]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.2, 18.0, size=n_p1), 4),
+        "bopis_pickup_delay_min": 0.0,
         "is_fraud": 1,
         "attack_vector": "card_testing_burst",
         "fraud_subtype": "card_testing_burst"
@@ -390,6 +444,11 @@ def generate_tabular_card_testing(
         "card_age_days": p2_age,
         "failed_attempts_24h": p2_failed,
         "user_agent_category": "spoofed_mobile_browser",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p2, p=[0.65, 0.35]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": np.random.choice([0, 1], size=n_p2, p=[0.85, 0.15]),
+        "raas_dispute_score": np.round(np.random.beta(1.3, 16.0, size=n_p2), 4),
+        "bopis_pickup_delay_min": 0.0,
         "is_fraud": 1,
         "attack_vector": "account_takeover",
         "fraud_subtype": "account_takeover"
@@ -433,6 +492,11 @@ def generate_tabular_card_testing(
         "card_age_days": p3_age,
         "failed_attempts_24h": p3_failed,
         "user_agent_category": "residential_proxy_bot",
+        "provisioning_channel": 0,
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.2, 18.0, size=n_p3), 4),
+        "bopis_pickup_delay_min": 0.0,
         "is_fraud": 1,
         "attack_vector": "high_velocity_bot",
         "fraud_subtype": "high_velocity_bot"
@@ -475,6 +539,11 @@ def generate_tabular_card_testing(
         "card_age_days": p4_age,
         "failed_attempts_24h": p4_failed,
         "user_agent_category": "automated_script",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p4, p=[0.70, 0.30]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.5, 15.0, size=n_p4), 4),
+        "bopis_pickup_delay_min": 0.0,
         "is_fraud": 1,
         "attack_vector": "cnp_fraud",
         "fraud_subtype": "cnp_fraud"
@@ -545,11 +614,344 @@ def generate_tabular_card_testing(
         "card_age_days": np.round(np.random.lognormal(mean=5.5, sigma=1.0, size=n_p5), 0).clip(10, 2500),
         "failed_attempts_24h": np.random.choice([0, 1], size=n_p5, p=[0.88, 0.12]),
         "user_agent_category": "residential_proxy_bot",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p5, p=[0.70, 0.30]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.3, 16.0, size=n_p5), 4),
+        "bopis_pickup_delay_min": 0.0,
         "is_fraud": 1,
         "attack_vector": "slow_drip",
         "fraud_subtype": "slow_drip_stealth"
     })
     fraud_frames.append(df_p5)
+
+    # ── Sub-Type 6: Digital Wallet Push Provisioning Hijack (Yellow Path) ──
+    # Signal: provisioning_channel = 3 (push_otp_bypass) + new device + moderate geo shift
+    # Real-world: Attacker pushes stolen card creds to Apple/Google Pay on their device via OTP intercept
+    p6_amounts = np.round(np.random.lognormal(mean=5.5, sigma=0.6, size=n_p6), 2)
+    p6_amounts = np.clip(p6_amounts, 80.0, 5000.0)
+    p6_mccs = np.random.choice([5311, 5812, 5999, 5816, 5411, 7399], size=n_p6,
+                                p=[0.25, 0.20, 0.15, 0.15, 0.15, 0.10])
+    p6_declines = np.random.choice([0, 1], size=n_p6, p=[0.72, 0.28])
+    p6_risk = np.round(np.random.beta(3.0, 4.5, size=n_p6), 4)
+    p6_risk = np.clip(p6_risk, 0.15, 0.65)
+    p6_velocity = np.round(np.random.lognormal(mean=0.5, sigma=0.4, size=n_p6), 2)
+    p6_velocity = np.clip(p6_velocity, 0.5, 6.0)
+    p6_geo = np.round(np.random.lognormal(mean=5.0, sigma=0.8, size=n_p6), 2)
+    p6_geo = np.clip(p6_geo, 20.0, 3000.0)
+    p6_age = np.round(np.random.lognormal(mean=5.0, sigma=0.8, size=n_p6), 0)
+    p6_age = np.clip(p6_age, 30, 2000)
+    p6_failed = np.random.choice([0, 1, 2], size=n_p6, p=[0.50, 0.30, 0.20])
+    p6_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p6))
+    p6_hours = (p6_ts % 86400) / 3600.0
+
+    df_p6 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_WALLET_{i:06d}" for i in range(n_p6)],
+        "timestamp_sec": p6_ts,
+        "amount": p6_amounts,
+        "mcc": p6_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.30) for m in p6_mccs]),
+        "is_decline": p6_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p6_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p6_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard"], size=n_p6, p=[0.55, 0.45]),
+        "device_risk_score": p6_risk,
+        "velocity": p6_velocity,
+        "geo_distance_km": p6_geo,
+        "card_age_days": p6_age,
+        "failed_attempts_24h": p6_failed,
+        "user_agent_category": "spoofed_mobile_browser",
+        "provisioning_channel": 3,  # KEY SIGNAL: push_otp_bypass
+        "nfc_tap_latency_ms": np.where(
+            np.random.random(n_p6) < 0.40,
+            np.round(np.random.uniform(25.0, 75.0, size=n_p6), 1),
+            0.0
+        ),
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.5, 15.0, size=n_p6), 4),
+        "bopis_pickup_delay_min": 0.0,
+        "is_fraud": 1,
+        "attack_vector": "wallet_push_provisioning_hijack",
+        "fraud_subtype": "wallet_push_provisioning_hijack"
+    })
+    fraud_frames.append(df_p6)
+
+    # ── Sub-Type 7: Ghost Tap & NFC Relay ──
+    # Signal: nfc_tap_latency_ms = 180-900ms (legit contactless: 20-80ms) — APDU relay delay
+    # Real-world: Modified POS relays NFC to attacker phone with stolen card token
+    p7_amounts = np.round(np.random.lognormal(mean=4.0, sigma=0.6, size=n_p7), 2)
+    p7_amounts = np.clip(p7_amounts, 10.0, 500.0)  # Under contactless limits
+    p7_mccs = np.random.choice([5411, 5812, 5541, 4121, 7523, 5311], size=n_p7,
+                                p=[0.25, 0.25, 0.15, 0.15, 0.10, 0.10])
+    p7_declines = np.random.choice([0, 1], size=n_p7, p=[0.80, 0.20])
+    p7_risk = np.round(np.random.beta(2.0, 7.0, size=n_p7), 4)
+    p7_risk = np.clip(p7_risk, 0.05, 0.40)  # Clean device (attacker's own phone)
+    p7_velocity = np.round(np.random.lognormal(mean=1.0, sigma=0.5, size=n_p7), 2)
+    p7_velocity = np.clip(p7_velocity, 1.5, 12.0)
+    p7_geo = np.round(np.abs(np.random.normal(15.0, 20.0, size=n_p7)), 2)
+    p7_geo = np.clip(p7_geo, 0.5, 100.0)
+    p7_age = np.round(np.random.lognormal(mean=5.5, sigma=0.8, size=n_p7), 0)
+    p7_age = np.clip(p7_age, 20, 2000)
+    p7_failed = np.random.choice([0, 1], size=n_p7, p=[0.85, 0.15])
+    p7_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p7))
+    p7_hours = (p7_ts % 86400) / 3600.0
+
+    df_p7 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_GHOST_{i:06d}" for i in range(n_p7)],
+        "timestamp_sec": p7_ts,
+        "amount": p7_amounts,
+        "mcc": p7_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.20) for m in p7_mccs]),
+        "is_decline": p7_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p7_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p7_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard"], size=n_p7, p=[0.50, 0.50]),
+        "device_risk_score": p7_risk,
+        "velocity": p7_velocity,
+        "geo_distance_km": p7_geo,
+        "card_age_days": p7_age,
+        "failed_attempts_24h": p7_failed,
+        "user_agent_category": "standard_browser",
+        "provisioning_channel": np.random.choice([1, 2], size=n_p7, p=[0.60, 0.40]),
+        "nfc_tap_latency_ms": np.round(np.random.uniform(180.0, 900.0, size=n_p7), 1),  # KEY SIGNAL: relay delay
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.2, 18.0, size=n_p7), 4),
+        "bopis_pickup_delay_min": 0.0,
+        "is_fraud": 1,
+        "attack_vector": "ghost_tap_nfc_relay",
+        "fraud_subtype": "ghost_tap_nfc_relay"
+    })
+    fraud_frames.append(df_p7)
+
+    # ── Sub-Type 8: BOPIS Mule Laundering ──
+    # Signal: bopis_pickup_delay_min = 5-25 (legit: 60-480) — rapid mule pickup
+    # Real-world: Fraudster buys online with stolen card, mule picks up in-store within minutes
+    p8_amounts = np.round(np.random.lognormal(mean=5.8, sigma=0.5, size=n_p8), 2)
+    p8_amounts = np.clip(p8_amounts, 100.0, 4000.0)
+    p8_mccs = np.random.choice([5311, 5999, 5411, 5912, 5812], size=n_p8,
+                                p=[0.35, 0.25, 0.15, 0.15, 0.10])
+    p8_declines = np.random.choice([0, 1], size=n_p8, p=[0.75, 0.25])
+    p8_risk = np.round(np.random.beta(2.5, 5.5, size=n_p8), 4)
+    p8_risk = np.clip(p8_risk, 0.10, 0.55)
+    p8_velocity = np.round(np.random.lognormal(mean=0.3, sigma=0.3, size=n_p8), 2)
+    p8_velocity = np.clip(p8_velocity, 0.3, 4.0)
+    p8_geo = np.round(np.random.lognormal(mean=4.0, sigma=0.8, size=n_p8), 2)
+    p8_geo = np.clip(p8_geo, 5.0, 800.0)
+    p8_age = np.round(np.random.lognormal(mean=5.2, sigma=0.9, size=n_p8), 0)
+    p8_age = np.clip(p8_age, 15, 2000)
+    p8_failed = np.random.choice([0, 1, 2], size=n_p8, p=[0.60, 0.25, 0.15])
+    p8_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p8))
+    p8_hours = (p8_ts % 86400) / 3600.0
+
+    df_p8 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_BOPIS_{i:06d}" for i in range(n_p8)],
+        "timestamp_sec": p8_ts,
+        "amount": p8_amounts,
+        "mcc": p8_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.30) for m in p8_mccs]),
+        "is_decline": p8_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p8_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p8_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard", "amex"], size=n_p8, p=[0.5, 0.4, 0.1]),
+        "device_risk_score": p8_risk,
+        "velocity": p8_velocity,
+        "geo_distance_km": p8_geo,
+        "card_age_days": p8_age,
+        "failed_attempts_24h": p8_failed,
+        "user_agent_category": "automated_script",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p8, p=[0.60, 0.40]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.5, 14.0, size=n_p8), 4),
+        "bopis_pickup_delay_min": np.round(np.random.uniform(5.0, 25.0, size=n_p8), 0),  # KEY SIGNAL: rapid pickup
+        "is_fraud": 1,
+        "attack_vector": "bopis_mule_laundering",
+        "fraud_subtype": "bopis_mule_laundering"
+    })
+    fraud_frames.append(df_p8)
+
+    # ── Sub-Type 9: BNPL Synthetic Stacking ──
+    # Signal: bnpl_bureau_inquiries = 6-15 (legit: 0-2) — multiple BNPL providers hit in 30 days
+    # Real-world: Synthetic/thin-file ID opens BNPL across Klarna, Afterpay, Affirm simultaneously
+    p9_amounts = np.round(np.random.lognormal(mean=5.5, sigma=0.55, size=n_p9), 2)
+    p9_amounts = np.clip(p9_amounts, 100.0, 3500.0)
+    p9_mccs = np.random.choice([5311, 5999, 5816, 5812, 7399], size=n_p9,
+                                p=[0.30, 0.25, 0.20, 0.15, 0.10])
+    p9_declines = np.random.choice([0, 1], size=n_p9, p=[0.70, 0.30])
+    p9_risk = np.round(np.random.beta(2.0, 6.0, size=n_p9), 4)
+    p9_risk = np.clip(p9_risk, 0.08, 0.50)
+    p9_velocity = np.round(np.random.lognormal(mean=0.4, sigma=0.35, size=n_p9), 2)
+    p9_velocity = np.clip(p9_velocity, 0.3, 5.0)
+    p9_geo = np.round(np.abs(np.random.normal(20.0, 25.0, size=n_p9)), 2)
+    p9_geo = np.clip(p9_geo, 0.5, 200.0)
+    p9_age = np.round(np.random.uniform(5, 90, size=n_p9), 0)  # Thin-file: very new accounts
+    p9_failed = np.random.choice([0, 1, 2, 3], size=n_p9, p=[0.40, 0.30, 0.20, 0.10])
+    p9_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p9))
+    p9_hours = (p9_ts % 86400) / 3600.0
+
+    df_p9 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_BNPL_{i:06d}" for i in range(n_p9)],
+        "timestamp_sec": p9_ts,
+        "amount": p9_amounts,
+        "mcc": p9_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.30) for m in p9_mccs]),
+        "is_decline": p9_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p9_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p9_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard"], size=n_p9, p=[0.5, 0.5]),
+        "device_risk_score": p9_risk,
+        "velocity": p9_velocity,
+        "geo_distance_km": p9_geo,
+        "card_age_days": p9_age,
+        "failed_attempts_24h": p9_failed,
+        "user_agent_category": "standard_browser",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p9, p=[0.50, 0.50]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": np.random.choice(range(6, 16), size=n_p9),  # KEY SIGNAL: stacking
+        "raas_dispute_score": np.round(np.random.beta(1.5, 12.0, size=n_p9), 4),
+        "bopis_pickup_delay_min": 0.0,
+        "is_fraud": 1,
+        "attack_vector": "bnpl_synthetic_stacking",
+        "fraud_subtype": "bnpl_synthetic_stacking"
+    })
+    fraud_frames.append(df_p9)
+
+    # ── Sub-Type 10: Refund-as-a-Service (RaaS) ──
+    # Signal: raas_dispute_score = 0.70-0.95 (legit: 0.0-0.15) — professional refund abuse
+    # Real-world: Telegram/Discord "refund services" filing systematic false chargebacks
+    p10_amounts = np.round(np.random.lognormal(mean=5.8, sigma=0.5, size=n_p10), 2)
+    p10_amounts = np.clip(p10_amounts, 150.0, 3000.0)
+    p10_mccs = np.random.choice([5311, 5999, 5816, 5812, 5968], size=n_p10,
+                                 p=[0.30, 0.25, 0.20, 0.15, 0.10])
+    p10_declines = np.random.choice([0, 1], size=n_p10, p=[0.88, 0.12])
+    p10_risk = np.round(np.random.beta(1.5, 9.0, size=n_p10), 4)
+    p10_risk = np.clip(p10_risk, 0.03, 0.30)  # Clean device — looks like real customer
+    p10_velocity = np.round(np.random.lognormal(mean=0.2, sigma=0.25, size=n_p10), 2)
+    p10_velocity = np.clip(p10_velocity, 0.3, 3.5)
+    p10_geo = np.round(np.abs(np.random.normal(12.0, 15.0, size=n_p10)), 2)
+    p10_geo = np.clip(p10_geo, 0.5, 80.0)
+    p10_age = np.round(np.random.lognormal(mean=5.8, sigma=0.8, size=n_p10), 0)
+    p10_age = np.clip(p10_age, 60, 2500)  # Established accounts (not new)
+    p10_failed = np.random.choice([0, 1], size=n_p10, p=[0.90, 0.10])
+    p10_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p10))
+    p10_hours = (p10_ts % 86400) / 3600.0
+
+    df_p10 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_RAAS_{i:06d}" for i in range(n_p10)],
+        "timestamp_sec": p10_ts,
+        "amount": p10_amounts,
+        "mcc": p10_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.30) for m in p10_mccs]),
+        "is_decline": p10_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p10_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p10_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard", "amex"], size=n_p10, p=[0.5, 0.4, 0.1]),
+        "device_risk_score": p10_risk,
+        "velocity": p10_velocity,
+        "geo_distance_km": p10_geo,
+        "card_age_days": p10_age,
+        "failed_attempts_24h": p10_failed,
+        "user_agent_category": "standard_browser",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p10, p=[0.65, 0.35]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": np.random.choice([0, 1], size=n_p10, p=[0.80, 0.20]),
+        "raas_dispute_score": np.round(np.random.uniform(0.70, 0.95, size=n_p10), 4),  # KEY SIGNAL: dispute abuse
+        "bopis_pickup_delay_min": 0.0,
+        "is_fraud": 1,
+        "attack_vector": "refund_as_a_service",
+        "fraud_subtype": "refund_as_a_service"
+    })
+    fraud_frames.append(df_p10)
+
+    # ── Sub-Type 11: Distributed BIN Enumeration ──
+    # Signal: Low velocity + HIGH decline rate + rotating MCCs across IPs (Visa VAAI pattern)
+    # Real-world: Distributed low-and-slow card validation across rotating IP/proxy pools
+    p11_amounts = np.round(np.random.uniform(0.50, 5.00, size=n_p11), 2)  # Micro-validation amounts
+    p11_mccs = np.random.choice([5999, 7399, 5816, 5968, 5969, 7523], size=n_p11,
+                                 p=[0.20, 0.20, 0.15, 0.15, 0.15, 0.15])
+    p11_declines = np.random.choice([0, 1], size=n_p11, p=[0.25, 0.75])  # KEY SIGNAL: high decline
+    p11_risk = np.round(np.random.beta(2.5, 5.0, size=n_p11), 4)
+    p11_risk = np.clip(p11_risk, 0.10, 0.55)
+    p11_velocity = np.round(np.random.lognormal(mean=0.3, sigma=0.3, size=n_p11), 2)
+    p11_velocity = np.clip(p11_velocity, 0.3, 4.0)  # KEY: LOW velocity (distributed)
+    p11_geo = np.round(np.random.uniform(50.0, 5000.0, size=n_p11), 2)  # Rotating proxies
+    p11_age = np.round(np.random.lognormal(mean=5.5, sigma=1.0, size=n_p11), 0)
+    p11_age = np.clip(p11_age, 10, 2500)
+    p11_failed = np.random.choice([0, 1, 2, 3, 4, 5], size=n_p11, p=[0.05, 0.15, 0.25, 0.25, 0.20, 0.10])
+    p11_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p11))
+    p11_hours = (p11_ts % 86400) / 3600.0
+
+    df_p11 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_BINEN_{i:06d}" for i in range(n_p11)],
+        "timestamp_sec": p11_ts,
+        "amount": p11_amounts,
+        "mcc": p11_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.40) for m in p11_mccs]),
+        "is_decline": p11_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p11_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p11_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard"], size=n_p11, p=[0.7, 0.3]),
+        "device_risk_score": p11_risk,
+        "velocity": p11_velocity,
+        "geo_distance_km": p11_geo,
+        "card_age_days": p11_age,
+        "failed_attempts_24h": p11_failed,
+        "user_agent_category": "headless_chrome_bot",
+        "provisioning_channel": 0,
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": 0,
+        "raas_dispute_score": np.round(np.random.beta(1.2, 18.0, size=n_p11), 4),
+        "bopis_pickup_delay_min": 0.0,
+        "is_fraud": 1,
+        "attack_vector": "distributed_bin_enumeration",
+        "fraud_subtype": "distributed_bin_enumeration"
+    })
+    fraud_frames.append(df_p11)
+
+    # ── Sub-Type 12: Synthetic Merchant Bust-Out ──
+    # Signal: High amounts + high-risk MCC + very young card age (new fake merchant)
+    # Real-world: Fake merchant account processes max volume, then disappears with funds
+    p12_amounts = np.round(np.random.lognormal(mean=7.0, sigma=0.4, size=n_p12), 2)
+    p12_amounts = np.clip(p12_amounts, 500.0, 12000.0)  # High-value transactions
+    p12_mccs = np.random.choice([5999, 7399, 5816, 5968, 5969], size=n_p12,
+                                 p=[0.30, 0.25, 0.20, 0.15, 0.10])
+    p12_declines = np.random.choice([0, 1], size=n_p12, p=[0.82, 0.18])
+    p12_risk = np.round(np.random.beta(2.0, 6.0, size=n_p12), 4)
+    p12_risk = np.clip(p12_risk, 0.08, 0.45)
+    p12_velocity = np.round(np.random.lognormal(mean=1.5, sigma=0.5, size=n_p12), 2)
+    p12_velocity = np.clip(p12_velocity, 2.0, 15.0)  # Elevated but not extreme
+    p12_geo = np.round(np.random.uniform(100.0, 4000.0, size=n_p12), 2)
+    p12_age = np.round(np.random.uniform(1, 30, size=n_p12), 0)  # KEY SIGNAL: very young merchant
+    p12_failed = np.random.choice([0, 1, 2], size=n_p12, p=[0.55, 0.30, 0.15])
+    p12_ts = np.sort(np.random.uniform(0, 86400 * 14, size=n_p12))
+    p12_hours = (p12_ts % 86400) / 3600.0
+
+    df_p12 = pd.DataFrame({
+        "transaction_id": [f"TX_FRD_BUSTOUT_{i:06d}" for i in range(n_p12)],
+        "timestamp_sec": p12_ts,
+        "amount": p12_amounts,
+        "mcc": p12_mccs,
+        "mcc_risk_weight": np.array([MCC_RISK_MAP.get(m, 0.50) for m in p12_mccs]),
+        "is_decline": p12_declines,
+        "hour_of_day_sin": np.round(np.sin(2 * np.pi * p12_hours / 24.0), 4),
+        "hour_of_day_cos": np.round(np.cos(2 * np.pi * p12_hours / 24.0), 4),
+        "card_type": np.random.choice(["visa", "mastercard"], size=n_p12, p=[0.5, 0.5]),
+        "device_risk_score": p12_risk,
+        "velocity": p12_velocity,
+        "geo_distance_km": p12_geo,
+        "card_age_days": p12_age,
+        "failed_attempts_24h": p12_failed,
+        "user_agent_category": "automated_script",
+        "provisioning_channel": np.random.choice([0, 1], size=n_p12, p=[0.50, 0.50]),
+        "nfc_tap_latency_ms": 0.0,
+        "bnpl_bureau_inquiries": np.random.choice([0, 1, 2, 3], size=n_p12, p=[0.40, 0.25, 0.20, 0.15]),
+        "raas_dispute_score": np.round(np.random.beta(2.0, 5.0, size=n_p12), 4),
+        "bopis_pickup_delay_min": 0.0,
+        "is_fraud": 1,
+        "attack_vector": "synthetic_merchant_bustout",
+        "fraud_subtype": "synthetic_merchant_bustout"
+    })
+    fraud_frames.append(df_p12)
 
     df_fraud_all = pd.concat(fraud_frames, ignore_index=True)
 

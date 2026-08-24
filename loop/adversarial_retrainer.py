@@ -59,7 +59,7 @@ def retrain_round2(
             n_estimators=300, max_depth=6, learning_rate=0.06,
             subsample=0.85, colsample_bytree=0.85,
             scale_pos_weight=spw, eval_metric="aucpr",
-            random_state=42, use_label_encoder=False
+            random_state=42
         )
         model_r2.fit(X_train, y_train)
         
@@ -68,11 +68,14 @@ def retrain_round2(
         try:
             import onnxmltools
             from onnxmltools.convert.common.data_types import FloatTensorType
-            onnx_model = onnxmltools.convert_xgboost(
-                model_r2.get_booster(),
-                initial_types=[("features", FloatTensorType([None, len(feature_cols)]))]
-            )
-            onnxmltools.utils.save_model(onnx_model, onnx_path)
+            booster = model_r2.get_booster()
+            orig_names = booster.feature_names
+            booster.feature_names = [f"f{i}" for i in range(len(feature_cols))]
+            initial_types = [("input", FloatTensorType([None, len(feature_cols)]))]
+            onnx_model = onnxmltools.convert_xgboost(booster, initial_types=initial_types)
+            with open(onnx_path, "wb") as f:
+                f.write(onnx_model.SerializeToString())
+            booster.feature_names = orig_names
             print(f"      -> Round 2 ONNX exported: {onnx_path}")
         except Exception as e:
             print(f"      -> ONNX export warning: {e}")
@@ -104,7 +107,7 @@ def retrain_round2(
         
         from generate.generator_graph import GRAPH_FEATURE_COLS
         graph_features = list(GRAPH_FEATURE_COLS)
-        X_train = df_augmented[graph_features].values.astype(float)
+        X_train = df_augmented[graph_features].astype(float)
         y_train = df_augmented["is_fraud"].values
         
         from sklearn.ensemble import HistGradientBoostingClassifier

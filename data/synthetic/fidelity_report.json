@@ -3,33 +3,321 @@
   "text_pass_rate_pct": 100.0,
   "graph_pass_rate_pct": 100.0,
   "evasion_pass_rate_pct": 100.0,
-  "tstr_auc_pr": 0.1182,
+  "domain_validation": {
+    "tabular": {
+      "rules_evaluated": 13,
+      "rule_results": [
+        {
+          "rule_id": "TAB.1",
+          "description": "Amount in [0.01, 100000.00]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.2",
+          "description": "Velocity in [0.0, 120.0] tx/min",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.3",
+          "description": "device_risk_score in [0.0, 1.0]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.4",
+          "description": "is_decline in {0, 1}",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.5",
+          "description": "Diurnal unit circle |sin\u00b2+cos\u00b2-1| <= 0.05",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.6",
+          "description": "geo_distance_km >= 0 and card_age_days >= 0",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.7",
+          "description": "mcc_risk_weight in [0.0, 1.0]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.8",
+          "description": "failed_attempts_24h in [0, 50]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.9",
+          "description": "provisioning_channel in {0, 1, 2, 3}",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.10",
+          "description": "nfc_tap_latency_ms >= 0.0",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.11",
+          "description": "bnpl_bureau_inquiries in [0, 30]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.12",
+          "description": "raas_dispute_score in [0.0, 1.0]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.13",
+          "description": "bopis_pickup_delay_min >= 0.0",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        }
+      ]
+    },
+    "text": {
+      "rules_evaluated": 6,
+      "rule_results": [
+        {
+          "rule_id": "T.1",
+          "description": "Non-empty string with stripped length >= 5",
+          "passed": 1500,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "T.2",
+          "description": "Character length in [5, 5000]",
+          "passed": 1500,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "T.3",
+          "description": "attack_type in approved 18-category taxonomy",
+          "passed": 1500,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "T.4",
+          "description": "severity in {none, low, medium, high, critical}",
+          "passed": 1500,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "T.5",
+          "description": "prompt_id starts with 'PRM_'",
+          "passed": 1500,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "T.6",
+          "description": "Label-metadata consistency (legit\u21920/none, fraud\u21921/!none)",
+          "passed": 1500,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        }
+      ]
+    },
+    "graph": {
+      "rules_evaluated": 6,
+      "rule_results": [
+        {
+          "rule_id": "G.1",
+          "description": "No self-loops (sender_account != receiver_account)",
+          "passed": 7478,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "G.2",
+          "description": "Account IDs match ACC_XXXXX schema",
+          "passed": 7478,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "G.3",
+          "description": "Amount in [0.01, 500000.00]",
+          "passed": 7478,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "G.4",
+          "description": "pass_through_delay_sec >= 0.0",
+          "passed": 7478,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "G.5",
+          "description": "timestamp_sec >= 0.0",
+          "passed": 7478,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "G.6",
+          "description": "mule_topology in approved 9-category taxonomy",
+          "passed": 7478,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        }
+      ]
+    },
+    "evasion": {
+      "rules_evaluated": 13,
+      "rule_results": [
+        {
+          "rule_id": "TAB.1",
+          "description": "Amount in [0.01, 100000.00]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.2",
+          "description": "Velocity in [0.0, 120.0] tx/min",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.3",
+          "description": "device_risk_score in [0.0, 1.0]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.4",
+          "description": "is_decline in {0, 1}",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.5",
+          "description": "Diurnal unit circle |sin\u00b2+cos\u00b2-1| <= 0.05",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.6",
+          "description": "geo_distance_km >= 0 and card_age_days >= 0",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.7",
+          "description": "mcc_risk_weight in [0.0, 1.0]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.8",
+          "description": "failed_attempts_24h in [0, 50]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.9",
+          "description": "provisioning_channel in {0, 1, 2, 3}",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.10",
+          "description": "nfc_tap_latency_ms >= 0.0",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.11",
+          "description": "bnpl_bureau_inquiries in [0, 30]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.12",
+          "description": "raas_dispute_score in [0.0, 1.0]",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        },
+        {
+          "rule_id": "TAB.13",
+          "description": "bopis_pickup_delay_min >= 0.0",
+          "passed": 50000,
+          "failed": 0,
+          "pass_rate_pct": 100.0
+        }
+      ]
+    }
+  },
+  "tstr_auc_pr": 0.1313,
   "benchmark_dataset_used": "IEEE-CIS train_transaction.csv",
   "fidelity_details": {
     "feature_metrics": {
       "amount": {
-        "wasserstein_distance": 50.6794,
-        "ks_statistic": 0.2054,
+        "wasserstein_distance": 54.3293,
+        "ks_statistic": 0.2078,
         "ks_p_value": 0.0
       },
       "velocity": {
-        "wasserstein_distance": 1.9754,
+        "wasserstein_distance": 1.9176,
         "ks_statistic": 0.9106,
         "ks_p_value": 0.0
       },
       "device_risk_score": {
-        "wasserstein_distance": 0.1569,
+        "wasserstein_distance": 0.1554,
         "ks_statistic": 0.8126,
         "ks_p_value": 0.0
       },
       "is_decline": {
-        "wasserstein_distance": 0.065,
-        "ks_statistic": 0.065,
+        "wasserstein_distance": 0.0654,
+        "ks_statistic": 0.0654,
         "ks_p_value": 0.0
       }
     },
     "tstr_utility": {
-      "tstr_auc_pr": 0.1182,
+      "tstr_auc_pr": 0.1313,
       "train_samples_count": 50000,
       "test_samples_count": 20000
     }

@@ -78,7 +78,7 @@ def extract_blind_spots(
         
         if prober.graph_model is not None:
             probs_after = prober.graph_model.predict_proba(
-                df_evaded[graph_features].values.astype(float)
+                df_evaded[graph_features].astype(float)
             )[:, 1]
             evaded_mask = probs_after < threshold_graph
             n_evaded = int(evaded_mask.sum())
