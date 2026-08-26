@@ -10,6 +10,7 @@ Computes the mathematically grounded joint correlated risk score and determines 
 
 import os
 import sys
+import time
 import numpy as np
 import pandas as pd
 from typing import Dict, Any, Optional
@@ -32,6 +33,7 @@ def evaluate_cross_vector_scenario(
     Evaluates a 3-phase compound attack scenario using real pre-trained detectors.
     Computes genuine mathematical risk scores for each stage and joint correlated risk.
     """
+    t_start = time.perf_counter()
     import joblib
     models_dir = os.path.join(PROJECT_ROOT, "defend", "models")
     
@@ -219,7 +221,7 @@ def evaluate_cross_vector_scenario(
             "threshold": tabular_threshold,
             "verdict": tabular_verdict,
             "transactions": evaluated_txs if evaluated_txs else transactions,
-            "model": "9-Feature ONNX XGBoost"
+            "model": "15-Feature ONNX XGBoost"
         },
         "phase_3_result": {
             "attack_type": phase3_data.get("attack_type", "Multi-Hop Mule Routing"),
@@ -242,7 +244,7 @@ def evaluate_cross_vector_scenario(
             "action": recommended_action,
             "severity": action_severity,
             "description": action_description,
-            "interception_timeline_ms": 12.4
+            "interception_timeline_ms": round(max(0.1, (time.perf_counter() - t_start) * 1000), 2)
         }
     }
 

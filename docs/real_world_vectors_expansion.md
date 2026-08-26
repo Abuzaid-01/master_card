@@ -78,11 +78,11 @@ This updated specification incorporates the newly emerging 2026 threat profilesâ
 #### Vector 04: SIM-Swap & Out-of-Band Telemetry Spoofing
 * **Category:** Authentication Hijack / Out-of-Band Channel Compromise
 * **Traditional Fraud:** Intercepting paper bank statements or eavesdropping on landline phone lines.
-* **GenAI Force-Multiplier:** Executing social engineering against cellular carriers or exploiting SS7 signaling protocols to port a victim's phone number to an attacker eSIM. The attacker intercepts banking SMS alerts and resets multi-factor authentication while spoofing the victim's IMEI and device hardware profile.
+* **GenAI Force-Multiplier:** Attackers deploy conversational voice-cloning bots to social engineer mobile network operator (MNO) customer support into executing unauthorized SIM re-issuance / eSIM profile porting to attacker hardware. Distinct from direct SS7/Diameter cellular signaling interception (which eavesdrops on SMS in-transit without SIM modification), SIM-swapping transfers complete cellular IMSI control, enabling the adversary to intercept banking OTPs, trigger password resets, and synthesize clean device hardware telemetry profiles.
 * **Data Signature (ML Features):**
-  * Cellular Carrier IMSI change event within 24 hours prior to payment authorization.
-  * Sudden shift in mobile network operator (MNO) cell tower routing without physical transit latency.
-  * Biometric login failure immediately followed by an SMS-based password reset.
+  * Cellular Carrier IMSI / ICCID change event within 24 hours prior to high-risk payment authorization.
+  * Sudden shift in mobile network operator (MNO) cell tower routing and BGP ASN without corresponding physical transit latency.
+  * Biometric login challenge failure immediately followed by an out-of-band SMS-based password reset attempt.
 * **Citation:** FBI IC3 Alert on SIM-Swapping Threats & European Banking Authority (EBA) Guidelines on Strong Customer Authentication (SCA).
 
 ---

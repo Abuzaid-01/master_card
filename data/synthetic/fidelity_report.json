@@ -291,7 +291,7 @@
       ]
     }
   },
-  "tstr_auc_pr": 0.1313,
+  "tstr_auc_pr": 0.1289,
   "benchmark_dataset_used": "IEEE-CIS train_transaction.csv",
   "fidelity_details": {
     "feature_metrics": {
@@ -311,13 +311,13 @@
         "ks_p_value": 0.0
       },
       "is_decline": {
-        "wasserstein_distance": 0.0654,
-        "ks_statistic": 0.0654,
+        "wasserstein_distance": 0.0649,
+        "ks_statistic": 0.0649,
         "ks_p_value": 0.0
       }
     },
     "tstr_utility": {
-      "tstr_auc_pr": 0.1313,
+      "tstr_auc_pr": 0.1289,
       "train_samples_count": 50000,
       "test_samples_count": 20000
     }

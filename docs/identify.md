@@ -8,9 +8,24 @@
 
 ## Executive Summary
 
-Generative AI has fundamentally reshaped the payment threat landscape by lowering the cost of execution, enabling real-time adaptability, and allowing attackers to bypass static rule-based security systems. Rather than viewing fraud in isolation, this document maps **8 distinct, novel attack vectors** across card rails, instant push payments (UPI/FedNow), conversational AI interfaces, and merchant networks.
+Generative AI has fundamentally reshaped the payment threat landscape by lowering the cost of execution, enabling real-time adaptability, and allowing attackers to bypass static rule-based security systems. Rather than viewing fraud in isolation, this document maps the **8 foundational attack archetypes** across card rails, instant push payments (UPI/FedNow), conversational AI interfaces, and merchant networks.
 
 Each vector is grounded in real-world payment mechanics, official regulatory alerts (**FinCEN Alert FIN-2024-Alert004**), and authoritative financial security sources (OWASP, FBI IC3, Treasury AI Risk Report, Federal Reserve Bank of Atlanta), establishing the explicit **Data Signatures** needed for ML simulation and defense.
+
+> [!NOTE]
+> ### 🧭 System Taxonomy & Enterprise Matrix Mapping
+> The 8 foundational vectors in this document represent our core threat models aligned with FinCEN Alert FIN-2024-Alert004. In the production release of SENTRIX AI, these 8 foundational archetypes have been fully scaled and granularized into the **36-Vector Enterprise Matrix (V01–V36)** across 5 Operational Pillars (see [`docs/real_world_vectors_expansion.md`](file:///Users/abuzaid/Desktop/final/master/docs/real_world_vectors_expansion.md) and [`SENTRIX_AI_SYSTEM_ARCHITECTURE.md`](file:///Users/abuzaid/Desktop/final/master/SENTRIX_AI_SYSTEM_ARCHITECTURE.md)):
+>
+> | Foundational Archetype | Enterprise Matrix Vectors | Operational Pillar |
+> |---|---|---|
+> | **Vector 1: Indirect Prompt Injection** | **V01, V02, V06, V08, V09, V10, V11, V15** | Pillar 1: AI Red-Teaming & Pillar 2: Obfuscation |
+> | **Vector 2: Multi-Hop Money Mule Networks** | **V23, V24, V25, V26, V27, V28, V29** | Pillar 4: Money Laundering & Topologies |
+> | **Vector 3: Deepfake KYC & Biometric Bypass** | **V02, V04** | Pillar 1: Identity & Social Engineering |
+> | **Vector 4: AI Voice Clone Vishing** | **V04, V05, V06** | Pillar 1: AI Red-Teaming & Conversational |
+> | **Vector 5: Evasive Card Testing & BIN Enum** | **V16, V17, V21, V22** | Pillar 3: Multi-Rail & Digital Payments |
+> | **Vector 6: Synthetic Identity & Credit Build** | **V01, V18, V19** | Pillar 1: Identity & Pillar 3: Credit Rails |
+> | **Vector 7: GenAI Merchant Fraud & RaaS** | **V18, V20, V22** | Pillar 3: Multi-Rail & Dispute Exploits |
+> | **Vector 8: Adversarial Evasion & ML Probing** | **V30, V31, V32, V33, V34, V35, V36** | Pillar 5: Adversarial Evasion & Active Learning |
 
 ---
 
