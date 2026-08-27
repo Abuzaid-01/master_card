@@ -69,7 +69,7 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
         cell.paragraphs[0].add_run(h).font.bold = True
         set_cell_background(cell, "F2F2F2")
 
-    team_table.cell(1, 0).paragraphs[0].add_run("• Live Web Platform: https://abuzaid-01-master-card-frontend.pages.dev/\n• FastAPI API Docs: https://master-card.onrender.com/docs\n• Public GitHub Repo: https://github.com/Abuzaid-01/master_card")
+    team_table.cell(1, 0).paragraphs[0].add_run("• Live Web Platform: https://sentrix-ai-seven.vercel.app/\n• FastAPI API Docs: https://master-card.onrender.com/docs\n• Public GitHub Repo: https://github.com/Abuzaid-01/master_card")
     team_table.cell(1, 1).paragraphs[0].add_run("• Team Name: Abuzaid_2005\n• Target Event: GFF 2026, Mumbai (Jio World Centre)\n• Track: Red Team / Blue Team AI Defense Lab\n• Submission Deadline: 31st August 2026")
     
     team_table.cell(2, 0).paragraphs[0].add_run("Team Members & Registered Email IDs:").font.bold = True
@@ -243,7 +243,7 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
         "SENTRIX AI proves that the most effective way to defeat GenAI-enabled financial fraud is to build a unified system that generates, stress-tests, and actively evolves its own defenses. All components—from synthetic generation to real-time ONNX inference and active retraining—are fully open-source, reproducible, and live in production:"
     )
 
-    doc.add_paragraph("• Interactive Web Dashboard: https://abuzaid-01-master-card-frontend.pages.dev/")
+    doc.add_paragraph("• Interactive Web Dashboard: https://sentrix-ai-seven.vercel.app/")
     doc.add_paragraph("• Live FastAPI Backend & API Docs: https://master-card.onrender.com/docs")
     doc.add_paragraph("• GitHub Public Source Code: https://github.com/Abuzaid-01/master_card")
 
