@@ -208,36 +208,9 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
     for step in loop_steps:
         doc.add_paragraph(step)
 
-    # ── Section 6: Evaluation Criteria Alignment Matrix ──
-    h6 = doc.add_heading("6. Official Evaluation Criteria Alignment Matrix", level=1)
+    # ── Section 6: Conclusion & Deployment ──
+    h6 = doc.add_heading("6. Conclusion & Live Deployment Links", level=1)
     h6.runs[0].font.color.rgb = RGBColor(235, 0, 27)
-
-    criteria = [
-        ("Diversity of Attacks Identified", "High (Exhaustive)", "36 Real-World Vectors across 5 Pillars covering conversational LLMs, tool calling, wallet push provisioning, NFC ghost tap relays, instant UPI/FedNow smurfing, crypto mixers, and adversarial RL evasion."),
-        ("Fidelity of Attacks in Simulation", "100% Invariant Compliance", "50,000 Tabular (15 features), 1,500 Text, 7,478 Graph edges, 50,000 Evasion records. 100% pass rate across 38 domain rules and verified against 20,000 real IEEE-CIS records via TSTR."),
-        ("Detection Algorithms & Efficacy", "Sub-Millisecond & High AUC", "ONNX Tabular (0.006 ms latency, AUC-PR 0.8031), Dense Semantic Text (AUC-PR 1.0, +9.19% lift on paraphrased zero-days), Graph GBDT (AUC-PR 0.9630, F1 0.9025)."),
-        ("Novelty of the Solution", "Industry Firsts", "First cross-vector mathematical risk fusion correlating Chatbot + Gateway + Mule Layering. First model-aware multi-strategy active learning feedback loop with automated anti-forgetting audit."),
-        ("Real-World Feasibility in Live Payments", "Production-Ready", "Zero PyTorch runtime overhead in production (pure ONNX Runtime C++ engine), sub-50ms SLA compliance, $3,071.97 financial threshold optimization, and live PCI-DSS SHAP attribution.")
-    ]
-
-    t_crit = doc.add_table(rows=len(criteria)+1, cols=3)
-    t_crit.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for i, col_name in enumerate(["Challenge Evaluation Criterion", "SENTRIX AI Benchmark", "Technical Implementation Evidence"]):
-        c = t_crit.cell(0, i)
-        c.paragraphs[0].add_run(col_name).font.bold = True
-        set_cell_background(c, "EAEAEA")
-
-    for idx, (cr, bm, ev) in enumerate(criteria):
-        r = idx + 1
-        t_crit.cell(r, 0).paragraphs[0].add_run(cr).font.bold = True
-        t_crit.cell(r, 1).paragraphs[0].add_run(bm)
-        t_crit.cell(r, 2).paragraphs[0].add_run(ev)
-
-    doc.add_paragraph()
-
-    # ── Section 7: Conclusion & Deployment ──
-    h7 = doc.add_heading("7. Conclusion & Live Deployment Links", level=1)
-    h7.runs[0].font.color.rgb = RGBColor(235, 0, 27)
 
     doc.add_paragraph(
         "SENTRIX AI proves that the most effective way to defeat GenAI-enabled financial fraud is to build a unified system that generates, stress-tests, and actively evolves its own defenses. All components—from synthetic generation to real-time ONNX inference and active retraining—are fully open-source, reproducible, and live in production:"
