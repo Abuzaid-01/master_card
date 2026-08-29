@@ -98,7 +98,7 @@ function StepButton({
     }
     const interval = setInterval(() => {
       setMsgIdx((prev) => (prev + 1) % loadingMessages.length);
-    }, 2400);
+    }, 2600);
     return () => clearInterval(interval);
   }, [loading, loadingMessages]);
 
@@ -112,33 +112,39 @@ function StepButton({
   const activeMsg =
     loadingMessages && loadingMessages.length > 0
       ? loadingMessages[msgIdx]
-      : "Processing...";
+      : "Running pipeline task...";
 
   return (
-    <div className="w-full space-y-2">
+    <div className="w-full space-y-3">
       <button
         onClick={onClick}
         disabled={loading}
-        className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-mono text-sm transition-all border disabled:opacity-90 ${colors[accent]}`}
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-mono text-sm font-semibold transition-all border disabled:opacity-70 ${colors[accent]}`}
       >
         {loading ? (
           <Loader2 className="h-4 w-4 animate-spin shrink-0" />
         ) : (
           <Icon className="h-4 w-4 shrink-0" />
         )}
-        <span className="truncate">{loading ? activeMsg : label}</span>
+        <span>{loading ? "Processing..." : label}</span>
       </button>
 
       {loading && (
         <motion.div
-          initial={{ opacity: 0, y: -4 }}
+          key={activeMsg}
+          initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
-          className="flex items-center justify-center gap-2 rounded-lg bg-secondary/80 px-3 py-2 text-xs font-mono text-foreground border border-glass-border/60 shadow-inner"
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+          className="flex items-start gap-3 rounded-xl border border-glass-border/80 bg-secondary/90 p-3.5 shadow-md backdrop-blur-md"
         >
-          <span className="inline-block h-2 w-2 rounded-full bg-cyan animate-ping shrink-0" />
-          <span className="truncate text-[11px] text-muted-foreground">
-            {activeMsg}
+          <span className="relative mt-1 flex h-2 w-2 shrink-0">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-cyan opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-cyan" />
           </span>
+          <p className="font-mono text-xs leading-relaxed text-foreground whitespace-normal break-words">
+            {activeMsg}
+          </p>
         </motion.div>
       )}
     </div>
