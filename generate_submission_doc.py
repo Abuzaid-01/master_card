@@ -38,7 +38,7 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
     title_run.font.name = "Arial"
     title_run.font.size = Pt(26)
     title_run.font.bold = True
-    title_run.font.color.rgb = RGBColor(235, 0, 27)  # Mastercard Red
+    title_run.font.color.rgb = RGBColor(0, 0, 0)
 
     sub_p = doc.add_paragraph()
     sub_p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -54,7 +54,7 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
     meta_run.font.name = "Arial"
     meta_run.font.size = Pt(10)
     meta_run.font.bold = True
-    meta_run.font.color.rgb = RGBColor(255, 95, 0)  # Mastercard Orange
+    meta_run.font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph("―" * 55).alignment = WD_ALIGN_PARAGRAPH.CENTER
 
@@ -81,18 +81,18 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
 
     # ── Section 1: Executive Summary ──
     h1 = doc.add_heading("1. Executive Summary & Core Innovation", level=1)
-    h1.runs[0].font.color.rgb = RGBColor(235, 0, 27)
+    h1.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph(
         "Generative AI has fundamentally reshaped financial cybercrime by lowering attack costs, enabling dynamic behavioral evasion, and weaponizing conversational interfaces at scale. Traditional payment defenses operate in isolated silos—the chatbot safety team, payment authorization gateway, and anti-money laundering (AML) graph units evaluate events independently. Modern fraud syndicates exploit these blind spots via compound kill-chains: using conversational prompt injection to suppress SMS alerts, executing automated card testing micro-bursts across merchant channels, and instantly laundering funds through multi-hop mule networks within seconds."
     )
     doc.add_paragraph(
-        "SENTRIX AI delivers an end-to-end, closed-loop Red Team/Blue Team platform designed specifically for payment networks. It operates across three tightly integrated pillars: (1) an exhaustive 36-vector threat taxonomy grounded in FinCEN Alert FIN-2024-Alert004 and Federal Reserve FraudClassifier standards, (2) high-fidelity synthetic attack generators verified against real IEEE-CIS data with 100% domain invariant compliance across 38 rules, and (3) a multi-model defense suite featuring sub-millisecond ONNX-quantized inference, dense semantic prompt injection detectors, topological graph GBDTs, financial cost optimization, and active learning retraining that eliminates catastrophic forgetting."
+        "SENTRIX AI is an end-to-end, closed-loop Red Team/Blue Team prototype for payment networks. It combines: (1) a 36-vector fraud taxonomy informed by regulatory and real-world payment-fraud patterns; (2) synthetic tabular, text, graph, and adversarial-evasion datasets checked against explicit domain rules; and (3) specialised detection models, risk fusion, cost-aware thresholding, and active-learning retraining. The goal is straightforward: simulate coordinated fraud safely, detect it across modalities, and continuously test where the defence is weakest."
     )
 
     # ── Section 2: Threat Taxonomy (Pillar 1 - Identify) ──
     h2 = doc.add_heading("2. Pillar 1: Threat Identification & 36-Vector Taxonomy", level=1)
-    h2.runs[0].font.color.rgb = RGBColor(235, 0, 27)
+    h2.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph(
         "Rather than focusing on narrow fraud patterns, SENTRIX AI establishes an exhaustive 36-vector threat taxonomy categorized across 5 distinct operational pillars. Every vector is grounded in real payment protocols, cardholder behavioral data, and official regulatory advisories:"
@@ -122,52 +122,59 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
 
     # ── Section 3: Synthetic Generation & Fidelity (Pillar 2 - Generate) ──
     h3 = doc.add_heading("3. Pillar 2: Synthetic Attack Generation & Statistical Fidelity", level=1)
-    h3.runs[0].font.color.rgb = RGBColor(235, 0, 27)
+    h3.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph(
-        "To ensure generated attack datasets are genuinely useful for training production defenses, SENTRIX AI deploys modality-specific synthetic generators governed by strict domain invariants:"
+        "Each generator starts from known fraud mechanics, varies the signals an attacker would manipulate, and validates the exported records before they enter model training. This creates realistic enough stress cases without using customer data."
+    )
+
+    methodology = doc.add_paragraph()
+    methodology.add_run("How vectors are produced and used. ").bold = True
+    methodology.add_run(
+        "The tabular generator mixes ordinary spend, hard negatives, fraud sub-types, and controlled label noise across 15 features. "
+        "The text generator expands seeded prompts with template and slot variations. The graph generator builds organic transfers alongside mule rings, then derives degree, funnel, and pass-through signals. "
+        "A separate evasion pass mutates fraud records to imitate threshold skirting, spoofed device signals, velocity dilution, poisoning, and boundary probing. Finally, 100 cross-vector scenarios link text, payment, and laundering stages into one campaign."
     )
 
     gen_stats = [
-        ("Tabular Card Testing", "50,000 Transactions", "12 sub-types across 15 enterprise features (Amount, Velocity, Device Risk, Decline, Diurnal Sin/Cos, MCC Weight, Geo Distance, Card Age, Failed Attempts, Provisioning Channel, NFC Tap Latency, BNPL Inquiries, RaaS Dispute Score, BOPIS Delay).", "100.0% Pass Rate (13 Invariant Rules TAB.1–TAB.13)"),
-        ("Prompt Injection Text", "1,500 Prompts", "18 categories (17 adversarial + legitimate inquiries) synthesized via Groq Cloud (GPT OSS 120B / Llama 3.3 70B) and Google Gemini 3.5 Flash Lite with Platt-calibrated embeddings.", "100.0% Pass Rate (6 Invariant Rules T.1–T.6)"),
-        ("Money Mule Network Graph", "7,478 Transfers", "1,000 nodes, 100 mule rings, 7 laundering topologies generated using NetworkX directed multi-graphs with conserved monetary flow and realistic timestamp delays.", "100.0% Pass Rate (6 Invariant Rules G.1–G.6)"),
-        ("Adversarial Evasion", "50,000 Perturbations", "7 adversarial attack strategies applying boundary-skirting perturbations, model poisoning triggers, and reinforcement learning policy shifts.", "100.0% Pass Rate (13 Invariant Rules EV.1–EV.13)"),
-        ("Cross-Vector Scenarios", "100 Unique Campaigns", "Procedural multi-stage campaigns correlating chatbot text injection, gateway card testing, and graph laundering flows with 100% unique entity IDs.", "100.0% Unique Entities & Valid Timelines")
+        ("Tabular Card Testing", "50,000 transactions", "15 signals covering amount, velocity, device risk, decline state, timing, merchant risk, geography, card history, and newer payment-rail indicators. Includes 12 fraud sub-types, normal activity, and hard negatives."),
+        ("Prompt Injection Text", "1,500 prompts", "17 malicious categories plus legitimate customer queries. Seed prompts are expanded with deterministic templates and slot variations, including multilingual, encoded, multi-turn, and tool-use attacks."),
+        ("Money Mule Network Graph", "7,478 transfers", "1,000 accounts and 100 mule rings across seven laundering patterns: chains, fan-out, smurfing, wash cycles, instant micro-smurfing, chameleon traffic, and crypto off-ramping."),
+        ("Adversarial Evasion", "1,211 mutated fraud records", "Seven perturbation strategies modify a copy of the tabular data: amount structuring, timing jitter, device spoofing, velocity dilution, poisoning triggers, and two forms of boundary probing."),
+        ("Cross-Vector Scenarios", "100 Unique Campaigns", "Procedural multi-stage campaigns correlating chatbot text injection, gateway card testing, and graph laundering flows with 100% unique entity IDs.")
     ]
 
-    t_gen = doc.add_table(rows=len(gen_stats)+1, cols=4)
+    t_gen = doc.add_table(rows=len(gen_stats)+1, cols=3)
     t_gen.alignment = WD_TABLE_ALIGNMENT.CENTER
-    for i, col_name in enumerate(["Modality", "Volume", "Feature Space & Architecture", "Domain Pass Rate"]):
+    for i, col_name in enumerate(["Modality", "Volume", "How It Is Generated"]):
         c = t_gen.cell(0, i)
         c.paragraphs[0].add_run(col_name).font.bold = True
         set_cell_background(c, "EAEAEA")
 
-    for idx, (m, v, f, p) in enumerate(gen_stats):
+    for idx, (m, v, f) in enumerate(gen_stats):
         r = idx + 1
         t_gen.cell(r, 0).paragraphs[0].add_run(m).font.bold = True
         t_gen.cell(r, 1).paragraphs[0].add_run(v)
         t_gen.cell(r, 2).paragraphs[0].add_run(f)
-        t_gen.cell(r, 3).paragraphs[0].add_run(p)
 
     doc.add_paragraph(
-        "\nFidelity Benchmark: Evaluated using Train-on-Synthetic, Test-on-Real (TSTR) protocol against 20,000 real IEEE-CIS fraud benchmark records (TransactionAmt, C12 velocity, V201 device risk), confirming statistical distributional alignment without synthetic artifacts."
+        "\nValidation note: the project also runs Train-on-Synthetic, Test-on-Real (TSTR) and distributional checks against 20,000 IEEE-CIS benchmark records. These results are an early utility and distributional comparison—not a claim that synthetic data is equivalent to production traffic."
     )
 
     # ── Section 4: Multi-Model Defense Heads (Pillar 3 - Defend) ──
     h4 = doc.add_heading("4. Pillar 3: Multi-Model Defense Heads & Efficacy", level=1)
-    h4.runs[0].font.color.rgb = RGBColor(235, 0, 27)
+    h4.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph(
-        "The defense suite features three specialized heads operating in parallel, combined via a unified mathematical fusion engine:"
+        "The defence suite uses three specialist heads in parallel. Each returns a risk probability; the fusion layer combines the signals and selects an operational recommendation."
     )
 
     def_metrics = [
-        ("Tabular Fraud Detector", "ONNX-Quantized XGBoost + Isolation Forest", "AUC-PR: 0.8031\nF1 Score: 0.8147\nFPR: 0.0035 (0.35%)", "0.006 ms", "sub-50ms SLA met (8,300x faster than threshold)"),
-        ("NLP Injection Detector", "SentenceTransformers (all-MiniLM-L6-v2) + Platt Scaling", "Semantic AUC-PR: 1.0000\nParaphrased Lift: +9.19% vs TF-IDF\nOptimal Threshold: 0.2927", "1.42 ms", "Captures zero-day semantic shifts invisible to keywords"),
-        ("Mule Graph Classifier", "HistGradientBoosting on NetworkX Graph Topologies", "AUC-PR: 0.9630\nF1 Score: 0.9025\nOptimal Threshold: 0.50", "0.082 ms", "Identifies instant smurfing, crypto mixers, and chameleon rings"),
+        ("Tabular Fraud Detector", "ONNX-exported XGBoost + Isolation Forest", "AUC-PR: 0.8031\nF1 Score: 0.8147\nFPR: 0.0035 (0.35%)", "0.006 ms", "Meets the project’s sub-50 ms inference target on the local benchmark"),
+        ("NLP Injection Detector", "ONNX MiniLM embeddings + calibrated classifier and similarity ensemble", "Semantic AUC-PR: 1.0000\nParaphrased lift: +9.19% vs TF-IDF\nThreshold: 0.2927", "Not separately reported", "Captures meaning-level variation that keyword-only features can miss"),
+        ("Mule Graph Classifier", "HistGradientBoosting on NetworkX topology features", "AUC-PR: 0.9630\nF1 Score: 0.9025\nThreshold tuned on validation", "Not separately reported", "Scores rapid pass-through, high-degree, and funnel-like behaviour"),
         ("Financial Cost Optimizer", "Asymmetric Loss Sweeper ($1.2*Amt FN vs $15.00 FP)", "Optimal Tau: 0.36\nMin Financial Loss: $46,218.98\nSavings vs Default: $3,071.97", "Pre-computed", "Reduces chargeback losses while maintaining frictionless commerce"),
-        ("Cross-Vector Fusion Engine", "Correlated Joint Risk Formula + Autonomous Kill Switch", "Joint Score: 1 - Prod(1-Pi) + Delta\nCritical Action: Instant Kill Switch (>=0.80)\nHigh Action: Step-Up 2FA (0.50-0.79)", "15.5 - 32.9 ms", "Autonomous real-time token revocation and wire interception")
+        ("Cross-Vector Fusion Engine", "Joint-risk formula + action policy", "1 - Product(1-Pi) + synergy\nCritical: >=0.80\nHigh: 0.50–0.79", "Scenario execution", "Returns freeze, step-up, or monitor recommendations for payment-rail integration")
     ]
 
     t_def = doc.add_table(rows=len(def_metrics)+1, cols=5)
@@ -186,23 +193,22 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
         t_def.cell(r, 4).paragraphs[0].add_run(imp)
 
     doc.add_paragraph(
-        "\nExplainability & Compliance: Global and local TreeSHAP attribution computed across all 15 features (Top: failed_attempts_24h = 0.1281, nfc_tap_latency_ms = 0.1078, bnpl_bureau_inquiries = 0.1058), satisfying PCI-DSS and SR 11-7 model governance standards."
+        "\nExplainability: global and per-transaction TreeSHAP attribution is available across all 15 tabular features (the top three are failed_attempts_24h, nfc_tap_latency_ms, and bnpl_bureau_inquiries). This provides traceable model evidence to support a future PCI-DSS and model-governance review; it is not a compliance certification."
     )
 
     # ── Section 5: Closed-Loop Active Learning Engine ──
     h5 = doc.add_heading("5. Pillar 4: Closed-Loop Adversarial Active Learning", level=1)
-    h5.runs[0].font.color.rgb = RGBColor(235, 0, 27)
+    h5.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph(
-        "The cornerstone of SENTRIX AI is its self-healing feedback loop. Simulated attacks are not static test benchmarks—they become the dynamic training ground for active model retraining:"
+        "The closed loop makes the evaluation practical: it keeps an unseen partition, probes the first-round models, retrains on discovered misses, and then checks both adversarial and baseline performance:"
     )
 
     loop_steps = [
-        "1. Holdout Partitioning: Step 4 holdout data is split strictly 50/50 into a Mining Partition and an Unseen Final Evaluation Partition.",
-        "2. Model-Aware Probing: A multi-strategy prober (7 tabular strategies including push provisioning spoofing, NFC delay compression, and BNPL masking; 5 graph strategies; 3 semantic prompt mutations) iteratively attacks Round 1 defenses to discover decision-boundary blind spots.",
-        "3. Automated Failure Mining: Mined samples that successfully evaded Round 1 (34.7% tabular evasion rate, 57.9% graph evasion rate) are automatically labeled and merged into the training pool (+4,683 tabular, +711 graph records) without human annotation.",
-        "4. Round 2 Active Retraining: Round 2 models are trained and exported to ONNX.",
-        "5. Generalization & Catastrophic Forgetting Audit: Evaluated on the unseen adversarial test set. Graph Mule Catch Rate jumped from 39.8% in Round 1 to 87.5% in Round 2 (+42 adversarial mule rings intercepted, AUC-PR increased from 0.7114 to 0.9404, delta = +0.2290). Baseline validation FPR halved from 0.97% to 0.45%, verifying ZERO catastrophic forgetting."
+        "1. Holdout Partitioning: Step 4 holdout data is split 50/50 into a mining partition and an unseen final-evaluation partition.",
+        "2. Model-Aware Probing: targeted tabular, graph, and text mutations probe the Round 1 decision boundaries to expose blind spots.",
+        "3. Failure Mining and Retraining: evaded samples are automatically labelled and added to the training pool (+4,683 tabular and +711 graph records).",
+        "4. Evaluation: on unseen adversarial graph data, the mule catch rate improved from 39.8% to 87.5% (+42 catches) and AUC-PR rose from 0.7114 to 0.9404. Baseline graph AUC-PR changed by only -0.0019, so the project’s forgetting check did not flag material regression."
     ]
 
     for step in loop_steps:
@@ -210,10 +216,10 @@ def create_submission_document(filename="SENTRIX_AI_Mastercard_Submission.docx")
 
     # ── Section 6: Conclusion & Deployment ──
     h6 = doc.add_heading("6. Conclusion & Live Deployment Links", level=1)
-    h6.runs[0].font.color.rgb = RGBColor(235, 0, 27)
+    h6.runs[0].font.color.rgb = RGBColor(0, 0, 0)
 
     doc.add_paragraph(
-        "SENTRIX AI proves that the most effective way to defeat GenAI-enabled financial fraud is to build a unified system that generates, stress-tests, and actively evolves its own defenses. All components—from synthetic generation to real-time ONNX inference and active retraining—are fully open-source, reproducible, and live in production:"
+        "SENTRIX AI demonstrates a unified prototype that generates, stress-tests, and improves fraud defences across text, payment, and money-movement signals. The source, live web demonstration, and API documentation are available here:"
     )
 
     doc.add_paragraph("• Interactive Web Dashboard: https://sentrix-ai-seven.vercel.app/")

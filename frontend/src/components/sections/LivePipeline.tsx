@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import {
   Zap,
@@ -78,34 +78,70 @@ function StepButton({
   label,
   onClick,
   loading,
+  loadingMessages,
   icon: Icon,
   accent = "cyan",
 }: {
   label: string;
   onClick: () => void;
   loading: boolean;
+  loadingMessages?: string[];
   icon: typeof Zap;
   accent?: "cyan" | "violet" | "red" | "orange";
 }) {
+  const [msgIdx, setMsgIdx] = useState(0);
+
+  useEffect(() => {
+    if (!loading || !loadingMessages || loadingMessages.length <= 1) {
+      setMsgIdx(0);
+      return;
+    }
+    const interval = setInterval(() => {
+      setMsgIdx((prev) => (prev + 1) % loadingMessages.length);
+    }, 2400);
+    return () => clearInterval(interval);
+  }, [loading, loadingMessages]);
+
   const colors = {
-    cyan: "bg-cyan/15 text-cyan hover:bg-cyan/25",
-    violet: "bg-ai-violet/15 text-ai-violet hover:bg-ai-violet/25",
-    red: "bg-mc-red/15 text-mc-red hover:bg-mc-red/25",
-    orange: "bg-mc-orange/15 text-mc-orange hover:bg-mc-orange/25",
+    cyan: "bg-cyan/15 text-cyan hover:bg-cyan/25 border-cyan/30",
+    violet: "bg-ai-violet/15 text-ai-violet hover:bg-ai-violet/25 border-ai-violet/30",
+    red: "bg-mc-red/15 text-mc-red hover:bg-mc-red/25 border-mc-red/30",
+    orange: "bg-mc-orange/15 text-mc-orange hover:bg-mc-orange/25 border-mc-orange/30",
   };
+
+  const activeMsg =
+    loadingMessages && loadingMessages.length > 0
+      ? loadingMessages[msgIdx]
+      : "Processing...";
+
   return (
-    <button
-      onClick={onClick}
-      disabled={loading}
-      className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-mono text-sm transition-all disabled:opacity-50 ${colors[accent]}`}
-    >
-      {loading ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <Icon className="h-4 w-4" />
+    <div className="w-full space-y-2">
+      <button
+        onClick={onClick}
+        disabled={loading}
+        className={`flex w-full items-center justify-center gap-2 rounded-xl px-4 py-3 font-mono text-sm transition-all border disabled:opacity-90 ${colors[accent]}`}
+      >
+        {loading ? (
+          <Loader2 className="h-4 w-4 animate-spin shrink-0" />
+        ) : (
+          <Icon className="h-4 w-4 shrink-0" />
+        )}
+        <span className="truncate">{loading ? activeMsg : label}</span>
+      </button>
+
+      {loading && (
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center justify-center gap-2 rounded-lg bg-secondary/80 px-3 py-2 text-xs font-mono text-foreground border border-glass-border/60 shadow-inner"
+        >
+          <span className="inline-block h-2 w-2 rounded-full bg-cyan animate-ping shrink-0" />
+          <span className="truncate text-[11px] text-muted-foreground">
+            {activeMsg}
+          </span>
+        </motion.div>
       )}
-      {loading ? "Processing..." : label}
-    </button>
+    </div>
   );
 }
 
@@ -425,6 +461,7 @@ export function LivePipeline() {
                   label="Generate Now"
                   onClick={handleGenerate}
                   loading={generate.isPending}
+                  loadingMessages={["🧬 Generating adversarial attack data..."]}
                   icon={Zap}
                 />
               </div>
@@ -479,6 +516,7 @@ export function LivePipeline() {
                     label="🛡️ Train Round 1"
                     onClick={handleTrain}
                     loading={train.isPending}
+                    loadingMessages={["🧠 Neural defense heads calibrating on live threat data..."]}
                     icon={ShieldCheck}
                     accent="cyan"
                   />
@@ -534,6 +572,7 @@ export function LivePipeline() {
                     label="🔴 Attack Round 1"
                     onClick={handleAttack}
                     loading={attack.isPending}
+                    loadingMessages={["💥 Red Team counter-attack — mutating evasion strategies to break the defense..."]}
                     icon={Crosshair}
                     accent="red"
                   />
@@ -589,6 +628,10 @@ export function LivePipeline() {
                     label="🔄 Retrain Round 2"
                     onClick={handleRetrain}
                     loading={retrain.isPending}
+                    loadingMessages={[
+                      "🧪 Round 2 evolution — the AI is teaching itself from its own mistakes...",
+                      "🔄 Self-healing loop engaged — learning from every missed attack",
+                    ]}
                     icon={RefreshCw}
                     accent="violet"
                   />
@@ -642,6 +685,7 @@ export function LivePipeline() {
                     label="📊 Run Final Comparison"
                     onClick={handleEvaluate}
                     loading={evaluate.isPending}
+                    loadingMessages={["📊 Final audit — Round 1 vs Round 2 showdown, measuring the evolution..."]}
                     icon={BarChart3}
                     accent="orange"
                   />
