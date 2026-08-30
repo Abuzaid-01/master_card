@@ -103,17 +103,14 @@ export function Team() {
             </a>
           </div>
 
-          <p className="mt-12 font-mono text-xs tracking-wider text-muted-foreground">
-            Made with <span className="text-red-500 animate-pulse inline-block">❤️</span> by{" "}
-            <a
-              href="https://www.linkedin.com/in/abuzaid01"
-              target="_blank"
-              rel="noreferrer"
-              className="font-semibold text-cyan hover:underline decoration-cyan underline-offset-4 transition-colors"
-            >
-              Abuzaid
-            </a>
-          </p>
+          <div className="mt-12 flex justify-center">
+            <div className="group inline-flex items-center gap-2.5 rounded-full border border-white/10 bg-black/40 px-6 py-2.5 backdrop-blur-md transition-all duration-300 ease-out hover:scale-110 hover:-translate-y-1 hover:border-cyan/50 hover:bg-black/70 hover:shadow-[0_0_30px_rgba(0,229,255,0.3)] cursor-default">
+              <span className="h-1.5 w-1.5 rounded-full bg-cyan animate-pulse" />
+              <p className="font-mono text-xs sm:text-sm font-medium tracking-wide text-foreground/90 transition-colors duration-300 group-hover:text-cyan group-hover:text-glow-cyan">
+                Protecting Payments with AI That Never Stops Learning
+              </p>
+            </div>
+          </div>
         </Reveal>
       </div>
     </section>
