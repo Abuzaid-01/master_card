@@ -609,6 +609,65 @@ export const techGroups = [
   },
 ];
 
+export interface FAQItem {
+  id: string;
+  category: "Architecture & Workflow" | "ML & ONNX Engine" | "Closed Loop" | "Compliance & Defense";
+  question: string;
+  answer: string;
+  highlight?: string;
+}
+
+export const faqItems: FAQItem[] = [
+  {
+    id: "faq-1",
+    category: "Architecture & Workflow",
+    question: "How does the end-to-end Red-Blue workflow operate?",
+    answer:
+      "SENTRIX AI operates as an automated 4-phase closed loop: (1) The Red Team synthetic engine generates 36 real-world threat vectors across conversational, gateway, and graph rails. (2) Heterogeneous Blue Team defense heads detect attacks in real time. (3) A model-aware prober discovers blind spots and auto-mines evasion samples (+4,683 cases). (4) The Active Retrainer incrementally updates the ONNX models, achieving +57 more caught attacks in Round 2 with zero catastrophic forgetting on legitimate transactions.",
+    highlight: "Autonomous 4-phase loop: Simulate → Detect → Failure Mining → Active Retraining",
+  },
+  {
+    id: "faq-2",
+    category: "ML & ONNX Engine",
+    question: "Why is the ONNX inference time 0.006ms and how does it meet banking SLAs?",
+    answer:
+      "Production fraud systems have strict sub-50ms SLA budgets. Traditional Python/PyTorch inference is throttled by GIL lock and heavy memory overhead. SENTRIX AI quantizes trained XGBoost models and compiles them into a standalone C++ ONNX Runtime engine. This enables direct CPU cache tensor evaluation in 0.0056ms — over 8,300x faster than required banking SLAs.",
+    highlight: "C++ ONNX Runtime engine running at 0.0056ms SLA (8,300x faster than 50ms budget)",
+  },
+  {
+    id: "faq-3",
+    category: "Architecture & Workflow",
+    question: "How is synthetic data verified to match real-world payment data?",
+    answer:
+      "Every generated record must satisfy 38 strict domain invariant rules (checking velocity limits, MCC risk weighting, diurnal sin/cos cycles, and conserved multi-hop graph flows). Statistical fidelity is evaluated using the Train-on-Synthetic, Test-on-Real (TSTR) protocol against 20,000 real IEEE-CIS benchmark records, achieving a 99.9% AUC-PR fidelity score without synthetic artifacts.",
+    highlight: "100% Invariant pass rate across 38 domain rules + 99.9% TSTR AUC-PR on real IEEE-CIS records",
+  },
+  {
+    id: "faq-4",
+    category: "ML & ONNX Engine",
+    question: "How does the Tri-Vector mathematical risk fusion formula work?",
+    answer:
+      "When an incoming transaction event occurs, it is evaluated across three decoupled modalities: NLP semantic injection probability (P_text), tabular gateway anomaly risk (P_tab), and graph topological ring score (P_graph). The fusion engine calculates joint risk using R_fused = 1 - ∏(1 - P_i) + Δ_synergy. If R_fused ≥ 0.80, an autonomous instant kill-switch freezes the card and halts wire dispersal.",
+    highlight: "Correlated Bayesian fusion equation combining Chatbot + Gateway + Graph trails",
+  },
+  {
+    id: "faq-5",
+    category: "Closed Loop",
+    question: "How does the active learning loop prevent catastrophic forgetting?",
+    answer:
+      "When retraining on newly discovered adversarial mutations, standard ML models risk degrading their accuracy on normal everyday transactions (catastrophic forgetting). SENTRIX AI enforces an automated dual-partition holdout audit. Round 2 models are tested against a preserved baseline validation set, confirming a 0.45% false positive rate (-0.67% drift), proving that new defenses do not introduce friction for legitimate cardholders.",
+    highlight: "Dual-partition holdout audit ensuring -0.67% drift and 0.45% validation FPR",
+  },
+  {
+    id: "faq-6",
+    category: "Compliance & Defense",
+    question: "Is SENTRIX AI strictly defense-only?",
+    answer:
+      "Yes. The synthetic generation module functions purely as an internal automated stress-testing harness (similar to a flight simulator for pilots) to validate defenses before criminals discover vulnerabilities. In production, SENTRIX AI operates strictly as an AI Risk Manager protecting merchants and cardholders from fraud loss, return abuse (RaaS), and chargebacks with asymmetric cost-loss threshold optimization.",
+    highlight: "Strictly defense-only AI Risk Manager with asymmetric financial cost-loss optimization ($3,071 savings/batch)",
+  },
+];
+
 export const navSections = [
   { id: "hero", label: "Overview" },
   { id: "identify", label: "Identify" },
@@ -616,5 +675,6 @@ export const navSections = [
   { id: "defend", label: "Defend" },
   { id: "loop", label: "Closed Loop" },
   { id: "demo", label: "Live Demo" },
+  { id: "faq", label: "FAQ" },
   { id: "team", label: "Team" },
 ];

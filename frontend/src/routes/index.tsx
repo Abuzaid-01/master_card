@@ -6,6 +6,7 @@ import { Generate } from "@/components/sections/Generate";
 import { Defend } from "@/components/sections/Defend";
 import { ClosedLoop } from "@/components/sections/ClosedLoop";
 import { LiveDemo } from "@/components/sections/LiveDemo";
+import { FAQ } from "@/components/sections/FAQ";
 import { Team } from "@/components/sections/Team";
 
 const title = "SENTRIX AI — Tri-Vector Compound Fraud Defense Engine";
@@ -36,6 +37,7 @@ function Index() {
       <Defend />
       <ClosedLoop />
       <LiveDemo />
+      <FAQ />
       <Team />
     </main>
   );
